@@ -3,6 +3,7 @@ use bevy::prelude::*;
 // ----- Modules ------------------------------------------------------------ //
 
 // Modules in folders
+pub mod components;
 pub mod enemy;
 pub mod player;
 mod score;
@@ -32,14 +33,20 @@ impl Plugin for GamePlugin {
             // States
             .add_state::<SimulationState>()
             // Enter State Systems
-            .add_system(resume_simulation.in_schedule(OnEnter(AppState::Game)))
+            .add_systems(
+                (spawn_background, resume_simulation, spawn_world_borders)
+                    .in_schedule(OnEnter(AppState::Game)),
+            )
             // Plugins
             .add_plugin(EnemyPlugin)
             .add_plugin(PlayerPlugin)
             .add_plugin(StarsPlugin)
             .add_plugin(ScorePlugin)
             // Systems
-            .add_system(toggle_simulation.run_if(in_state(AppState::Game)))
+            .add_system(
+                toggle_simulation_on_input_event
+                    .run_if(in_state(AppState::Game)),
+            )
             // Exit State Systems
             .add_system(pause_simulation.in_schedule(OnExit(AppState::Game)));
     }

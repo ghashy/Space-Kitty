@@ -1,4 +1,8 @@
-use bevy::{app::AppExit, prelude::*, window::PrimaryWindow};
+use bevy::{
+    app::AppExit, prelude::*, render::camera::ScalingMode,
+    window::PrimaryWindow,
+};
+use bevy_rapier2d::prelude::*;
 
 // ----- Crate -------------------------------------------------------------- //
 
@@ -9,19 +13,24 @@ use crate::{
 
 // ----- Body --------------------------------------------------------------- //
 
-pub fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    let sound_effect_1: Handle<AudioSource> =
-        asset_server.load("audio/pluck_001.ogg");
-    let sound_effect_2: Handle<AudioSource> =
-        asset_server.load("audio/pluck_002.ogg");
-    let exp = asset_server.load("audio/explosionCrunch_000.ogg");
-    let pick_star = asset_server.load("audio/laserLarge_000.ogg");
+pub fn setup(
+    mut commands: Commands,
+    mut rapier_config: ResMut<RapierConfiguration>,
+    asset_server: ResMut<AssetServer>,
+) {
+    // Setup physics gravity
+    rapier_config.gravity = Vec2::ZERO;
 
     commands.insert_resource(SamplePack {
-        pluck1: sound_effect_1,
-        pluck2: sound_effect_2,
-        exp,
-        pick_star,
+        imp_light_0: asset_server.load("audio/impact/Light_00.ogg"),
+        imp_light_1: asset_server.load("audio/impact/Light_01.ogg"),
+        imp_light_2: asset_server.load("audio/impact/Light_02.ogg"),
+        imp_light_3: asset_server.load("audio/impact/Light_03.ogg"),
+        imp_light_4: asset_server.load("audio/impact/Light_04.ogg"),
+        imp_med_0: asset_server.load("audio/impact/Medium_00.ogg"),
+        imp_med_1: asset_server.load("audio/impact/Medium_01.ogg"),
+        exp: asset_server.load("audio/explosionCrunch_000.ogg"),
+        pick_star: asset_server.load("audio/laserLarge_000.ogg"),
     });
 }
 
@@ -32,11 +41,15 @@ pub fn spawn_camera(
     let window = window_query.get_single().unwrap();
 
     commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(
-            window.width() / 2.,
-            window.height() / 2.,
-            0.,
-        ),
+        transform: Transform::from_xyz(window.width(), window.height(), 0.),
+        projection: OrthographicProjection {
+            scale: 2.,
+            scaling_mode: ScalingMode::Fixed {
+                width: window.width(),
+                height: window.height(),
+            },
+            ..default()
+        },
         ..default()
     });
 }

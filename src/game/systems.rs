@@ -1,8 +1,9 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 
-// ----- Crate -------------------------------------------------------------- //
+// ----- Modules ------------------------------------------------------------ //
 
-use super::SimulationState;
+use super::{components::Wall, SimulationState};
 
 // ----- Body --------------------------------------------------------------- //
 
@@ -18,7 +19,7 @@ pub fn resume_simulation(
     simulation_state_next_state.set(SimulationState::Running);
 }
 
-pub fn toggle_simulation(
+pub fn toggle_simulation_on_input_event(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
     simulation_state: Res<State<SimulationState>>,
@@ -34,4 +35,124 @@ pub fn toggle_simulation(
             println!("Simulation running");
         }
     }
+}
+
+pub fn spawn_world_borders(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = window_query.get_single().unwrap();
+
+    let width = Collider::cuboid(window.width() * 2., 2.);
+    let height = Collider::cuboid(2., window.height() * 2.);
+
+    // Top border
+    commands.spawn((
+        SpatialBundle {
+            transform: Transform {
+                translation: Vec3::new(
+                    // X axis
+                    window.width(),
+                    // Y axis
+                    window.height() * 2.,
+                    0.,
+                ),
+                ..default()
+            },
+            ..default()
+        },
+        width.clone(),
+        Wall,
+    ));
+
+    // Bottom border
+    commands.spawn((
+        SpatialBundle {
+            transform: Transform {
+                translation: Vec3::new(
+                    // X axis
+                    window.width(),
+                    // Y axis
+                    0.,
+                    0.,
+                ),
+                ..default()
+            },
+            ..default()
+        },
+        width,
+        Wall,
+    ));
+
+    // Left border
+    commands.spawn((
+        SpatialBundle {
+            transform: Transform {
+                translation: Vec3::new(
+                    // X axis
+                    0.,
+                    // Y axis
+                    window.height() * 2.,
+                    0.,
+                ),
+                ..default()
+            },
+            ..default()
+        },
+        height.clone(),
+        Wall,
+    ));
+
+    // Left border
+    commands.spawn((
+        SpatialBundle {
+            transform: Transform {
+                translation: Vec3::new(
+                    // X axis
+                    window.width() * 2.,
+                    // Y axis
+                    0.,
+                    0.,
+                ),
+                ..default()
+            },
+            ..default()
+        },
+        height,
+        Wall,
+    ));
+}
+
+pub fn spawn_background(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = window_query.get_single().unwrap();
+    let image: Handle<Image> =
+        asset_server.load("sprites/background_green.png");
+
+    let width = window.width() / 128. * 2.;
+    let height = window.height() / 128. * 2. + 1.;
+
+    println!("{}, {} ", width, height);
+    for row in 0..width as u32 {
+        for column in 0..height as u32 {
+            commands.spawn(SpriteBundle {
+                texture: image.clone(),
+                transform: Transform::from_translation(Vec3::new(
+                    64. + 128. * row as f32,
+                    54. + 128. * column as f32,
+                    -100.,
+                )),
+                sprite: Sprite {
+                    color: Color::rgba(0.3, 0.3, 0.4, 1.),
+                    ..default()
+                },
+                ..default()
+            });
+        }
+    }
+
+    println!("Helllo");
 }

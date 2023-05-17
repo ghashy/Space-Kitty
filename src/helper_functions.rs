@@ -6,6 +6,19 @@ use crate::game::player::BALL_SIZE;
 
 // ----- Body --------------------------------------------------------------- //
 
+pub trait Vec2Util {
+    fn reflect(&mut self, rhs: Vec2) {}
+}
+
+impl Vec2Util for Vec2 {
+    fn reflect(&mut self, rhs: Vec2) {
+        let scalar = 2. * self.dot(rhs) / rhs.dot(rhs);
+
+        self.x = self.x - (rhs.x * scalar);
+        self.y = self.y - (rhs.y * scalar);
+    }
+}
+
 pub fn clamp_translation(
     mut translation: Vec3,
     x_min: f32,

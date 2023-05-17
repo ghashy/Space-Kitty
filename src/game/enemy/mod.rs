@@ -14,8 +14,8 @@ use super::SimulationState;
 
 // ----- Constants ---------------------------------------------------------- //
 
-const NUMBER_OF_ENEMIES: usize = 3;
-const ENEMY_SPEED: f32 = 500.;
+const NUMBER_OF_ENEMIES_ON_START: usize = 3;
+const ENEMY_SPEED: f32 = 16000. * 2.;
 
 // ----- Body --------------------------------------------------------------- //
 
@@ -29,9 +29,8 @@ impl Plugin for EnemyPlugin {
             // Systems
             .add_systems(
                 (
-                    enemy_movement,
                     update_enemy_direction,
-                    confine_enemy_movement,
+                    enemy_movement,
                     spawn_enemy_on_game_progress,
                 )
                     .in_set(OnUpdate(AppState::Game))

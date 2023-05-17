@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
+use bevy_rapier2d::prelude::*;
 
 // ----- Modules ------------------------------------------------------------ //
 
@@ -24,7 +25,16 @@ fn main() {
         .add_startup_system(spawn_camera)
         .add_state::<AppState>()
         // Plugins
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: String::from("Balls"),
+                resolution: WindowResolution::new(1280., 720.),
+                ..default()
+            }),
+            ..default()
+        }))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.))
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(GamePlugin)
         .add_plugin(MainMenuPlugin)
         // Systems

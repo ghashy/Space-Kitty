@@ -1,4 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 
 // ----- Crate -------------------------------------------------------------- //
 
@@ -34,6 +35,19 @@ pub fn spawn_player(
             texture: asset_server.load("sprites/ball_blue_large.png"),
             ..default()
         },
+        RigidBody::Dynamic,
+        Collider::ball(BALL_SIZE),
+        ExternalForce {
+            force: Vec2::ZERO,
+            torque: 0.,
+        },
+        Damping {
+            linear_damping: 0.6,
+            angular_damping: 5.,
+        },
+        ActiveCollisionTypes::all(),
+        ActiveEvents::COLLISION_EVENTS,
+        Restitution::coefficient(1.),
         Player {},
     ));
 }
@@ -49,30 +63,27 @@ pub fn despawn_player(
 
 pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<&mut ExternalForce, With<Player>>,
     time: Res<Time>,
 ) {
-    if let Ok(mut transform) = player_query.get_single_mut() {
+    if let Ok(mut player) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;
 
-        if keyboard_input.pressed(KeyCode::Left)
-            || keyboard_input.pressed(KeyCode::A)
-        {
+        let top = KeyCode::W;
+        let down = KeyCode::S;
+        let left = KeyCode::A;
+        let right = KeyCode::D;
+
+        if keyboard_input.pressed(left) {
             direction += Vec3::new(-1., 0., 0.);
         }
-        if keyboard_input.pressed(KeyCode::Right)
-            || keyboard_input.pressed(KeyCode::D)
-        {
+        if keyboard_input.pressed(right) {
             direction += Vec3::new(1., 0., 0.);
         }
-        if keyboard_input.pressed(KeyCode::Up)
-            || keyboard_input.pressed(KeyCode::W)
-        {
+        if keyboard_input.pressed(top) {
             direction += Vec3::new(0., 1., 0.);
         }
-        if keyboard_input.pressed(KeyCode::Down)
-            || keyboard_input.pressed(KeyCode::S)
-        {
+        if keyboard_input.pressed(down) {
             direction += Vec3::new(0., -1., 0.);
         }
 
@@ -80,28 +91,8 @@ pub fn player_movement(
             direction = direction.normalize();
         }
 
-        transform.translation +=
-            direction * PLAYER_SPEED * time.delta_seconds();
-    }
-}
-
-pub fn confine_player_movement(
-    mut player_query: Query<&mut Transform, With<Player>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    if let Ok(mut player_transform) = player_query.get_single_mut() {
-        let window = window_query.get_single().unwrap();
-
-        let (x_min, x_max, y_min, y_max) = get_window_borders(window);
-        let translation = clamp_translation(
-            player_transform.translation,
-            x_min,
-            x_max,
-            y_min,
-            y_max,
-        );
-
-        player_transform.translation = translation;
+        player.force =
+            direction.truncate() * PLAYER_SPEED * time.delta_seconds();
     }
 }
 
@@ -120,7 +111,7 @@ pub fn enemy_hit_player(
             let distance = player_transform
                 .translation
                 .distance(enemy_transform.translation);
-            let ball_radius = BALL_SIZE / 2.;
+            let ball_radius = BALL_SIZE;
 
             if distance < ball_radius + ball_radius {
                 println!("Game over!");

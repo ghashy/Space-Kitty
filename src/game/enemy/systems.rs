@@ -1,10 +1,14 @@
+use std::ops::Range;
+
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
 // ----- Crate -------------------------------------------------------------- //
 
 use crate::{
-    audio_system::resources::SamplePack, game::score::resources::Score,
+    audio_system::resources::SamplePack,
+    game::{player::BALL_SIZE, score::resources::Score},
     helper_functions::*,
 };
 
@@ -22,9 +26,9 @@ pub fn spawn_enemies(
     let window = window_query.get_single().unwrap();
 
     let mut rand = thread_rng();
-    for _ in 0..NUMBER_OF_ENEMIES {
-        let random_x = rand.gen::<f32>() * window.width();
-        let random_y = rand.gen::<f32>() * window.height();
+    for _ in 0..NUMBER_OF_ENEMIES_ON_START {
+        let random_x = rand.gen::<f32>() * window.width() * 2.;
+        let random_y = rand.gen::<f32>() * window.height() * 2.;
 
         commands.spawn((
             SpriteBundle {
@@ -32,6 +36,15 @@ pub fn spawn_enemies(
                 texture: asset_server.load("sprites/ball_red_large.png"),
                 ..default()
             },
+            RigidBody::Dynamic,
+            Collider::ball(BALL_SIZE),
+            Velocity {
+                linvel: Vec2::new(random_x, random_y),
+                angvel: 0.3,
+            },
+            Sleeping::disabled(),
+            ActiveCollisionTypes::all(),
+            ActiveEvents::COLLISION_EVENTS,
             Enemy {
                 direction: Vec2::new(rand.gen::<f32>(), rand.gen::<f32>())
                     .normalize(),
@@ -50,69 +63,101 @@ pub fn despawn_enemies(
 }
 
 pub fn enemy_movement(
-    mut enemy_query: Query<(&mut Transform, &Enemy)>,
+    mut enemy_query: Query<(&mut Velocity, &Enemy)>,
     time: Res<Time>,
 ) {
-    for (mut transform, enemy) in enemy_query.iter_mut() {
+    for (mut velocity, enemy) in enemy_query.iter_mut() {
         let direction = enemy.direction.extend(0.);
-        transform.translation += direction * ENEMY_SPEED * time.delta_seconds();
+        velocity.linvel =
+            direction.truncate() * ENEMY_SPEED * time.delta_seconds();
     }
 }
 
 pub fn update_enemy_direction(
-    mut enemy_query: Query<(&Transform, &mut Enemy)>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
+    mut enemy_query: Query<(Entity, &mut Enemy), With<Enemy>>,
+    mut collision_event: EventReader<CollisionEvent>,
+    rapier_context: Res<RapierContext>,
     audio: Res<Audio>,
     sample_pack: Res<SamplePack>,
 ) {
-    let window = window_query.get_single().unwrap();
+    let mut direction_changed = false;
 
-    let (x_min, x_max, y_min, y_max) = get_window_borders(window);
+    // 0b00 - empty
+    // 0b01 - entity1
+    // 0b10 - entity2
+    // 0b11 - both
+    let mut entities_flags = 0b00;
 
-    for (transform, mut enemy) in enemy_query.iter_mut() {
-        let mut direction_changed = false;
-        let translation = transform.translation;
-
-        if translation.x < x_min || translation.x > x_max {
-            enemy.direction.x *= -1.;
+    for event in collision_event.iter() {
+        if let CollisionEvent::Started(entity1, entity2, _) = event {
+            // For playing audio
             direction_changed = true;
-        }
 
-        if translation.y < y_min || translation.y > y_max {
-            enemy.direction.y *= -1.;
-            direction_changed = true;
-        }
+            // If we found a collision
+            if let Some(contact_pair) =
+                rapier_context.contact_pair(*entity1, *entity2)
+            {
+                // Is collided entity1 actually enemy?
+                if let Some(mut enemy) =
+                    enemy_query.iter_mut().find_map(|enemy| {
+                        if enemy.0 == *entity1 {
+                            Some(enemy.1)
+                        } else {
+                            None
+                        }
+                    })
+                {
+                    enemy
+                        .direction
+                        .reflect(contact_pair.manifold(0).unwrap().normal());
+                    // Write entity1 to flags
+                    entities_flags = entities_flags | 0b01;
+                }
 
-        if direction_changed {
-            // Randomly play one of the two sound effects
-            let sound_effect = if random::<f32>() > 0.5 {
-                &sample_pack.pluck1
-            } else {
-                &sample_pack.pluck2
-            };
-
-            audio.play(sound_effect.clone());
+                // Is collided entity2 actually enemy?
+                if let Some(mut enemy) =
+                    enemy_query.iter_mut().find_map(|enemy| {
+                        if enemy.0 == *entity2 {
+                            Some(enemy.1)
+                        } else {
+                            None
+                        }
+                    })
+                {
+                    enemy
+                        .direction
+                        .reflect(contact_pair.manifold(0).unwrap().normal());
+                    // Write entity2 to flags
+                    entities_flags = entities_flags | 0b10;
+                }
+            }
+            // Break if got actual collision
+            if entities_flags != 0b00 {
+                break;
+            }
         }
     }
-}
+    // Randomly play one of sound effects
+    let sound_effect: &Handle<AudioSource>;
+    let mut rng = thread_rng();
+    if direction_changed {
+        if entities_flags != 0b11 {
+            sound_effect = match rng.gen::<bool>() {
+                true => &sample_pack.imp_med_0,
+                false => &sample_pack.imp_med_1,
+            }
+        } else {
+            sound_effect = match rng.gen_range::<u16, Range<u16>>(0..5) {
+                0 => &sample_pack.imp_light_0,
+                1 => &sample_pack.imp_light_1,
+                2 => &sample_pack.imp_light_2,
+                3 => &sample_pack.imp_light_3,
+                4 => &sample_pack.imp_light_4,
+                _ => &sample_pack.exp,
+            }
+        }
 
-pub fn confine_enemy_movement(
-    mut enemy_query: Query<&mut Transform, With<Enemy>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
-    let (x_min, x_max, y_min, y_max) = get_window_borders(window);
-
-    for mut enemy_transform in enemy_query.iter_mut() {
-        let translation = clamp_translation(
-            enemy_transform.translation,
-            x_min,
-            x_max,
-            y_min,
-            y_max,
-        );
-
-        enemy_transform.translation = translation;
+        audio.play(sound_effect.clone());
     }
 }
 
@@ -125,15 +170,24 @@ pub fn spawn_enemy_on_game_progress(
     if score.value % 5 == 0 && score.value > score.last_value {
         let window = window_query.get_single().unwrap();
         let mut rand = thread_rng();
-        let rand_x = rand.gen::<f32>() * window.width();
-        let rand_y = rand.gen::<f32>() * window.height();
+        let random_x = rand.gen::<f32>() * window.width() * 2.;
+        let random_y = rand.gen::<f32>() * window.height() * 2.;
 
         commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(rand_x, rand_y, 0.),
+                transform: Transform::from_xyz(random_x, random_y, 0.),
                 texture: asset_server.load("sprites/ball_red_large.png"),
                 ..default()
             },
+            RigidBody::Dynamic,
+            Collider::ball(BALL_SIZE),
+            Velocity {
+                linvel: Vec2::new(random_x, random_y),
+                angvel: 0.3,
+            },
+            Sleeping::disabled(),
+            ActiveCollisionTypes::all(),
+            ActiveEvents::COLLISION_EVENTS,
             Enemy {
                 direction: Vec2::new(rand.gen::<f32>(), rand.gen::<f32>())
                     .normalize(),

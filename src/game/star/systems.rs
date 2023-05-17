@@ -12,8 +12,8 @@ pub fn spawn_stars(
 
     let mut rand = thread_rng();
     for _ in 0..NUMBER_OF_STARS {
-        let rand_x = rand.gen::<f32>() * window.width();
-        let rand_y = rand.gen::<f32>() * window.height();
+        let rand_x = rand.gen::<f32>() * window.width() * 2.;
+        let rand_y = rand.gen::<f32>() * window.height() * 2.;
 
         commands.spawn((
             SpriteBundle {
@@ -51,8 +51,8 @@ pub fn spawn_stars_over_time(
     if star_spawn_timer.timer.finished() {
         let window = window_query.get_single().unwrap();
         let mut rand = thread_rng();
-        let rand_x = rand.gen::<f32>() * window.width();
-        let rand_y = rand.gen::<f32>() * window.height();
+        let rand_x = rand.gen::<f32>() * window.width() * 2.;
+        let rand_y = rand.gen::<f32>() * window.height() * 2.;
 
         commands.spawn((
             SpriteBundle {
