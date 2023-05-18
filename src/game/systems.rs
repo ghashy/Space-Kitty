@@ -4,6 +4,7 @@ use bevy_rapier2d::prelude::*;
 // ----- Modules ------------------------------------------------------------ //
 
 use super::{components::Wall, SimulationState};
+use crate::game::components::BackgroundSprite;
 
 // ----- Body --------------------------------------------------------------- //
 
@@ -138,21 +139,32 @@ pub fn spawn_background(
     println!("{}, {} ", width, height);
     for row in 0..width as u32 {
         for column in 0..height as u32 {
-            commands.spawn(SpriteBundle {
-                texture: image.clone(),
-                transform: Transform::from_translation(Vec3::new(
-                    64. + 128. * row as f32,
-                    54. + 128. * column as f32,
-                    -100.,
-                )),
-                sprite: Sprite {
-                    color: Color::rgba(0.3, 0.3, 0.4, 1.),
+            commands
+                .spawn(SpriteBundle {
+                    texture: image.clone(),
+                    transform: Transform::from_translation(Vec3::new(
+                        64. + 128. * row as f32,
+                        54. + 128. * column as f32,
+                        -100.,
+                    )),
+                    sprite: Sprite {
+                        color: Color::rgba(0.3, 0.3, 0.4, 1.),
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            });
+                })
+                .insert(BackgroundSprite);
         }
     }
 
     println!("Helllo");
+}
+
+pub fn despawn_background(
+    mut commands: Commands,
+    background_sprite_query: Query<Entity, With<BackgroundSprite>>,
+) {
+    for entity in background_sprite_query.iter() {
+        commands.entity(entity).despawn();
+    }
 }

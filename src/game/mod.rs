@@ -48,7 +48,10 @@ impl Plugin for GamePlugin {
                     .run_if(in_state(AppState::Game)),
             )
             // Exit State Systems
-            .add_system(pause_simulation.in_schedule(OnExit(AppState::Game)));
+            .add_systems(
+                (pause_simulation, despawn_background)
+                    .in_schedule(OnExit(AppState::Game)),
+            );
     }
 }
 
