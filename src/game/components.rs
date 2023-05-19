@@ -4,4 +4,4 @@ use bevy::prelude::*;
 pub struct Wall;
 
 #[derive(Component)]
-pub struct BackgroundSprite;
+pub struct BackgroundTexture;

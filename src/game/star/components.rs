@@ -1,4 +1,7 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Star {}
+
+#[derive(Component)]
+pub struct StarsPack;

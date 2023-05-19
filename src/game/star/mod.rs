@@ -8,7 +8,7 @@ pub mod systems;
 
 use crate::AppState;
 
-use self::{resources::*, systems::*};
+use self::{components::Star, resources::*, systems::*};
 
 use super::SimulationState;
 
@@ -23,7 +23,10 @@ pub struct StarsPlugin;
 
 impl Plugin for StarsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<StarSpawnTimer>()
+        app
+            // Register types
+            .register_type::<Star>()
+            .init_resource::<StarSpawnTimer>()
             // Enter State Systems
             .add_system(spawn_stars.in_schedule(OnEnter(AppState::Game)))
             // Systems

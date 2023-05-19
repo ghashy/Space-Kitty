@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
-// ----- Modules ------------------------------------------------------------ //
+// ───── Modules ──────────────────────────────────────────────────────────── //
 
 // Modules in folders
 pub mod components;
 pub mod enemy;
+mod gui;
 pub mod player;
 mod score;
 mod star;
@@ -12,7 +13,7 @@ mod star;
 // Top-level modules
 mod systems;
 
-// ----- Crate -------------------------------------------------------------- //
+// ───── Crate ────────────────────────────────────────────────────────────── //
 
 use crate::{events::GameOver, AppState};
 use enemy::EnemyPlugin;
@@ -21,7 +22,9 @@ use score::ScorePlugin;
 use star::StarsPlugin;
 use systems::*;
 
-// ----- Body --------------------------------------------------------------- //
+use self::gui::GameUiPlugin;
+
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct GamePlugin;
 
@@ -42,6 +45,7 @@ impl Plugin for GamePlugin {
             .add_plugin(PlayerPlugin)
             .add_plugin(StarsPlugin)
             .add_plugin(ScorePlugin)
+            .add_plugin(GameUiPlugin)
             // Systems
             .add_system(
                 toggle_simulation_on_input_event
@@ -49,7 +53,7 @@ impl Plugin for GamePlugin {
             )
             // Exit State Systems
             .add_systems(
-                (pause_simulation, despawn_background)
+                (pause_simulation, despawn_background, despawn_borders)
                     .in_schedule(OnExit(AppState::Game)),
             );
     }

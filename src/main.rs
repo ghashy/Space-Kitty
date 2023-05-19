@@ -1,7 +1,7 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_rapier2d::prelude::*;
 
-// ----- Modules ------------------------------------------------------------ //
+// ───── Modules ──────────────────────────────────────────────────────────── //
 
 // Modules in folders
 pub mod audio_system;
@@ -9,15 +9,17 @@ pub mod game;
 pub mod main_menu;
 
 // Top-level modules
+mod debug;
 pub mod events;
 pub mod helper_functions;
 mod systems;
 
+use debug::DebugPlugin;
 use game::GamePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 fn main() {
     App::new()
@@ -34,9 +36,9 @@ fn main() {
             ..default()
         }))
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.))
-        // .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(GamePlugin)
         .add_plugin(MainMenuPlugin)
+        .add_plugin(DebugPlugin)
         // Systems
         .add_system(transition_to_game_state)
         .add_system(transition_to_main_menu_state)

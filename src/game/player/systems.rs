@@ -4,16 +4,16 @@ use bevy_rapier2d::prelude::*;
 // ----- Crate -------------------------------------------------------------- //
 
 use crate::audio_system::resources::SamplePack;
+use crate::events::{GameOver, PlayerHit};
 use crate::game::enemy::components::*;
 use crate::game::score::resources::Score;
-use crate::game::star::components::Star;
+use crate::game::star::components::{Star, StarsPack};
 use crate::game::star::STAR_SIZE;
-use crate::{events::GameOver, helper_functions::*};
 
 // ----- Module ------------------------------------------------------------- //
 
-use super::BALL_SIZE;
-use super::{components::Player, PLAYER_SPEED};
+use super::{components::*, PLAYER_SPEED};
+use super::{PlayerState, BALL_SIZE};
 
 // ----- Body --------------------------------------------------------------- //
 
@@ -48,7 +48,7 @@ pub fn spawn_player(
         ActiveCollisionTypes::all(),
         ActiveEvents::COLLISION_EVENTS,
         Restitution::coefficient(1.),
-        Player {},
+        Player { health: 3 },
     ));
 }
 
@@ -98,14 +98,22 @@ pub fn player_movement(
 
 pub fn enemy_hit_player(
     mut commands: Commands,
+    // Events
     mut game_over_event_writer: EventWriter<GameOver>,
-    mut player_query: Query<(Entity, &Transform), With<Player>>,
+    mut event_writer: EventWriter<PlayerHit>,
+    // Queries
+    mut player_query: Query<(Entity, &Transform, &mut Player)>,
     enemy_query: Query<&Transform, With<Enemy>>,
+    // State
+    mut player_state: ResMut<NextState<PlayerState>>,
+    // Audio
     audio: Res<Audio>,
     sample_pack: Res<SamplePack>,
+    // Assistants
     score: Res<Score>,
 ) {
-    if let Ok((player_entity, player_transform)) = player_query.get_single_mut()
+    if let Ok((player_entity, player_transform, mut player)) =
+        player_query.get_single_mut()
     {
         for enemy_transform in enemy_query.iter() {
             let distance = player_transform
@@ -114,13 +122,30 @@ pub fn enemy_hit_player(
             let ball_radius = BALL_SIZE;
 
             if distance < ball_radius + ball_radius {
-                println!("Game over!");
-                audio.play(sample_pack.exp.clone());
-                commands.entity(player_entity).despawn();
+                if player.health > 1 {
+                    player.health -= 1;
+                    // Spawn Timer to Player entity
+                    commands.entity(player_entity).insert(
+                        PlayerInvulnerableTimer(Timer::from_seconds(
+                            3.,
+                            TimerMode::Once,
+                        )),
+                    );
+                    player_state.set(PlayerState::Invulnerable);
+                } else {
+                    player.health -= 1;
+                    println!("Game over!");
+                    audio.play(sample_pack.exp.clone());
+                    commands.entity(player_entity).despawn();
+                    println!("DESPAWNED");
 
-                game_over_event_writer.send(GameOver {
-                    final_score: score.value,
-                })
+                    game_over_event_writer.send(GameOver {
+                        final_score: score.value,
+                    })
+                }
+                event_writer.send(PlayerHit {
+                    remaining_health: player.health,
+                });
             }
         }
     }
@@ -130,6 +155,7 @@ pub fn player_hit_star(
     mut commands: Commands,
     player_query: Query<&Transform, With<Player>>,
     star_query: Query<(Entity, &Transform), With<Star>>,
+    star_pack: Query<Entity, With<StarsPack>>,
     audio: Res<Audio>,
     sample_pack: Res<SamplePack>,
     mut score: ResMut<Score>,
@@ -144,11 +170,50 @@ pub fn player_hit_star(
             let star_radius = STAR_SIZE / 2.;
 
             if distance < ball_radius + star_radius {
+                commands
+                    .entity(star_pack.single())
+                    .remove_children(&[star_entity]);
+
                 audio.play(sample_pack.pick_star.clone());
                 commands.entity(star_entity).despawn();
                 score.last_value = score.value;
                 score.value += 1;
             }
+        }
+    }
+}
+
+pub fn count_player_invulnerability_timer(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut player_state: ResMut<NextState<PlayerState>>,
+    mut player_query: Query<
+        (Entity, &mut PlayerInvulnerableTimer),
+        With<Player>,
+    >,
+) {
+    if let Ok((entity, mut timer)) = player_query.get_single_mut() {
+        if timer.0.tick(time.delta()).finished() {
+            player_state.set(PlayerState::Vulnerable);
+            commands.entity(entity).remove::<PlayerInvulnerableTimer>();
+            println!("VULNERABILITY!");
+        }
+    }
+}
+
+pub fn blink_player(
+    mut player_query: Query<
+        (&mut Sprite, &PlayerInvulnerableTimer),
+        With<Player>,
+    >,
+) {
+    if let Ok((mut sprite, timer)) = player_query.get_single_mut() {
+        if timer.0.percent() >= 0.9 {
+            sprite.color.set_a(1.);
+        } else {
+            sprite
+                .color
+                .set_a((timer.0.elapsed_secs() * 8.).sin().abs());
         }
     }
 }

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 pub mod components;
 pub mod systems;
 
-use crate::AppState;
+use crate::{events::PlayerHit, AppState};
 
 use self::systems::*;
 
@@ -23,13 +23,24 @@ pub enum PlayerSystemSet {
     Movement,
 }
 
+#[derive(States, Clone, PartialEq, Eq, Default, Debug, Hash)]
+pub enum PlayerState {
+    #[default]
+    Vulnerable,
+    Invulnerable,
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Events
+            .add_event::<PlayerHit>()
             // System Sets
             .configure_set(PlayerSystemSet::Movement)
+            // States
+            .add_state::<PlayerState>()
             // Enter State Systems
             .add_system(spawn_player.in_schedule(OnEnter(AppState::Game)))
             // Systems
@@ -40,7 +51,19 @@ impl Plugin for PlayerPlugin {
                     player_hit_star,
                 )
                     .in_set(OnUpdate(SimulationState::Running))
-                    .in_set(OnUpdate(AppState::Game)),
+                    .in_set(OnUpdate(AppState::Game))
+                    .in_set(OnUpdate(PlayerState::Vulnerable)),
+            )
+            .add_systems(
+                (
+                    player_movement.in_set(PlayerSystemSet::Movement),
+                    player_hit_star,
+                    count_player_invulnerability_timer,
+                    blink_player,
+                )
+                    .in_set(OnUpdate(SimulationState::Running))
+                    .in_set(OnUpdate(AppState::Game))
+                    .in_set(OnUpdate(PlayerState::Invulnerable)),
             )
             // Exit State Systems
             .add_system(despawn_player.in_schedule(OnExit(AppState::Game)));

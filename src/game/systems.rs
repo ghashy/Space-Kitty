@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 // ----- Modules ------------------------------------------------------------ //
 
 use super::{components::Wall, SimulationState};
-use crate::game::components::BackgroundSprite;
+use crate::game::components::BackgroundTexture;
 
 // ----- Body --------------------------------------------------------------- //
 
@@ -124,6 +124,15 @@ pub fn spawn_world_borders(
     ));
 }
 
+pub fn despawn_borders(
+    mut commands: Commands,
+    borders_query: Query<Entity, With<Wall>>,
+) {
+    for border in borders_query.iter() {
+        commands.entity(border).despawn();
+    }
+}
+
 pub fn spawn_background(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -136,10 +145,11 @@ pub fn spawn_background(
     let width = window.width() / 128. * 2.;
     let height = window.height() / 128. * 2. + 1.;
 
-    println!("{}, {} ", width, height);
+    let mut background_sprites = vec![];
+
     for row in 0..width as u32 {
         for column in 0..height as u32 {
-            commands
+            let sprite = commands
                 .spawn(SpriteBundle {
                     texture: image.clone(),
                     transform: Transform::from_translation(Vec3::new(
@@ -153,18 +163,23 @@ pub fn spawn_background(
                     },
                     ..default()
                 })
-                .insert(BackgroundSprite);
+                .id();
+            background_sprites.push(sprite);
         }
     }
 
-    println!("Helllo");
+    commands
+        .spawn(SpatialBundle::default())
+        .insert(BackgroundTexture)
+        .insert(Name::new("BackgroundTexture"))
+        .push_children(&background_sprites);
 }
 
 pub fn despawn_background(
     mut commands: Commands,
-    background_sprite_query: Query<Entity, With<BackgroundSprite>>,
+    background_sprite_query: Query<Entity, With<BackgroundTexture>>,
 ) {
-    for entity in background_sprite_query.iter() {
-        commands.entity(entity).despawn();
-    }
+    commands
+        .entity(background_sprite_query.single())
+        .despawn_recursive();
 }
