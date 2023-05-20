@@ -1,22 +1,18 @@
-use std::ops::Range;
-
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
+use std::ops::Range;
 
-// ----- Crate -------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use super::{components::Enemy, *};
 use crate::{
     audio_system::resources::SamplePack,
     game::{player::BALL_SIZE, score::resources::Score},
     helper_functions::*,
 };
 
-// ----- Module ------------------------------------------------------------- //
-
-use super::{components::Enemy, *};
-
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn spawn_enemies(
     mut commands: Commands,

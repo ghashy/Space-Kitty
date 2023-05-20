@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 
-// ----- Module ------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use self::{resources::*, systems::*};
+use crate::AppState;
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 pub mod resources;
 pub mod systems;
 
-use crate::AppState;
-
-use self::{resources::*, systems::*};
-
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct ScorePlugin;
 

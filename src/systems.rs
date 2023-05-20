@@ -4,14 +4,14 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::*;
 
-// ----- Crate -------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::{
     audio_system::resources::SamplePack, events::*, game::SimulationState,
     AppState,
 };
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn setup(
     mut commands: Commands,

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-// ----- Constants ---------------------------------------------------------- //
+// ───── Constants ────────────────────────────────────────────────────────── //
 
 pub const NORMAL_BUTTON_COLOR: Color = Color::rgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON_COLOR: Color = Color::rgb(0.25, 0.25, 0.25);
@@ -32,7 +32,7 @@ pub const TITLE_STYLE: Style = Style {
     ..Style::DEFAULT
 };
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn get_button_text_style(asset_server: &Res<AssetServer>) -> TextStyle {
     TextStyle {

@@ -1,16 +1,17 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use self::systems::{interactions::*, layout::*};
+use crate::AppState;
 
-// ----- Modules ------------------------------------------------------------ //
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 mod components;
 mod styles;
 mod systems;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct MainMenuPlugin;
 

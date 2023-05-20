@@ -1,8 +1,10 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 
-// ----- Crate -------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use super::{components::*, PLAYER_SPEED};
+use super::{PlayerState, BALL_SIZE};
 use crate::audio_system::resources::SamplePack;
 use crate::events::{GameOver, PlayerHit};
 use crate::game::enemy::components::*;
@@ -10,12 +12,7 @@ use crate::game::score::resources::Score;
 use crate::game::star::components::{Star, StarsPack};
 use crate::game::star::STAR_SIZE;
 
-// ----- Module ------------------------------------------------------------- //
-
-use super::{components::*, PLAYER_SPEED};
-use super::{PlayerState, BALL_SIZE};
-
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn spawn_player(
     mut commands: Commands,

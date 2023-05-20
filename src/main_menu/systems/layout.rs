@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
-// ----- Modules ------------------------------------------------------------ //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::main_menu::{components::*, styles::*};
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let main_menu_entity = build_main_menu(&mut commands, &asset_server);

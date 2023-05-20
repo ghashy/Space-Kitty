@@ -1,7 +1,15 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_rapier2d::prelude::*;
+use bevy_tweening::TweeningPlugin;
 
-// ───── Modules ──────────────────────────────────────────────────────────── //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use debug::DebugPlugin;
+use game::GamePlugin;
+use main_menu::MainMenuPlugin;
+use systems::*;
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 // Modules in folders
 pub mod audio_system;
@@ -13,11 +21,6 @@ mod debug;
 pub mod events;
 pub mod helper_functions;
 mod systems;
-
-use debug::DebugPlugin;
-use game::GamePlugin;
-use main_menu::MainMenuPlugin;
-use systems::*;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -37,6 +40,7 @@ fn main() {
         }))
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.))
         .add_plugin(GamePlugin)
+        .add_plugin(TweeningPlugin)
         .add_plugin(MainMenuPlugin)
         .add_plugin(DebugPlugin)
         // Systems

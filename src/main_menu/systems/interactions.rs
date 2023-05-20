@@ -1,7 +1,7 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
-// ----- Modules ------------------------------------------------------------ //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::main_menu::components::*;
 use crate::main_menu::styles::{
@@ -9,7 +9,7 @@ use crate::main_menu::styles::{
 };
 use crate::AppState;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn interact_with_play_button(
     mut button_query: Query<

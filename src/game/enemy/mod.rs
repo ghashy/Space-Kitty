@@ -1,23 +1,23 @@
 use bevy::prelude::*;
 
-// ----- Module ------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use self::systems::*;
+use super::SimulationState;
+use crate::AppState;
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 pub mod components;
 pub mod resources;
 pub mod systems;
 
-use crate::AppState;
-
-use self::systems::*;
-
-use super::SimulationState;
-
-// ----- Constants ---------------------------------------------------------- //
+// ───── Constants ────────────────────────────────────────────────────────── //
 
 const NUMBER_OF_ENEMIES_ON_START: usize = 3;
 const ENEMY_SPEED: f32 = 16000. * 2.;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct EnemyPlugin;
 

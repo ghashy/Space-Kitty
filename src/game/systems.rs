@@ -1,12 +1,12 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 
-// ----- Modules ------------------------------------------------------------ //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{components::Wall, SimulationState};
 use crate::game::components::BackgroundTexture;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn pause_simulation(
     mut simulation_state_next_state: ResMut<NextState<SimulationState>>,

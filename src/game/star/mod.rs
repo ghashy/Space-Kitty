@@ -1,23 +1,23 @@
 use bevy::prelude::*;
 
-// ----- Module ------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use self::{components::Star, resources::*, systems::*};
+use super::SimulationState;
+use crate::AppState;
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 pub mod components;
 pub mod resources;
 pub mod systems;
 
-use crate::AppState;
-
-use self::{components::Star, resources::*, systems::*};
-
-use super::SimulationState;
-
-// ----- Constants ---------------------------------------------------------- //
+// ───── Constants ────────────────────────────────────────────────────────── //
 
 const NUMBER_OF_STARS: usize = 10;
 pub const STAR_SIZE: f32 = 100.;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct StarsPlugin;
 

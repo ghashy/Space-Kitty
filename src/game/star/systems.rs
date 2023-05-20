@@ -1,7 +1,11 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use rand::prelude::*;
 
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
 use super::{components::*, resources::StarSpawnTimer, NUMBER_OF_STARS};
+
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn spawn_stars(
     mut commands: Commands,

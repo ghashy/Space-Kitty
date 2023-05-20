@@ -1,22 +1,28 @@
 use bevy::prelude::*;
+use bevy_tweening::{TweenCompleted, TweeningPlugin};
 
-// ----- Modules ------------------------------------------------------------ //
-
-// Top-level modules
-mod components;
-mod styles;
-mod systems;
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use self::systems::*;
 use crate::AppState;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Submodules ───────────────────────────────────────────────────────── //
+
+// Top-level modules
+mod animation;
+mod components;
+mod styles;
+mod systems;
+
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct GameUiPlugin;
 
 impl Plugin for GameUiPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Events
+            .add_event::<TweenCompleted>()
             // States
             .add_state::<HudState>()
             // Enter State Systems

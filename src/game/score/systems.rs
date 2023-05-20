@@ -1,14 +1,11 @@
 use bevy::prelude::*;
 
-// ----- Crate -------------------------------------------------------------- //
-
-use crate::events::GameOver;
-
-// ----- Module ------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::resources::{HighScores, Score};
+use crate::events::GameOver;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn insert_score(mut commands: Commands) {
     commands.insert_resource(Score::default());

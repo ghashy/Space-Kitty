@@ -1,22 +1,22 @@
 use bevy::prelude::*;
 
-// ----- Module ------------------------------------------------------------- //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use self::systems::*;
+use super::SimulationState;
+use crate::{events::PlayerHit, AppState};
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 pub mod components;
 pub mod systems;
 
-use crate::{events::PlayerHit, AppState};
-
-use self::systems::*;
-
-use super::SimulationState;
-
-// ----- Constants ---------------------------------------------------------- //
+// ───── Constants ────────────────────────────────────────────────────────── //
 
 pub const PLAYER_SPEED: f32 = 50000.;
 pub const BALL_SIZE: f32 = 64.;
 
-// ----- Body --------------------------------------------------------------- //
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum PlayerSystemSet {
