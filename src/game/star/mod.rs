@@ -15,7 +15,7 @@ pub mod systems;
 // ───── Constants ────────────────────────────────────────────────────────── //
 
 const NUMBER_OF_STARS: usize = 10;
-pub const STAR_SIZE: f32 = 100.;
+pub const STAR_SIZE: f32 = 50.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 

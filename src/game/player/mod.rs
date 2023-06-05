@@ -13,7 +13,7 @@ pub mod systems;
 
 // ───── Constants ────────────────────────────────────────────────────────── //
 
-pub const PLAYER_SPEED: f32 = 50000.;
+pub const PLAYER_SPEED: f32 = 25000.;
 pub const BALL_SIZE: f32 = 64.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //

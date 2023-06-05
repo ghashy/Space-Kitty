@@ -7,7 +7,7 @@ use crate::game::player::BALL_SIZE;
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub trait Vec2Util {
-    fn reflect(&mut self, rhs: Vec2) {}
+    fn reflect(&mut self, _rhs: Vec2) {}
 }
 
 impl Vec2Util for Vec2 {

@@ -4,7 +4,6 @@ use bevy_rapier2d::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{components::Wall, SimulationState};
-use crate::game::components::BackgroundTexture;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -44,25 +43,19 @@ pub fn spawn_world_borders(
 ) {
     let window = window_query.get_single().unwrap();
 
-    let width = Collider::cuboid(window.width() * 2., 2.);
-    let height = Collider::cuboid(2., window.height() * 2.);
+    let horizontal = Collider::cuboid(window.width(), 2.);
+    let vertical = Collider::cuboid(2., window.height());
 
     // Top border
     commands.spawn((
         SpatialBundle {
             transform: Transform {
-                translation: Vec3::new(
-                    // X axis
-                    window.width(),
-                    // Y axis
-                    window.height() * 2.,
-                    0.,
-                ),
+                translation: Vec3::new(window.width(), window.height(), 0.),
                 ..default()
             },
             ..default()
         },
-        width.clone(),
+        horizontal.clone(),
         Wall,
     ));
 
@@ -81,7 +74,7 @@ pub fn spawn_world_borders(
             },
             ..default()
         },
-        width,
+        horizontal,
         Wall,
     ));
 
@@ -93,14 +86,14 @@ pub fn spawn_world_borders(
                     // X axis
                     0.,
                     // Y axis
-                    window.height() * 2.,
+                    window.height(),
                     0.,
                 ),
                 ..default()
             },
             ..default()
         },
-        height.clone(),
+        vertical.clone(),
         Wall,
     ));
 
@@ -110,7 +103,7 @@ pub fn spawn_world_borders(
             transform: Transform {
                 translation: Vec3::new(
                     // X axis
-                    window.width() * 2.,
+                    window.width(),
                     // Y axis
                     0.,
                     0.,
@@ -119,7 +112,7 @@ pub fn spawn_world_borders(
             },
             ..default()
         },
-        height,
+        vertical,
         Wall,
     ));
 }
@@ -131,55 +124,4 @@ pub fn despawn_borders(
     for border in borders_query.iter() {
         commands.entity(border).despawn();
     }
-}
-
-pub fn spawn_background(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
-    let image: Handle<Image> =
-        asset_server.load("sprites/background_green.png");
-
-    let width = window.width() / 128. * 2.;
-    let height = window.height() / 128. * 2. + 1.;
-
-    let mut background_sprites = vec![];
-
-    for row in 0..width as u32 {
-        for column in 0..height as u32 {
-            let sprite = commands
-                .spawn(SpriteBundle {
-                    texture: image.clone(),
-                    transform: Transform::from_translation(Vec3::new(
-                        64. + 128. * row as f32,
-                        54. + 128. * column as f32,
-                        -100.,
-                    )),
-                    sprite: Sprite {
-                        color: Color::rgba(0.3, 0.3, 0.4, 1.),
-                        ..default()
-                    },
-                    ..default()
-                })
-                .id();
-            background_sprites.push(sprite);
-        }
-    }
-
-    commands
-        .spawn(SpatialBundle::default())
-        .insert(BackgroundTexture)
-        .insert(Name::new("BackgroundTexture"))
-        .push_children(&background_sprites);
-}
-
-pub fn despawn_background(
-    mut commands: Commands,
-    background_sprite_query: Query<Entity, With<BackgroundTexture>>,
-) {
-    commands
-        .entity(background_sprite_query.single())
-        .despawn_recursive();
 }

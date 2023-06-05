@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tweening::{TweenCompleted, TweeningPlugin};
+use bevy_tweening::TweenCompleted;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 

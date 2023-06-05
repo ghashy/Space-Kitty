@@ -3,10 +3,16 @@ use bevy::prelude::*;
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(Component)]
-pub struct HUD;
-
-#[derive(Component, Debug)]
-pub enum HeartImage {
-    Content(u8, Handle<Image>),
-    Back(u8, Handle<Image>),
+pub struct BackgroundStar {
+    pub index: u8,
+    pub timer: Timer,
 }
+
+#[derive(Component)]
+pub struct BackgroundStars;
+
+#[derive(Component)]
+pub struct DarkScreenOverlap;
+
+// Event
+pub struct DarkenScreen;

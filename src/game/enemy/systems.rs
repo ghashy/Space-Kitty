@@ -23,17 +23,21 @@ pub fn spawn_enemies(
 
     let mut rand = thread_rng();
     for _ in 0..NUMBER_OF_ENEMIES_ON_START {
-        let random_x = rand.gen::<f32>() * window.width() * 2.;
-        let random_y = rand.gen::<f32>() * window.height() * 2.;
+        let random_x = rand.gen::<f32>() * window.width();
+        let random_y = rand.gen::<f32>() * window.height();
 
         commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, 0.),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(BALL_SIZE)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(random_x, random_y, 10.),
+                texture: asset_server.load("sprites/Original/Dog.png"),
                 ..default()
             },
             RigidBody::Dynamic,
-            Collider::ball(BALL_SIZE),
+            Collider::ball(BALL_SIZE / 2.),
             Velocity {
                 linvel: Vec2::new(random_x, random_y),
                 angvel: 0.3,
@@ -166,17 +170,21 @@ pub fn spawn_enemy_on_game_progress(
     if score.value % 5 == 0 && score.value > score.last_value {
         let window = window_query.get_single().unwrap();
         let mut rand = thread_rng();
-        let random_x = rand.gen::<f32>() * window.width() * 2.;
-        let random_y = rand.gen::<f32>() * window.height() * 2.;
+        let random_x = rand.gen::<f32>() * window.width();
+        let random_y = rand.gen::<f32>() * window.height();
 
         commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, 0.),
-                texture: asset_server.load("sprites/ball_red_large.png"),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(BALL_SIZE)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(random_x, random_y, 10.),
+                texture: asset_server.load("sprites/Original/Dog.png"),
                 ..default()
             },
             RigidBody::Dynamic,
-            Collider::ball(BALL_SIZE),
+            Collider::ball(BALL_SIZE / 2.),
             Velocity {
                 linvel: Vec2::new(random_x, random_y),
                 angvel: 0.3,

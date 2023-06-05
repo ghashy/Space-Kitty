@@ -7,6 +7,7 @@ use crate::AppState;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
+mod animation;
 mod components;
 mod styles;
 mod systems;
@@ -22,7 +23,7 @@ impl Plugin for MainMenuPlugin {
             .add_system(
                 spawn_main_menu.in_schedule(OnEnter(AppState::MainMenu)),
             )
-            // Systems
+            // Interaction Systems
             .add_systems(
                 (interact_with_play_button, interact_with_quit_button)
                     .in_set(OnUpdate(AppState::MainMenu)),

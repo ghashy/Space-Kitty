@@ -15,7 +15,7 @@ pub mod systems;
 // ───── Constants ────────────────────────────────────────────────────────── //
 
 const NUMBER_OF_ENEMIES_ON_START: usize = 3;
-const ENEMY_SPEED: f32 = 16000. * 2.;
+const ENEMY_SPEED: f32 = 10000.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 

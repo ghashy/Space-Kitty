@@ -24,16 +24,20 @@ pub fn spawn_player(
 
     commands.spawn((
         SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::splat(BALL_SIZE)),
+                ..default()
+            },
             transform: Transform::from_xyz(
                 window.width() / 2.,
                 window.height() / 2.,
-                0.,
+                10.,
             ),
-            texture: asset_server.load("sprites/ball_blue_large.png"),
+            texture: asset_server.load("sprites/Original/Cat's starship.png"),
             ..default()
         },
         RigidBody::Dynamic,
-        Collider::ball(BALL_SIZE),
+        Collider::ball(BALL_SIZE / 2.),
         ExternalForce {
             force: Vec2::ZERO,
             torque: 0.,
@@ -118,7 +122,7 @@ pub fn enemy_hit_player(
                 .distance(enemy_transform.translation);
             let ball_radius = BALL_SIZE;
 
-            if distance < ball_radius + ball_radius {
+            if distance < ball_radius {
                 if player.health > 1 {
                     player.health -= 1;
                     // Spawn Timer to Player entity

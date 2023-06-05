@@ -20,13 +20,17 @@ pub fn spawn_stars(
 
     let mut rand = thread_rng();
     for _ in 0..NUMBER_OF_STARS {
-        let rand_x = rand.gen::<f32>() * window.width() * 2.;
-        let rand_y = rand.gen::<f32>() * window.height() * 2.;
+        let rand_x = rand.gen::<f32>() * window.width();
+        let rand_y = rand.gen::<f32>() * window.height();
 
         children_stars.push(
             commands
                 .spawn((
                     SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::splat(32.)),
+                            ..default()
+                        },
                         transform: Transform::from_xyz(rand_x, rand_y, 0.),
                         texture: asset_server.load("sprites/star.png"),
                         ..default()
@@ -71,13 +75,17 @@ pub fn spawn_stars_over_time(
     if star_spawn_timer.timer.finished() {
         let window = window_query.get_single().unwrap();
         let mut rand = thread_rng();
-        let rand_x = rand.gen::<f32>() * window.width() * 2.;
-        let rand_y = rand.gen::<f32>() * window.height() * 2.;
+        let rand_x = rand.gen::<f32>() * window.width();
+        let rand_y = rand.gen::<f32>() * window.height();
 
         let stars_pack = stars_pack_query.single();
         let child = commands
             .spawn((
                 SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::splat(32.)),
+                        ..default()
+                    },
                     transform: Transform::from_xyz(rand_x, rand_y, 0.),
                     texture: asset_server.load("sprites/star.png"),
                     ..default()

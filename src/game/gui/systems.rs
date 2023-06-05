@@ -10,16 +10,12 @@ use crate::{events::PlayerHit, game::player::components::Player};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-pub fn spawn_hud(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    assets: Res<Assets<Image>>,
-) {
+pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
     let img1 = asset_server.load("sprites/State=Life Background 341 x 286.png");
     let img2 = asset_server.load("sprites/State=Life 308.2 x 258.74.png");
     // let img3 = asset_server.load("sprites/State=No Life 341 x 286.png");
 
-    let hud_entity = commands
+    commands
         .spawn((
             NodeBundle {
                 style: HUD_CONTAINER,
@@ -72,7 +68,6 @@ pub fn despawn_hud(
 pub fn listen_events(
     mut event_reader: EventReader<PlayerHit>,
     mut hud_state: ResMut<NextState<HudState>>,
-    assets: Res<Assets<Image>>,
 ) {
     for event in event_reader.iter() {
         println!("Player was hit! health: {}", event.remaining_health);
@@ -81,9 +76,7 @@ pub fn listen_events(
 }
 
 pub fn update_hud(
-    // Commands
     mut commands: Commands,
-    // Events
     mut tween_event: EventReader<TweenCompleted>,
     // State
     mut hud_state: ResMut<NextState<HudState>>,
@@ -120,7 +113,7 @@ pub fn update_hud(
 
         for (entity, mut image, heart_image_type) in heart_img.iter_mut() {
             match heart_image_type {
-                HeartImage::Content(id, texture) if ev_id == *id => {
+                HeartImage::Content(id, _) if ev_id == *id => {
                     // If all tweens finished
                     if started_tweens.1 {
                         started_tweens.0 = false;

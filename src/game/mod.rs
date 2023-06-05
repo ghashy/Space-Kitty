@@ -1,6 +1,17 @@
 use bevy::prelude::*;
 
-// ───── Modules ──────────────────────────────────────────────────────────── //
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use crate::{events::GameOver, AppState};
+use enemy::EnemyPlugin;
+use player::PlayerPlugin;
+use score::ScorePlugin;
+use star::StarsPlugin;
+use systems::*;
+
+use self::gui::GameUiPlugin;
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
 
 // Modules in folders
 pub mod components;
@@ -12,17 +23,6 @@ mod star;
 
 // Top-level modules
 mod systems;
-
-// ───── Crate ────────────────────────────────────────────────────────────── //
-
-use crate::{events::GameOver, AppState};
-use enemy::EnemyPlugin;
-use player::PlayerPlugin;
-use score::ScorePlugin;
-use star::StarsPlugin;
-use systems::*;
-
-use self::gui::GameUiPlugin;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -37,7 +37,7 @@ impl Plugin for GamePlugin {
             .add_state::<SimulationState>()
             // Enter State Systems
             .add_systems(
-                (spawn_background, resume_simulation, spawn_world_borders)
+                (resume_simulation, spawn_world_borders)
                     .in_schedule(OnEnter(AppState::Game)),
             )
             // Plugins
@@ -53,7 +53,7 @@ impl Plugin for GamePlugin {
             )
             // Exit State Systems
             .add_systems(
-                (pause_simulation, despawn_background, despawn_borders)
+                (pause_simulation, despawn_borders)
                     .in_schedule(OnExit(AppState::Game)),
             );
     }

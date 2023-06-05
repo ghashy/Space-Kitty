@@ -3,34 +3,32 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use crate::components::DarkenScreen;
+use crate::main_menu::animation::*;
 use crate::main_menu::components::*;
-use crate::main_menu::styles::{
-    HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR, PRESSED_BUTTON_COLOR,
-};
-use crate::AppState;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn interact_with_play_button(
     mut button_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<PlayButton>),
+        (&Interaction, &mut UiImage, &PlayButton),
+        Changed<Interaction>,
     >,
-    mut app_state_next_state: ResMut<NextState<AppState>>,
+    mut event_writer: EventWriter<DarkenScreen>,
 ) {
-    if let Ok((interaction, mut background_color)) =
+    if let Ok((interaction, mut image, play_button)) =
         button_query.get_single_mut()
     {
         match *interaction {
             Interaction::Clicked => {
-                *background_color = PRESSED_BUTTON_COLOR.into();
-                app_state_next_state.set(AppState::Game);
+                animate_button_click(&mut image, play_button);
+                event_writer.send(DarkenScreen);
             }
             Interaction::Hovered => {
-                *background_color = HOVERED_BUTTON_COLOR.into();
+                animate_button_hover(&mut image, play_button);
             }
             Interaction::None => {
-                *background_color = NORMAL_BUTTON_COLOR.into();
+                animate_button_none(&mut image, play_button);
             }
         }
     }
@@ -38,24 +36,23 @@ pub fn interact_with_play_button(
 
 pub fn interact_with_quit_button(
     mut button_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<QuitButton>),
+        (&Interaction, &mut UiImage, &QuitButton),
+        Changed<Interaction>,
     >,
     mut app_exit_event_writer: EventWriter<AppExit>,
 ) {
-    if let Ok((interaction, mut background_color)) =
-        button_query.get_single_mut()
+    if let Ok((interaction, mut image, button)) = button_query.get_single_mut()
     {
         match *interaction {
             Interaction::Clicked => {
-                *background_color = PRESSED_BUTTON_COLOR.into();
+                animate_button_click(&mut image, button);
                 app_exit_event_writer.send(AppExit);
             }
             Interaction::Hovered => {
-                *background_color = HOVERED_BUTTON_COLOR.into();
+                animate_button_hover(&mut image, button);
             }
             Interaction::None => {
-                *background_color = NORMAL_BUTTON_COLOR.into();
+                animate_button_none(&mut image, button);
             }
         }
     }
