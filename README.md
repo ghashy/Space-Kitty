@@ -7,19 +7,23 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ![Screenshot 2023-06-12 at 23 50 21](https://github.com/ghashy/Space-Kitty/assets/109857267/db89aa10-a0ef-459a-9c5e-61163d1541d1)
 
 ## To-do:
+
+### Design:
 - [x] Fish-boss
+- [ ] Audio design
+- [ ] Rotating antenna
+- [ ] Design border, 10 dog’s skins, new cat’s skin
+- [x] Add fish score icon
+- [ ] Design new game icon
+- [ ] Design casualties on the ship
+- [ ] Design health of the ship
+
+### Coding:
 - [ ] Dog’s message when rotating wildly
 - [ ] Status bar
 - [ ] Dog’s spawn outside the screen
-- [ ] Add fish score icon
 - [ ] Entity’s message when collecting every first and 10th cracker
 - [ ] Dog’s message when 2 dogs colliding (inline)
 - [ ] Message when new dog arriving
-- [ ] Audio design
-- [ ] Rotating antenna 
-- [ ] Design border, 10 dog’s skins, new cat’s skin
-- [ ] Design new game icon
 - [ ] Crackers particles when kitty colliding with dog
-- [ ] Design casualties on the ship
-- [ ] Design health of the ship
 - [x] Resizing screen fix
