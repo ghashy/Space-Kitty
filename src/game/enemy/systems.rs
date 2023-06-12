@@ -257,9 +257,11 @@ pub fn rotate_patch_of_light(
     }
 }
 
-const FIRST_NAMES: [&str; 15] = [
-    "Arnold", "Misha", "Adam", "Huan", "Ivan", "Toby", "Fox", "Robert",
-    "Antonio", "Rabbit", "Buddy", "Wolf", "El Dog", "Shepard", "Slime",
+const FIRST_NAMES: [&str; 26] = [
+    "Arnold", "Misha", "Adam", "Juan", "Ivan", "Toby", "Fox", "Robert",
+    "Antonio", "Rabbit", "Buddy", "Wolf", "El Torro", "Shepard", "Pedro",
+    "Ricardo", "Dummy", "Bob", "Bean", "Button", "Samuel", "Teddy", "Goobboy"
+    "Bill", "Jackie", "Peter", 
 ];
 
 const LAST_NAMES: [&str; 6] =
