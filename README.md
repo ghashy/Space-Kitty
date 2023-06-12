@@ -1,5 +1,12 @@
 # Space-Kitty
 
+This is a game about a Kitty, which floats in Space in search of fish-crackers, build with [Bevy game engine](https://github.com/bevyengine/bevy).
+The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
+
+## Screenshot:
+![Screenshot 2023-06-12 at 23 50 21](https://github.com/ghashy/Space-Kitty/assets/109857267/db89aa10-a0ef-459a-9c5e-61163d1541d1)
+
+## To-do:
 - [x] Fish-boss
 - [ ] Dog’s message when rotating wildly
 - [ ] Status bar
