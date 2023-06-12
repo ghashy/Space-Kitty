@@ -1,6 +1,7 @@
 use bevy::diagnostic::{
     Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
 };
+use bevy::utils::HashMap;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_inspector_egui::{
     bevy_egui::{EguiContexts, EguiPlugin},
@@ -9,30 +10,45 @@ use bevy_inspector_egui::{
 };
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+pub use components::*;
+
+// ───── Submodules ───────────────────────────────────────────────────────── //
+
+// Top-level modules
+mod components;
+
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct DebugPlugin;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 struct UpdateFpsTimer {
     timer: Timer,
-    current_fps: f32,
+    current_fps: f64,
+    cpu_usage: f64,
+    mem_usage: f64,
 }
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         #[cfg(debug_assertions)]
         app
+            // Events
+            .add_event::<AddValueToDebugEvent>()
             // Plugins
             .add_plugin(EguiPlugin)
             .add_plugin(WorldInspectorPlugin::new())
             .add_plugin(RapierDebugRenderPlugin::default())
             .add_plugin(FrameTimeDiagnosticsPlugin::default())
             .add_plugin(EntityCountDiagnosticsPlugin::default())
+            // .add_plugin(SystemInformationDiagnosticsPlugin::default())
             // Startup Systems
             .add_startup_system(setup)
             // Systems
-            .add_system(update_info_window.in_base_set(CoreSet::Update));
+            .add_system(update_info_window.in_base_set(CoreSet::Update))
+            .add_system(update_values_window.in_base_set(CoreSet::Update));
     }
 }
 
@@ -40,7 +56,40 @@ fn setup(mut commands: Commands) {
     commands.spawn(UpdateFpsTimer {
         timer: Timer::from_seconds(0.1, TimerMode::Repeating),
         current_fps: 0.,
+        cpu_usage: 0.,
+        mem_usage: 0.,
     });
+}
+
+fn update_values_window(
+    mut event_reader: EventReader<AddValueToDebugEvent>,
+    mut contexts: EguiContexts,
+    mut local: Local<HashMap<String, String>>,
+) {
+    // Collect
+    let events: HashMap<String, String> = event_reader
+        .into_iter()
+        .map(|element| (element.0.clone(), element.1.clone()))
+        .collect();
+    local.extend(events);
+
+    // Draw
+    egui::Window::new("Values").default_open(false).show(
+        contexts.ctx_mut(),
+        |ui| {
+            egui::Grid::new("Properties")
+                .num_columns(2)
+                .spacing([40., 4.])
+                .striped(true)
+                .show(ui, |ui| {
+                    for (key, value) in local.iter() {
+                        ui.label(key);
+                        ui.label(value);
+                        ui.end_row();
+                    }
+                })
+        },
+    );
 }
 
 fn update_info_window(
@@ -76,15 +125,23 @@ fn update_info_window(
                     ));
                     ui.end_row();
                     let mut timer = timer_query.single_mut();
-                    let mut fps = timer.current_fps;
                     if timer.timer.tick(time.delta()).finished() {
-                        fps = extract_fps(&diagnostics).unwrap_or(fps as f64)
-                            as f32;
-                        timer.current_fps = fps;
+                        timer.current_fps = extract_fps(&diagnostics)
+                            .unwrap_or(timer.current_fps);
+                        timer.cpu_usage = extract_cpu_usage(&diagnostics)
+                            .unwrap_or(timer.cpu_usage);
+                        timer.mem_usage = extract_mem_usage(&diagnostics)
+                            .unwrap_or(timer.mem_usage);
                     }
                     ui.label("Fps");
-                    ui.label(format!("{:.0}", fps));
+                    ui.label(format!("{:.0}", timer.current_fps));
                     ui.end_row();
+                    // ui.label("Cpu usage");
+                    // ui.label(format!("{:.0} %", timer.cpu_usage));
+                    // ui.end_row();
+                    // ui.label("Mem usage");
+                    // ui.label(format!("{:.0} %", timer.mem_usage));
+                    // ui.end_row();
                     ui.label("Entities count");
                     ui.label(format!(
                         "{}",
@@ -104,5 +161,19 @@ fn extract_fps(diagnostics: &Res<Diagnostics>) -> Option<f64> {
 fn extract_entities_count(diagnostics: &Res<Diagnostics>) -> Option<f64> {
     diagnostics
         .get(bevy::diagnostic::EntityCountDiagnosticsPlugin::ENTITY_COUNT)
+        .and_then(|value| value.value())
+}
+
+#[allow(dead_code)]
+fn extract_cpu_usage(diagnostics: &Res<Diagnostics>) -> Option<f64> {
+    diagnostics
+        .get(bevy::diagnostic::SystemInformationDiagnosticsPlugin::CPU_USAGE)
+        .and_then(|value| value.value())
+}
+
+#[allow(dead_code)]
+fn extract_mem_usage(diagnostics: &Res<Diagnostics>) -> Option<f64> {
+    diagnostics
+        .get(bevy::diagnostic::SystemInformationDiagnosticsPlugin::MEM_USAGE)
         .and_then(|value| value.value())
 }

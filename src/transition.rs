@@ -4,7 +4,7 @@ use bevy_tweening::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::{
-    components::{DarkScreenOverlap, DarkenScreen},
+    components::{DarkScreenOverlap, DarkenScreenEvent},
     AppState,
 };
 
@@ -38,7 +38,7 @@ impl Lens<BackgroundColor> for UiColorLens {
 
 pub fn spawn_overlap_on_transition(
     mut commands: Commands,
-    mut event_reader: EventReader<DarkenScreen>,
+    mut event_reader: EventReader<DarkenScreenEvent>,
     app_state: Res<State<AppState>>,
 ) {
     for _ in event_reader.iter() {
@@ -51,7 +51,7 @@ pub fn spawn_overlap_on_transition(
                     end: Color::rgba(0., 0., 0., 1.),
                 },
             )
-            .with_completed_event(0)
+            .with_completed_event(300)
             .then(
                 Tween::new(
                     EaseFunction::CubicIn,
@@ -61,7 +61,7 @@ pub fn spawn_overlap_on_transition(
                         end: Color::rgba(0., 0., 0., 0.),
                     },
                 )
-                .with_completed_event(1),
+                .with_completed_event(301),
             );
 
             let node = NodeBundle {

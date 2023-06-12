@@ -4,9 +4,9 @@ use bevy::prelude::*;
 
 use crate::{events::GameOver, AppState};
 use enemy::EnemyPlugin;
+use fish::FishPlugin;
 use player::PlayerPlugin;
 use score::ScorePlugin;
-use star::StarsPlugin;
 use systems::*;
 
 use self::gui::GameUiPlugin;
@@ -16,10 +16,10 @@ use self::gui::GameUiPlugin;
 // Modules in folders
 pub mod components;
 pub mod enemy;
+mod fish;
 mod gui;
 pub mod player;
 mod score;
-mod star;
 
 // Top-level modules
 mod systems;
@@ -43,7 +43,7 @@ impl Plugin for GamePlugin {
             // Plugins
             .add_plugin(EnemyPlugin)
             .add_plugin(PlayerPlugin)
-            .add_plugin(StarsPlugin)
+            .add_plugin(FishPlugin)
             .add_plugin(ScorePlugin)
             .add_plugin(GameUiPlugin)
             // Systems

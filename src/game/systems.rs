@@ -1,7 +1,14 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{
+    prelude::*,
+    window::{PrimaryWindow, WindowResized},
+};
 use bevy_rapier2d::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use crate::{
+    helper_functions::get_camera_borders, systems::handle_pressing_g_key,
+};
 
 use super::{components::Wall, SimulationState};
 
@@ -40,8 +47,14 @@ pub fn toggle_simulation_on_input_event(
 pub fn spawn_world_borders(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
+    camera_query: Query<(&Transform, &OrthographicProjection), With<Camera2d>>,
 ) {
-    let window = window_query.get_single().unwrap();
+    let window = window_query.single();
+
+    let (cam_transform, cam_projection) = camera_query.single();
+
+    let (left, right, top, bottom) =
+        get_camera_borders(cam_transform, cam_projection.area);
 
     let horizontal = Collider::cuboid(window.width(), 2.);
     let vertical = Collider::cuboid(2., window.height());
@@ -50,133 +63,53 @@ pub fn spawn_world_borders(
     commands.spawn((
         SpatialBundle {
             transform: Transform {
-                translation: Vec3::new(window.width(), window.height(), 0.),
+                translation: top,
                 ..default()
             },
             ..default()
         },
         horizontal.clone(),
-        Wall,
+        Wall::Top,
     ));
 
     // Bottom border
     commands.spawn((
         SpatialBundle {
             transform: Transform {
-                translation: Vec3::new(
-                    // X axis
-                    window.width(),
-                    // Y axis
-                    0.,
-                    0.,
-                ),
+                translation: bottom,
                 ..default()
             },
             ..default()
         },
         horizontal,
-        Wall,
+        Wall::Bottom,
     ));
 
     // Left border
     commands.spawn((
         SpatialBundle {
             transform: Transform {
-                translation: Vec3::new(
-                    // X axis
-                    0.,
-                    // Y axis
-                    window.height(),
-                    0.,
-                ),
+                translation: left,
                 ..default()
             },
             ..default()
         },
         vertical.clone(),
-        Wall,
+        Wall::Left,
     ));
 
-    // Left border
+    // Right border
     commands.spawn((
         SpatialBundle {
             transform: Transform {
-                translation: Vec3::new(
-                    // X axis
-                    window.width(),
-                    // Y axis
-                    0.,
-                    0.,
-                ),
+                translation: right,
                 ..default()
             },
             ..default()
         },
         vertical,
-        Wall,
+        Wall::Right,
     ));
-}
-
-pub fn update_borders(
-    mut commands: Commands,
-    mut window_resize_event: EventReader<WindowResized>,
-    mut walls_query: Query<(&mut Transform, Entity, &Wall)>,
-    camera_query: Query<
-        (&Transform, &OrthographicProjection),
-        (With<Camera2d>, Without<Wall>),
-    >,
-    mut local_timer: Local<(Timer, f32, f32)>,
-    mut false_on_start: Local<bool>,
-    time: Res<Time>,
-) {
-    if !*false_on_start {
-        *false_on_start = true;
-        local_timer.0.pause();
-    }
-
-    if let Some(event) = window_resize_event.iter().last() {
-        // Start timer
-        local_timer.1 = event.width;
-        local_timer.2 = event.height;
-        local_timer.0.set_mode(TimerMode::Once);
-        local_timer
-            .0
-            .set_duration(std::time::Duration::from_millis(1000));
-        local_timer.0.reset();
-        local_timer.0.tick(time.delta());
-        local_timer.0.unpause();
-    }
-
-    if !local_timer.0.finished() && !local_timer.0.paused() {
-        local_timer.0.tick(time.delta());
-
-        let horizontal = Collider::cuboid(local_timer.1, 2.);
-        let vertical = Collider::cuboid(2., local_timer.2);
-        let (cam_transform, cam_projection) = camera_query.single();
-        let (left, right, top, bottom) =
-            get_camera_borders(cam_transform, cam_projection.area);
-
-        for (mut wall_transform, entity, wall) in walls_query.iter_mut() {
-            match wall {
-                Wall::Top => {
-                    wall_transform.translation = top;
-                    commands.entity(entity).insert(horizontal.clone());
-                }
-                Wall::Bottom => {
-                    wall_transform.translation = bottom;
-                    commands.entity(entity).insert(horizontal.clone());
-                }
-                Wall::Left => {
-                    wall_transform.translation = left;
-                    commands.entity(entity).insert(vertical.clone());
-                }
-                Wall::Right => {
-                    wall_transform.translation = right;
-                    commands.entity(entity).insert(vertical.clone());
-                }
-            }
-        }
-    }
 }
 
 pub fn despawn_borders(

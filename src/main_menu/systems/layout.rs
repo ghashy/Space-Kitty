@@ -4,7 +4,7 @@ use bevy_tweening::{lens::TransformPositionLens, *};
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::{
-    game::player::{components::Player, BALL_SIZE},
+    game::player::components::Player,
     main_menu::{components::*, styles::*},
 };
 
@@ -62,7 +62,7 @@ pub fn build_planets_layer(
             parent.spawn(ImageBundle {
                 style: PLANET_BIG,
                 image: UiImage::new(
-                    asset_server.load("sprites/original/Planet Big.png"),
+                    asset_server.load("sprites/Planet Big.png"),
                 ),
                 background_color: BackgroundColor::from(Color::rgba(
                     1., 1., 1., 1.,
@@ -73,7 +73,7 @@ pub fn build_planets_layer(
             parent.spawn(ImageBundle {
                 style: PLANET_MAIN,
                 image: UiImage::new(
-                    asset_server.load("sprites/original/Planet Main.png"),
+                    asset_server.load("sprites/Planet Main.png"),
                 ),
                 background_color: BackgroundColor::from(Color::rgba(
                     1., 1., 1., 1.,
@@ -85,8 +85,7 @@ pub fn build_planets_layer(
                 .spawn(ImageBundle {
                     style: PLANET_ATMOSPHERE,
                     image: UiImage::new(
-                        asset_server
-                            .load("sprites/original/Planet atmosphere.png"),
+                        asset_server.load("sprites/Planet atmosphere.png"),
                     ),
                     background_color: BackgroundColor::from(Color::rgba(
                         1., 1., 1., 0.3,
@@ -97,8 +96,7 @@ pub fn build_planets_layer(
                     parent.spawn(ImageBundle {
                         style: PLANET_SMALL,
                         image: UiImage::new(
-                            asset_server
-                                .load("sprites/original/Planet Small.png"),
+                            asset_server.load("sprites/Planet Small.png"),
                         ),
                         background_color: BackgroundColor::from(Color::rgba(
                             1., 1., 1., 1.,
@@ -173,7 +171,7 @@ fn spawn_title(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
             // Image
             parent.spawn(ImageBundle {
                 style: IMAGE_STYLE,
-                image: asset_server.load("sprites/Original/Title.png").into(),
+                image: asset_server.load("sprites/Title.png").into(),
                 ..default()
             });
         });
@@ -184,11 +182,11 @@ fn spawn_play_button(
     asset_server: &Res<AssetServer>,
 ) {
     let default_texture: Handle<Image> =
-        asset_server.load("sprites/Original/Play_Default.png");
+        asset_server.load("sprites/Play_Default.png");
     let hovered_texture: Handle<Image> =
-        asset_server.load("sprites/Original/Play_Hovered.png");
+        asset_server.load("sprites/Play_Hovered.png");
     let clicked_texture: Handle<Image> =
-        asset_server.load("sprites/Original/Play_Clicked.png");
+        asset_server.load("sprites/Play_Clicked.png");
     parent.spawn((
         ButtonBundle {
             style: NORMAL_BUTTON_STYLE,
@@ -209,11 +207,11 @@ fn spawn_quit_button(
     asset_server: &Res<AssetServer>,
 ) {
     let default_texture: Handle<Image> =
-        asset_server.load("sprites/Original/Quit_Default.png");
+        asset_server.load("sprites/Quit_Default.png");
     let hovered_texture: Handle<Image> =
-        asset_server.load("sprites/Original/Quit_Hovered.png");
+        asset_server.load("sprites/Quit_Hovered.png");
     let clicked_texture: Handle<Image> =
-        asset_server.load("sprites/Original/Quit_Hovered.png");
+        asset_server.load("sprites/Quit_Hovered.png");
     parent.spawn((
         ButtonBundle {
             style: NORMAL_BUTTON_STYLE,
@@ -261,12 +259,11 @@ fn spawn_player(
             parent.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        custom_size: Some(Vec2::splat(BALL_SIZE * 4.)),
+                        custom_size: Some(Vec2::new(513., 622.) / 2.),
                         flip_x: true,
                         ..default()
                     },
-                    texture: asset_server
-                        .load("sprites/Original/Cat's starship_HQ2.png"),
+                    texture: asset_server.load("sprites/Cat's starship_HQ.png"),
                     ..default()
                 },
                 Animator::new(tween),

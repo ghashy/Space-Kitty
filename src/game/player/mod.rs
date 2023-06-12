@@ -14,7 +14,8 @@ pub mod systems;
 // ───── Constants ────────────────────────────────────────────────────────── //
 
 pub const PLAYER_SPEED: f32 = 25000.;
-pub const BALL_SIZE: f32 = 64.;
+pub const LIVES_COUNT: u64 = 3;
+pub const SPACESHIP_SIZE: f32 = 64.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -48,7 +49,6 @@ impl Plugin for PlayerPlugin {
                 (
                     player_movement.in_set(PlayerSystemSet::Movement),
                     enemy_hit_player,
-                    player_hit_star,
                 )
                     .in_set(OnUpdate(SimulationState::Running))
                     .in_set(OnUpdate(AppState::Game))
@@ -57,7 +57,6 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 (
                     player_movement.in_set(PlayerSystemSet::Movement),
-                    player_hit_star,
                     count_player_invulnerability_timer,
                     blink_player,
                 )
@@ -66,6 +65,9 @@ impl Plugin for PlayerPlugin {
                     .in_set(OnUpdate(PlayerState::Invulnerable)),
             )
             // Exit State Systems
-            .add_system(despawn_player.in_schedule(OnExit(AppState::Game)));
+            .add_system(
+                despawn_player_on_exit_game_state
+                    .in_schedule(OnExit(AppState::Game)),
+            );
     }
 }

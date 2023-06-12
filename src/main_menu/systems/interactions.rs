@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::components::DarkenScreen;
+use crate::components::DarkenScreenEvent;
 use crate::main_menu::animation::*;
 use crate::main_menu::components::*;
 
@@ -14,7 +14,7 @@ pub fn interact_with_play_button(
         (&Interaction, &mut UiImage, &PlayButton),
         Changed<Interaction>,
     >,
-    mut event_writer: EventWriter<DarkenScreen>,
+    mut event_writer: EventWriter<DarkenScreenEvent>,
 ) {
     if let Ok((interaction, mut image, play_button)) =
         button_query.get_single_mut()
@@ -22,7 +22,7 @@ pub fn interact_with_play_button(
         match *interaction {
             Interaction::Clicked => {
                 animate_button_click(&mut image, play_button);
-                event_writer.send(DarkenScreen);
+                event_writer.send(DarkenScreenEvent);
             }
             Interaction::Hovered => {
                 animate_button_hover(&mut image, play_button);

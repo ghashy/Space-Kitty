@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::systems::*;
+use self::{components::EnemyIsArrivingEvent, systems::*};
 use super::SimulationState;
 use crate::AppState;
 
@@ -14,7 +14,6 @@ pub mod systems;
 
 // ───── Constants ────────────────────────────────────────────────────────── //
 
-const NUMBER_OF_ENEMIES_ON_START: usize = 3;
 const ENEMY_SPEED: f32 = 10000.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -24,14 +23,16 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
-            // Enter State Systems
-            .add_system(spawn_enemies.in_schedule(OnEnter(AppState::Game)))
+            // Events
+            .add_event::<EnemyIsArrivingEvent>()
             // Systems
             .add_systems(
                 (
                     update_enemy_direction,
                     enemy_movement,
                     spawn_enemy_on_game_progress,
+                    rotate_patch_of_light,
+                    // enemy_hit_fish,
                 )
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),

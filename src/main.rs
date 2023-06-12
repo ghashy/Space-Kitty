@@ -16,7 +16,8 @@ use bevy::{
         settings::{WgpuFeatures, WgpuSettings},
         RenderPlugin,
     },
-    window::WindowResolution,
+    window::{WindowMode, WindowResolution},
+    winit::WinitSettings,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_rapier2d::prelude::*;
@@ -28,6 +29,7 @@ use components::*;
 use debug::DebugPlugin;
 use game::GamePlugin;
 use main_menu::MainMenuPlugin;
+use resources::CometTimer;
 use systems::*;
 use transition::TransitionPlugin;
 
@@ -44,8 +46,14 @@ mod components;
 mod debug;
 pub mod events;
 pub mod helper_functions;
+mod resources;
 mod systems;
 mod transition;
+
+// ───── Constants ────────────────────────────────────────────────────────── //
+
+const RAND_STAR_ANIMATION_TIME_RANGE: std::ops::Range<f32> = 5_f32..100_f32;
+const COMET_SPEED: f32 = 500.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -57,6 +65,8 @@ fn main() {
         .set(WgpuFeatures::VERTEX_WRITABLE_STORAGE, true);
 
     App::new()
+        // Resources
+        .init_resource::<CometTimer>()
         // Startup Systems
         .add_startup_system(setup)
         .add_startup_system(spawn_camera)
@@ -66,27 +76,27 @@ fn main() {
         // States
         .add_state::<AppState>()
         // Events
-        .add_event::<DarkenScreen>()
+        .add_event::<DarkenScreenEvent>()
         // Plugins
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: String::from("Balls"),
-                        resolution: WindowResolution::new(1280., 720.),
+                        // IMPORTANT: Options for release build
+                        // resolution: WindowResolution::new(1280., 720.)
+                        //     .with_scale_factor_override(1.5),
+                        // mode: WindowMode::SizedFullscreen,
+                        title: String::from("Space Kitty"),
                         resizable: true,
-                        resize_constraints: WindowResizeConstraints {
-                            min_width: 960.,
-                            min_height: 540.,
-                            ..default()
-                        },
                         ..default()
                     }),
                     ..default()
                 })
                 .set(RenderPlugin { wgpu_settings }),
         )
+        // + 2 percents on cpu
         .add_plugin(HanabiPlugin)
+        // +1.1 percent on cpu
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
         .add_plugin(GamePlugin)
         .add_plugin(TweeningPlugin)
@@ -95,7 +105,13 @@ fn main() {
         .add_plugin(TransitionPlugin)
         // Gui Update Systems
         .add_systems(
-            (update_background_stars, animate_background_stars)
+            (
+                update_background_stars,
+                animate_background_stars,
+                spawn_periodical_comet,
+                move_comets,
+                despawn_outer_comets,
+            )
                 .in_base_set(CoreSet::Update),
         )
         // Systems
@@ -118,5 +134,7 @@ pub enum AppState {
 }
 
 // TweenEvent Codes:
-// 0 - MainMenu animation phase1 is finished.
-// 1 - MainMenu animation phase2 is finished, moving to next state: Game.
+// 0..250 - background stars events.
+// 300 - MainMenu animation phase1 is finished.
+// 301 - MainMenu animation phase2 is finished, moving to next state: Game.
+// 400..450 - gui lives id animation.

@@ -7,13 +7,13 @@ const SPAWN_STAR_TIMER: f32 = 1.;
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(Resource)]
-pub struct StarSpawnTimer {
+pub struct FishSpawnTimer {
     pub timer: Timer,
 }
 
-impl Default for StarSpawnTimer {
+impl Default for FishSpawnTimer {
     fn default() -> Self {
-        StarSpawnTimer {
+        FishSpawnTimer {
             timer: Timer::from_seconds(SPAWN_STAR_TIMER, TimerMode::Repeating),
         }
     }

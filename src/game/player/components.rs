@@ -7,3 +7,9 @@ pub struct Player {
 
 #[derive(Component)]
 pub struct PlayerInvulnerableTimer(pub Timer);
+
+#[derive(Component)]
+pub struct RocketEngineParticles;
+
+#[derive(Component)]
+pub struct RocketEngineSprite;

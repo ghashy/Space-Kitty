@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_tweening::TweenCompleted;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -14,6 +13,10 @@ mod components;
 mod styles;
 mod systems;
 
+// ───── Constants ────────────────────────────────────────────────────────── //
+
+const LIVES_ID_OFFSET: u64 = 400;
+
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub struct GameUiPlugin;
@@ -21,26 +24,26 @@ pub struct GameUiPlugin;
 impl Plugin for GameUiPlugin {
     fn build(&self, app: &mut App) {
         app
-            // Events
-            .add_event::<TweenCompleted>()
             // States
-            .add_state::<HudState>()
+            .add_state::<HudLivesState>()
             // Enter State Systems
             .add_system(spawn_hud.in_schedule(OnEnter(AppState::Game)))
             // Update Hud State
             .add_system(
-                listen_events
+                listen_hit_events
                     .in_set(OnUpdate(AppState::Game))
-                    .in_set(OnUpdate(HudState::Idle)),
+                    .in_set(OnUpdate(HudLivesState::Idle)),
             )
-            .add_system(update_hud.in_set(OnUpdate(HudState::Update)))
+            // Systems
+            .add_system(update_messages.in_set(OnUpdate(AppState::Game)))
+            .add_system(update_lives.in_set(OnUpdate(HudLivesState::Update)))
             // Exit State Systems
             .add_system(despawn_hud.in_schedule(OnExit(AppState::Game)));
     }
 }
 
 #[derive(States, Clone, Copy, Hash, PartialEq, Eq, Default, Debug)]
-pub enum HudState {
+pub enum HudLivesState {
     #[default]
     Idle,
     Update,

@@ -1,12 +1,14 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-#[derive(Component)]
-pub struct Hud;
+#[derive(Resource)]
+pub struct CometTimer(pub Timer);
 
-#[derive(Component)]
-pub struct MessagesList;
-
-#[derive(Component, Debug)]
-pub struct HeartImage(pub u64, pub Handle<Image>, pub Handle<Image>);
+impl Default for CometTimer {
+    fn default() -> Self {
+        CometTimer(Timer::new(Duration::from_secs(3), TimerMode::Repeating))
+    }
+}

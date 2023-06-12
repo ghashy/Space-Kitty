@@ -7,23 +7,18 @@ use bevy::{
 };
 use bevy_hanabi::*;
 use bevy_rapier2d::prelude::*;
+use bevy_tweening::*;
 use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::{
-    animation::*,
-    audio_system::resources::SamplePack,
-    components::{BackgroundStar, BackgroundStars, DarkenScreen},
-    events::*,
-    game::SimulationState,
-    AppState,
-};
-use bevy_tweening::*;
-
-// ───── Constants ────────────────────────────────────────────────────────── //
-
-const RAND_STAR_ANIMATION_TIME_RANGE: std::ops::Range<f32> = 5_f32..100_f32;
+use crate::components::*;
+use crate::events::*;
+use crate::game::SimulationState;
+use crate::resources::CometTimer;
+use crate::AppState;
+use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
+use crate::{audio_system::resources::SamplePack, COMET_SPEED};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -46,6 +41,8 @@ pub fn setup(
         exp: asset_server.load("audio/explosionCrunch_000.ogg"),
         pick_star: asset_server.load("audio/laserLarge_000.ogg"),
     });
+
+    commands.spawn((SpatialBundle::default(), Comets, Name::new("Comets")));
 }
 
 pub fn spawn_camera(
@@ -57,6 +54,7 @@ pub fn spawn_camera(
     commands
         .spawn(Camera2dBundle {
             camera: Camera {
+                // +1 percent load on cpu when true
                 hdr: true,
                 ..default()
             },
@@ -68,11 +66,6 @@ pub fn spawn_camera(
             ),
             projection: OrthographicProjection {
                 scale: 1.,
-                // scaling_mode: ScalingMode::Fixed {
-                //     width: window.width(),
-                //     height: window.height(),
-                // },
-                // scaling_mode: ScalingMode::FixedVertical(window.height()),
                 scaling_mode: ScalingMode::AutoMax {
                     max_width: window.width(),
                     max_height: window.height(),
@@ -92,7 +85,6 @@ pub fn spawn_camera(
                     threshold_softness: 32.0,
                 },
             composite_mode: BloomCompositeMode::Additive,
-            ..default()
         });
 }
 
@@ -108,7 +100,7 @@ pub fn spawn_background_texture(
             color: Color::rgba(1., 1., 1., 0.999),
             ..default()
         },
-        texture: asset_server.load("sprites/original/Background.png"),
+        texture: asset_server.load("sprites/Background.png"),
         transform: Transform::from_xyz(
             window.width() / 2.,
             window.height() / 2.,
@@ -151,8 +143,7 @@ pub fn spawn_dust(
             speed: 100.0.into(),
         })
         .render(ParticleTextureModifier {
-            texture: asset_server.load("sprites/Original/Star glowing.png"),
-            ..default()
+            texture: asset_server.load("sprites/Star glowing.png"),
         })
         .render(SizeOverLifetimeModifier {
             gradient: Gradient::constant(Vec2::splat(5.0)),
@@ -181,7 +172,7 @@ pub fn spawn_background_stars(
     asset_server: Res<AssetServer>,
 ) {
     let window = window_query.single();
-    let star_handle = asset_server.load("sprites/Original/Star glowing.png");
+    let star_handle = asset_server.load("sprites/Star glowing.png");
 
     let mut children = Vec::new();
 
@@ -260,7 +251,7 @@ pub fn finalize_transition_to_game(
     mut event_reader: EventReader<TweenCompleted>,
 ) {
     for event in event_reader.iter() {
-        if event.user_data == 0 {
+        if event.user_data == 300 {
             next_app_state.set(AppState::Game);
         }
     }
@@ -268,10 +259,10 @@ pub fn finalize_transition_to_game(
 
 pub fn handle_pressing_g_key(
     keyboard_input: Res<Input<KeyCode>>,
-    mut event_writer: EventWriter<DarkenScreen>,
+    mut event_writer: EventWriter<DarkenScreenEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::G) {
-        event_writer.send(DarkenScreen);
+        event_writer.send(DarkenScreenEvent);
     }
 }
 
@@ -306,5 +297,91 @@ pub fn handle_game_over(
         commands.insert_resource(NextState(Some(AppState::GameOver)));
         commands.insert_resource(NextState(Some(SimulationState::Paused)));
         break;
+    }
+}
+
+pub fn spawn_periodical_comet(
+    mut commands: Commands,
+    comets_group_query: Query<Entity, With<Comets>>,
+    assets_server: Res<AssetServer>,
+    mut timer: ResMut<CometTimer>,
+    time: Res<Time>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    if timer.0.tick(time.delta()).finished() {
+        let window = window_query.single();
+        let mut rand = rand::thread_rng();
+        let rand_x = rand.gen_range(0.0..=window.width());
+        let y = window.height() + 100.;
+        let (texture, comet) = get_random_comet_texture(&assets_server);
+        commands
+            .entity(comets_group_query.single())
+            .with_children(|parent| {
+                parent.spawn((
+                    SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(comet.resolution / 3.),
+                            ..default()
+                        },
+                        // After background stars, and before planets
+                        transform: Transform::from_xyz(rand_x, y, 10.),
+                        texture,
+                        ..default()
+                    },
+                    comet,
+                ));
+            });
+
+        // Update timer duration
+        let rand_duration = rand.gen_range(1..5);
+        timer
+            .0
+            .set_duration(std::time::Duration::from_secs(rand_duration));
+    }
+    //
+}
+
+pub fn despawn_outer_comets(
+    mut commands: Commands,
+    comets_query: Query<(Entity, &Transform), With<Comet>>,
+) {
+    for (entity, transform) in comets_query.iter() {
+        if transform.translation.y < -100. {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
+pub fn move_comets(
+    mut comets_query: Query<(&mut Transform, &Comet)>,
+    time: Res<Time>,
+) {
+    for (mut transform, comet) in comets_query.iter_mut() {
+        transform.translation += Vec3::new(-40.37, -54.19, 0.).normalize()
+            * COMET_SPEED
+            * comet.speed_modifier
+            * time.delta_seconds();
+    }
+}
+
+fn get_random_comet_texture(
+    asset_server: &Res<AssetServer>,
+) -> (Handle<Image>, Comet) {
+    let idx = rand::thread_rng().gen_range(0..3);
+
+    match idx {
+        0 => (
+            asset_server.load("sprites/Komet Blue.png"),
+            Comet::new(3., Vec2::new(254., 301.)),
+        ),
+        1 => (
+            asset_server.load("sprites/Komet Purple.png"),
+            Comet::new(1., Vec2::new(184., 213.)),
+        ),
+        2 => (
+            asset_server.load("sprites/Komet Red.png"),
+            Comet::new(2., Vec2::new(245., 293.)),
+        ),
+        _ => unreachable!(),
     }
 }

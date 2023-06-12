@@ -4,7 +4,7 @@ use std::time::Duration;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-pub fn animate_heart_down(commands: &mut Commands, entity: Entity, id: u8) {
+pub fn animate_heart_down(commands: &mut Commands, entity: Entity, id: u64) {
     let tween = Tween::new(
         EaseFunction::CubicIn,
         Duration::from_millis(500),
@@ -23,13 +23,13 @@ pub fn animate_heart_down(commands: &mut Commands, entity: Entity, id: u8) {
                 end: Vec3::ZERO,
             },
         )
-        .with_completed_event(id as u64),
+        .with_completed_event(id),
     );
 
     commands.entity(entity).insert(Animator::new(tween));
 }
 
-pub fn animate_heart_up(commands: &mut Commands, entity: Entity, id: u8) {
+pub fn animate_heart_up(commands: &mut Commands, entity: Entity, id: u64) {
     let tween = Tween::new(
         EaseFunction::CubicIn,
         Duration::from_millis(300),
@@ -39,7 +39,7 @@ pub fn animate_heart_up(commands: &mut Commands, entity: Entity, id: u8) {
         },
     )
     .with_repeat_count(RepeatCount::Finite(1))
-    .with_completed_event(id as u64);
+    .with_completed_event(id);
 
     commands.entity(entity).insert(Animator::new(tween));
 }
