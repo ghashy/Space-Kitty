@@ -11,12 +11,12 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ### Design:
 - [x] Fish-boss
 - [ ] Audio design
-- [ ] Rotating antenna
-- [ ] Design border, 10 dog’s skins, new cat’s skin
+- [x] Rotating antenna
+- [x] Design border, 10 dog’s skins, new cat’s skin
 - [x] Add fish score icon
-- [ ] Design new game icon
-- [ ] Design casualties on the ship
-- [ ] Design health of the ship
+- [x] Design new game icon
+- [x] Design health of the ship
+- [ ] Design Game Over screen
 
 ### Coding:
 - [ ] Dog’s message when rotating wildly
