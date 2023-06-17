@@ -17,6 +17,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Design new game icon
 - [x] Design health of the ship
 - [ ] Design Game Over screen
+- [ ] Design game presentation image
 
 ### Coding:
 - [ ] Dog’s message when rotating wildly
