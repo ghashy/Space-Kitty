@@ -18,6 +18,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Design health of the ship
 - [ ] Design Game Over screen
 - [ ] Design game presentation image
+- [ ] Design animation for Big Buddy
 - [x] Design Message box
 
 ### Coding:
@@ -28,5 +29,6 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Dog’s message when 2 dogs colliding (inline)
 - [ ] Message when new dog arriving
 - [ ] Crackers particles when kitty colliding with dog
+- [ ] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix
