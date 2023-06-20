@@ -3,7 +3,7 @@ use bevy_tweening::{lens::*, *};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-pub fn animate_star(commands: &mut Commands, entity: Entity, index: u8) {
+pub fn animate_star(commands: &mut Commands, entity: Entity, index: u16) {
     let scale_tween = Tween::new(
         EaseFunction::CubicIn,
         std::time::Duration::from_millis(500),

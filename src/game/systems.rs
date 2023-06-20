@@ -1,16 +1,11 @@
-use bevy::{
-    prelude::*,
-    window::{PrimaryWindow, WindowResized},
-};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::{
-    helper_functions::get_camera_borders, systems::handle_pressing_g_key,
-};
+use crate::{components::BackgroundImage, WORLD_MAX_EDGE, WORLD_MIN_EDGE};
 
-use super::{components::Wall, SimulationState};
+use super::{components::Wall, player::components::Player, SimulationState};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -44,20 +39,14 @@ pub fn toggle_simulation_on_input_event(
     }
 }
 
-pub fn spawn_world_borders(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    camera_query: Query<(&Transform, &OrthographicProjection), With<Camera2d>>,
-) {
-    let window = window_query.single();
+pub fn spawn_world_borders(mut commands: Commands) {
+    let left = Vec3::new(WORLD_MIN_EDGE, 0., 0.);
+    let right = Vec3::new(WORLD_MAX_EDGE, 0., 0.);
+    let top = Vec3::new(0., WORLD_MAX_EDGE, 0.);
+    let bottom = Vec3::new(0., WORLD_MIN_EDGE, 0.);
 
-    let (cam_transform, cam_projection) = camera_query.single();
-
-    let (left, right, top, bottom) =
-        get_camera_borders(cam_transform, cam_projection.area);
-
-    let horizontal = Collider::cuboid(window.width(), 2.);
-    let vertical = Collider::cuboid(2., window.height());
+    let horizontal = Collider::cuboid(WORLD_MAX_EDGE, 2.);
+    let vertical = Collider::cuboid(2., WORLD_MAX_EDGE);
 
     // Top border
     commands.spawn((
@@ -110,6 +99,33 @@ pub fn spawn_world_borders(
         vertical,
         Wall::Right,
     ));
+}
+
+pub fn system_camera_follows_player(
+    mut background_image_query: Query<&mut Transform, With<BackgroundImage>>,
+    mut camera_query: Query<
+        &mut Transform,
+        (With<Camera2d>, Without<BackgroundImage>),
+    >,
+    player_query: Query<
+        &Transform,
+        (With<Player>, Without<Camera2d>, Without<BackgroundImage>),
+    >,
+) {
+    if let Ok(player) = player_query.get_single() {
+        if let Ok(mut camera_transform) = camera_query.get_single_mut() {
+            camera_transform.translation.x = player.translation.x;
+            camera_transform.translation.y = player.translation.y;
+            if let Ok(mut background_transform) =
+                background_image_query.get_single_mut()
+            {
+                background_transform.translation.x =
+                    camera_transform.translation.x;
+                background_transform.translation.y =
+                    camera_transform.translation.y;
+            }
+        }
+    }
 }
 
 pub fn despawn_borders(

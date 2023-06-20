@@ -4,12 +4,15 @@ use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct BackgroundStar {
-    pub index: u8,
+    pub index: u16,
     pub timer: Timer,
 }
 
 #[derive(Component)]
 pub struct BackgroundStars;
+
+#[derive(Component)]
+pub struct BackgroundImage;
 
 #[derive(Component)]
 pub struct DarkScreenOverlap;

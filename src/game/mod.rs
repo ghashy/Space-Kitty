@@ -47,9 +47,12 @@ impl Plugin for GamePlugin {
             .add_plugin(ScorePlugin)
             .add_plugin(GameUiPlugin)
             // Systems
-            .add_system(
-                toggle_simulation_on_input_event
-                    .run_if(in_state(AppState::Game)),
+            .add_systems(
+                (
+                    toggle_simulation_on_input_event,
+                    system_camera_follows_player,
+                )
+                    .in_set(OnUpdate(AppState::Game)),
             )
             // Exit State Systems
             .add_systems(

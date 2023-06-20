@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::*, *};
 use interpolation::EaseFunction;
@@ -8,6 +8,7 @@ use rand::prelude::*;
 
 use crate::audio_system::resources::SamplePack;
 use crate::game::{enemy::components::Enemy, player::components::Player};
+use crate::{WORLD_MAX_EDGE, WORLD_MIN_EDGE};
 
 use super::{
     components::*, resources::FishSpawnTimer, FISH_SIZE, NUMBER_OF_FISH,
@@ -15,21 +16,15 @@ use super::{
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-pub fn spawn_fish(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    asset_server: Res<AssetServer>,
-) {
-    let window = window_query.get_single().unwrap();
-
+pub fn spawn_fish(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Entity for storing stars
     let fish = SpatialBundle::default();
     let mut children_fish = vec![];
 
     let mut rand = thread_rng();
     for _ in 0..NUMBER_OF_FISH {
-        let rand_x = rand.gen::<f32>() * window.width();
-        let rand_y = rand.gen::<f32>() * window.height();
+        let rand_x = rand.gen_range(WORLD_MIN_EDGE..WORLD_MAX_EDGE);
+        let rand_y = rand.gen_range(WORLD_MIN_EDGE..WORLD_MAX_EDGE);
 
         children_fish.push(
             commands
@@ -129,16 +124,14 @@ pub fn check_collision(
 
 pub fn spawn_fish_over_time(
     mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
     stars_pack_query: Query<Entity, With<FishPack>>,
     asset_server: Res<AssetServer>,
     star_spawn_timer: Res<FishSpawnTimer>,
 ) {
     if star_spawn_timer.timer.finished() {
-        let window = window_query.get_single().unwrap();
         let mut rand = thread_rng();
-        let rand_x = rand.gen::<f32>() * window.width();
-        let rand_y = rand.gen::<f32>() * window.height();
+        let rand_x = rand.gen_range(WORLD_MIN_EDGE..WORLD_MAX_EDGE);
+        let rand_y = rand.gen_range(WORLD_MIN_EDGE..WORLD_MAX_EDGE);
 
         let stars_pack = stars_pack_query.single();
         let child = commands

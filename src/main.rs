@@ -16,8 +16,6 @@ use bevy::{
         settings::{WgpuFeatures, WgpuSettings},
         RenderPlugin,
     },
-    window::{WindowMode, WindowResolution},
-    winit::WinitSettings,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_rapier2d::prelude::*;
@@ -54,7 +52,10 @@ mod transition;
 
 // ───── Constants ────────────────────────────────────────────────────────── //
 
+const WORLD_MIN_EDGE: f32 = -2000.;
+const WORLD_MAX_EDGE: f32 = 2000.;
 const RAND_STAR_ANIMATION_TIME_RANGE: std::ops::Range<f32> = 5_f32..100_f32;
+const BACKGROUND_STARS_COUNT: u16 = 2000;
 const COMET_SPEED: f32 = 500.;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -72,10 +73,6 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        // IMPORTANT: Options for release build
-                        // resolution: WindowResolution::new(1280., 720.)
-                        //     .with_scale_factor_override(1.5),
-                        // mode: WindowMode::SizedFullscreen,
                         title: String::from("Space Kitty"),
                         resizable: true,
                         ..default()

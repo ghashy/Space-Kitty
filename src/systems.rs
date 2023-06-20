@@ -12,13 +12,13 @@ use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::components::*;
 use crate::events::*;
 use crate::game::SimulationState;
 use crate::resources::CometTimer;
 use crate::AppState;
 use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
 use crate::{audio_system::resources::SamplePack, COMET_SPEED};
+use crate::{components::*, BACKGROUND_STARS_COUNT};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -94,27 +94,29 @@ pub fn spawn_background_texture(
     asset_server: Res<AssetServer>,
 ) {
     let window = window_query.get_single().unwrap();
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
-            custom_size: Some(Vec2::new(window.width(), window.height())),
-            color: Color::rgba(1., 1., 1., 0.999),
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(window.width(), window.height())),
+                color: Color::rgba(1., 1., 1., 0.999),
+                ..default()
+            },
+            texture: asset_server.load("sprites/Background.png"),
+            transform: Transform::from_xyz(
+                window.width() / 2.,
+                window.height() / 2.,
+                0.,
+            ),
             ..default()
         },
-        texture: asset_server.load("sprites/Background.png"),
-        transform: Transform::from_xyz(
-            window.width() / 2.,
-            window.height() / 2.,
-            0.,
-        ),
-        ..default()
-    });
+        BackgroundImage,
+    ));
 }
 
 pub fn spawn_dust(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut effects: ResMut<Assets<EffectAsset>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let mut gradient = Gradient::new();
     gradient.add_key(0.0, Vec4::new(1., 1., 1., 0.0));
@@ -135,7 +137,7 @@ pub fn spawn_dust(
             dimension: ShapeDimension::Surface,
         })
         .init(InitLifetimeModifier {
-            lifetime: 7_f32.into(),
+            lifetime: 25_f32.into(),
         })
         .init(InitVelocityCircleModifier {
             center: Vec3::new(5., 5., 1.),
@@ -151,36 +153,29 @@ pub fn spawn_dust(
         .render(ColorOverLifetimeModifier { gradient }),
     );
 
-    let window = window_query.single();
-
     commands
         .spawn(ParticleEffectBundle {
             effect: ParticleEffect::new(effect).with_z_layer_2d(Some(4.)),
-            transform: Transform::from_xyz(
-                window.width() / 2.,
-                window.height() / 2.,
-                0.,
-            ),
             ..default()
         })
         .insert(Name::new("StarsInMenu"));
 }
 
 pub fn spawn_background_stars(
-    window_query: Query<&Window, With<PrimaryWindow>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    let window = window_query.single();
     let star_handle = asset_server.load("sprites/Star glowing.png");
 
     let mut children = Vec::new();
 
     let mut rng = rand::thread_rng();
 
-    for index in 0..250 {
-        let rand_x = rng.gen_range(0.0..window.width());
-        let rand_y = rng.gen_range(0.0..window.height());
+    for index in 0..BACKGROUND_STARS_COUNT {
+        // let rand_x = rng.gen_range(0.0..window.width());
+        // let rand_y = rng.gen_range(0.0..window.height());
+        let rand_x = rng.gen_range(-2000.0..2000.0);
+        let rand_y = rng.gen_range(-2000.0..2000.0);
         let child = commands
             .spawn((
                 SpriteBundle {
@@ -235,7 +230,7 @@ pub fn animate_background_stars(
     for event in event_reader.iter() {
         let mut rng = rand::thread_rng();
         for mut star in star_query.iter_mut() {
-            if event.user_data as u8 == star.index {
+            if event.user_data as u16 == star.index {
                 star.timer.set_duration(std::time::Duration::from_secs_f32(
                     rng.gen_range(RAND_STAR_ANIMATION_TIME_RANGE),
                 ));

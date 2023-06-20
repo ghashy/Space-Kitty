@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_tweening::TweenCompleted;
-use std::println;
 
 // ───── Current Crate Import ─────────────────────────────────────────────── //
 
@@ -71,8 +70,9 @@ pub fn listen_hit_events(
     mut player_hit_events: EventReader<PlayerHit>,
     mut hud_state: ResMut<NextState<HudLivesState>>,
 ) {
-    for event in player_hit_events.iter() {
+    for _ in player_hit_events.iter() {
         hud_state.set(HudLivesState::Update);
+        break;
     }
 }
 

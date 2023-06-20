@@ -175,7 +175,7 @@ mod tests {
         );
     }
 
-    use bevy::render::camera::{ComputedCameraValues, ScalingMode};
+    use bevy::render::camera::ScalingMode;
 
     const WINDOW_WIDTH: f32 = 1280.;
     const WINDOW_HEIGHT: f32 = 720.;

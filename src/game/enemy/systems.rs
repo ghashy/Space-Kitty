@@ -270,20 +270,16 @@ pub fn spawn_enemy_on_game_progress(
             .id();
         if name == "Doggy Potter" {
             let wand = commands
-                .spawn((
-                    Collider::cuboid(10., 130.),
-                    ActiveEvents::COLLISION_EVENTS,
-                    SpriteBundle {
-                        transform: Transform {
-                            translation: Vec3::new(-49.2, -51.6, -0.5),
-                            rotation: Quat::from_rotation_z(-4.2),
-                            scale: Vec3::new(0.3, 0.3, 0.),
-                            ..default()
-                        },
-                        texture: asset_server.load("sprites/Magic wand.png"),
+                .spawn((SpriteBundle {
+                    transform: Transform {
+                        translation: Vec3::new(-49.2, -51.6, -0.5),
+                        rotation: Quat::from_rotation_z(-4.2),
+                        scale: Vec3::new(0.3, 0.3, 0.),
                         ..default()
                     },
-                ))
+                    texture: asset_server.load("sprites/Magic wand.png"),
+                    ..default()
+                },))
                 .id();
             commands.entity(entity).push_children(&[wand]);
         }
@@ -343,8 +339,7 @@ fn generate_dog(
             dogs_resource.images.shuffle(&mut rand);
         }
     }
-    // let mut default_scale = rand.gen_range(0.3..1.2);
-    let mut default_scale = 0.5;
+    let mut default_scale = rand.gen_range(0.7..0.9);
 
     // Handle Doggy Potter case
     if &filename == "FaceHarry" {
@@ -353,7 +348,7 @@ fn generate_dog(
 
     // Handle Big Kid case
     if &filename == "Face8" {
-        default_scale = 1.0;
+        default_scale = 1.7;
     }
 
     // Generate name
