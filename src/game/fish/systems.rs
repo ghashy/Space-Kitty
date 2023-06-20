@@ -1,4 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::*, *};
 use interpolation::EaseFunction;
 use rand::prelude::*;
@@ -6,7 +7,6 @@ use rand::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::audio_system::resources::SamplePack;
-use crate::game::player::SPACESHIP_SIZE;
 use crate::game::{enemy::components::Enemy, player::components::Player};
 
 use super::{
@@ -46,6 +46,8 @@ pub fn spawn_fish(
                         texture: asset_server.load("sprites/Fish.png"),
                         ..default()
                     },
+                    Collider::ball(FISH_SIZE.x / 2.),
+                    Sensor::default(),
                     Fish {},
                     Animator::new(get_fish_tween(Vec3::new(
                         rand_x, rand_y, 1.,
@@ -80,29 +82,46 @@ pub fn tick_fish_spawn_timer(
 }
 
 pub fn check_collision(
+    mut collision_events: EventReader<CollisionEvent>,
     mut commands: Commands,
-    entity_query: Query<(&Transform, &Name), Or<(With<Player>, With<Enemy>)>>,
-    mut fish_query: Query<(Entity, &Parent, &Transform), With<Fish>>,
+    entity_query: Query<(Entity, &Name), Or<(With<Player>, With<Enemy>)>>,
+    mut fish_query: Query<(Entity, &Parent), With<Fish>>,
     audio: Res<Audio>,
     sample_pack: Res<SamplePack>,
     mut picked_event: EventWriter<FishWasPickedEvent>,
 ) {
-    for (fish_entity, fish_pack, fish_transform) in fish_query.iter_mut() {
-        for (entity_transform, entity_name) in entity_query.iter() {
-            let distance = entity_transform
-                .translation
-                .distance(fish_transform.translation);
-
-            let entity_radius = SPACESHIP_SIZE / 2.;
-            let fish_radius = FISH_SIZE.y / 2.;
-
-            if distance < entity_radius + fish_radius {
-                commands
-                    .entity(fish_pack.get())
-                    .remove_children(&[fish_entity]);
-                audio.play(sample_pack.pick_star.clone_weak());
-                commands.entity(fish_entity).despawn();
-                picked_event.send(FishWasPickedEvent(entity_name.to_string()));
+    'outer: for event in collision_events.iter() {
+        if let CollisionEvent::Started(entity1, entity2, _) = event {
+            for (fish_entity, fish_pack) in fish_query.iter_mut() {
+                if fish_entity == *entity1 {
+                    for (entity, name) in entity_query.iter() {
+                        if entity == *entity2 {
+                            commands
+                                .entity(fish_pack.get())
+                                .remove_children(&[fish_entity]);
+                            audio.play(sample_pack.pick_star.clone_weak());
+                            commands.entity(fish_entity).despawn();
+                            picked_event
+                                .send(FishWasPickedEvent(name.to_string()));
+                            // Continue cycle if collision is resolved
+                            continue 'outer;
+                        }
+                    }
+                } else if fish_entity == *entity2 {
+                    for (entity, name) in entity_query.iter() {
+                        if entity == *entity1 {
+                            commands
+                                .entity(fish_pack.get())
+                                .remove_children(&[fish_entity]);
+                            audio.play(sample_pack.pick_star.clone_weak());
+                            commands.entity(fish_entity).despawn();
+                            picked_event
+                                .send(FishWasPickedEvent(name.to_string()));
+                            // Continue cycle if collision is resolved
+                            continue 'outer;
+                        }
+                    }
+                }
             }
         }
     }
@@ -136,6 +155,8 @@ pub fn spawn_fish_over_time(
                     texture: asset_server.load("sprites/Fish.png"),
                     ..default()
                 },
+                Collider::ball(FISH_SIZE.x / 2.),
+                Sensor::default(),
                 Fish {},
                 Animator::new(get_fish_tween(Vec3::new(rand_x, rand_y, 1.))),
             ))

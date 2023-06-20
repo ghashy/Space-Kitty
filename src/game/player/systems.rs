@@ -199,56 +199,94 @@ pub fn player_movement(
 
 pub fn enemy_hit_player(
     mut commands: Commands,
-    // Events
-    _game_over_event_writer: EventWriter<GameOver>,
-    mut event_writer: EventWriter<PlayerHit>,
-    // Queries
-    mut player_query: Query<(Entity, &Transform, &mut Player)>,
-    enemy_query: Query<&Transform, With<Enemy>>,
-    // State
+    mut collision_events: EventReader<CollisionEvent>,
+    enemies: Query<Entity, With<Enemy>>,
+    mut player_query: Query<(Entity, &mut Player), Without<Enemy>>,
     mut player_state: ResMut<NextState<PlayerState>>,
-    // Audio
     audio: Res<Audio>,
     sample_pack: Res<SamplePack>,
-    // Assistants
+    _game_over_event_writer: EventWriter<GameOver>,
+    mut event_writer: EventWriter<PlayerHit>,
     _score: Res<Score>,
 ) {
-    if let Ok((player_entity, player_transform, mut player)) =
-        player_query.get_single_mut()
-    {
-        for enemy_transform in enemy_query.iter() {
-            let distance = player_transform
-                .translation
-                .distance(enemy_transform.translation);
-            let ball_radius = SPACESHIP_SIZE;
-
-            if distance < ball_radius {
-                if player.health > 1 {
-                    player.health -= 1;
-                    // Spawn Timer to Player entity
-                    commands.entity(player_entity).insert(
-                        PlayerInvulnerableTimer(Timer::from_seconds(
-                            3.,
-                            TimerMode::Once,
-                        )),
-                    );
-                    player_state.set(PlayerState::Invulnerable);
-                } else {
-                    player.health -= 1;
-                    audio.play(sample_pack.exp.clone());
-                    despawn_player(&mut commands, player_entity);
-
-                    // TODO: handle gameover event, add function to score to get highest score
-                    // game_over_event_writer.send(GameOver {
-                    //     final_score: score.value,
-                    // })
+    for event in collision_events.iter() {
+        if let Ok((player_entity, player)) = player_query.get_single_mut() {
+            if let CollisionEvent::Started(entity1, entity2, _) = event {
+                if player_entity == *entity1 {
+                    // First entity is player
+                    if handle_collision(
+                        &enemies,
+                        entity2,
+                        player,
+                        player_entity,
+                        &mut player_state,
+                        &mut commands,
+                        &audio,
+                        &sample_pack,
+                        &mut event_writer,
+                    ) {
+                        break;
+                    }
+                } else if player_entity == *entity2 {
+                    // Second entity is player
+                    if handle_collision(
+                        &enemies,
+                        entity2,
+                        player,
+                        player_entity,
+                        &mut player_state,
+                        &mut commands,
+                        &audio,
+                        &sample_pack,
+                        &mut event_writer,
+                    ) {
+                        break;
+                    }
                 }
-                event_writer.send(PlayerHit {
-                    remaining_health: player.health,
-                });
             }
         }
     }
+}
+
+fn handle_collision(
+    enemies_query: &Query<'_, '_, Entity, With<Enemy>>,
+    collided_with: &Entity,
+    mut player: Mut<'_, Player>,
+    player_entity: Entity,
+    player_state: &mut ResMut<'_, NextState<PlayerState>>,
+    commands: &mut Commands<'_, '_>,
+    audio: &Res<'_, Audio>,
+    sample_pack: &Res<'_, SamplePack>,
+    event_writer: &mut EventWriter<'_, PlayerHit>,
+) -> bool {
+    if enemies_query.iter().any(|e| e == *collided_with) {
+        // Collision
+        if player.health > 1 {
+            player.health -= 1;
+            // Spawn Timer to Player entity
+            commands
+                .entity(player_entity)
+                .insert(PlayerInvulnerableTimer(Timer::from_seconds(
+                    3.,
+                    TimerMode::Once,
+                )));
+            player_state.set(PlayerState::Invulnerable);
+        } else {
+            player.health -= 1;
+            audio.play(sample_pack.exp.clone());
+            despawn_player(commands, player_entity);
+
+            // TODO: handle gameover event, add function to score to get highest score
+            // game_over_event_writer.send(GameOver {
+            //     final_score: score.value,
+            // })
+        }
+        event_writer.send(PlayerHit {
+            remaining_health: player.health,
+        });
+        return true;
+    }
+    false
 }
 
 pub fn count_player_invulnerability_timer(

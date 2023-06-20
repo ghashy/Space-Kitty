@@ -25,6 +25,7 @@ use bevy_tweening::TweeningPlugin;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use asset_loader::JsonAssetLoader;
 use components::*;
 use debug::DebugPlugin;
 use game::GamePlugin;
@@ -36,6 +37,7 @@ use transition::TransitionPlugin;
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
 // Modules in folders
+pub mod asset_loader;
 pub mod audio_system;
 pub mod game;
 pub mod main_menu;
@@ -65,19 +67,7 @@ fn main() {
         .set(WgpuFeatures::VERTEX_WRITABLE_STORAGE, true);
 
     App::new()
-        // Resources
-        .init_resource::<CometTimer>()
-        // Startup Systems
-        .add_startup_system(setup)
-        .add_startup_system(spawn_camera)
-        .add_startup_system(spawn_background_stars)
-        .add_startup_system(spawn_background_texture)
-        .add_startup_system(spawn_dust)
-        // States
-        .add_state::<AppState>()
-        // Events
-        .add_event::<DarkenScreenEvent>()
-        // Plugins
+        // DefaultPlugins
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -94,6 +84,21 @@ fn main() {
                 })
                 .set(RenderPlugin { wgpu_settings }),
         )
+        // Asset loaders
+        .init_asset_loader::<JsonAssetLoader>()
+        // Resources
+        .init_resource::<CometTimer>()
+        // Startup Systems
+        .add_startup_system(setup)
+        .add_startup_system(spawn_camera)
+        .add_startup_system(spawn_background_stars)
+        .add_startup_system(spawn_background_texture)
+        .add_startup_system(spawn_dust)
+        // States
+        .add_state::<AppState>()
+        // Events
+        .add_event::<DarkenScreenEvent>()
+        // Plugins
         // + 2 percents on cpu
         .add_plugin(HanabiPlugin)
         // +1.1 percent on cpu

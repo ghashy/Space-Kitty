@@ -16,6 +16,7 @@ pub mod systems;
 pub const PLAYER_SPEED: f32 = 25000.;
 pub const LIVES_COUNT: u64 = 3;
 pub const SPACESHIP_SIZE: f32 = 64.;
+pub const DOG_SIZE: Vec2 = Vec2::new(156., 154.);
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 

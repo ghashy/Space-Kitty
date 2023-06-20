@@ -14,12 +14,17 @@ bevy_hanabi = "0.6.2"
 bevy_tweening = "0.7.0"
 rand = "0.8.5"
 interpolation = "0.2.0"
+serde = "1.0.164"
+serde_json = "1.0.97"
 
 [profile.dev]
 opt-level = 3
 
 [profile.dev.package."*"]
 opt-level = 3
+
+[features]
+profile = []
 
 [package.metadata.bundle]
 name = "Space Kitty"

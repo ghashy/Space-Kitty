@@ -2,12 +2,16 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::{components::EnemyIsArrivingEvent, systems::*};
+use self::{
+    assets::DogNames, components::EnemyIsArrivingEvent, resources::DogResource,
+    systems::*,
+};
 use super::SimulationState;
 use crate::AppState;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
+pub mod assets;
 pub mod components;
 pub mod resources;
 pub mod systems;
@@ -23,8 +27,12 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Assets
+            .add_asset::<DogNames>()
             // Events
             .add_event::<EnemyIsArrivingEvent>()
+            // Enter State Systems
+            .add_system(load_resources.in_schedule(OnEnter(AppState::Game)))
             // Systems
             .add_systems(
                 (
@@ -32,7 +40,6 @@ impl Plugin for EnemyPlugin {
                     enemy_movement,
                     spawn_enemy_on_game_progress,
                     rotate_patch_of_light,
-                    // enemy_hit_fish,
                 )
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),

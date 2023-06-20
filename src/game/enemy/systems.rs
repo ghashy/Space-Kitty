@@ -1,4 +1,4 @@
-use bevy::{prelude::*, sprite::Anchor, utils::HashMap, window::PrimaryWindow};
+use bevy::{prelude::*, sprite::Anchor, utils::HashSet, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 use std::ops::Range;
@@ -9,7 +9,7 @@ use super::{
     components::{Enemy, EnemyIsArrivingEvent, PatchOfLight},
     *,
 };
-use crate::game::{player::SPACESHIP_SIZE, score::resources::Score};
+use crate::game::{player::DOG_SIZE, score::resources::Score};
 use crate::helper_functions::*;
 use crate::{
     audio_system::resources::SamplePack,
@@ -18,7 +18,33 @@ use crate::{
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-//
+pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let names: Handle<DogNames> =
+        asset_server.load("json_data/dogs_names.json");
+
+    let mut images: Vec<(String, Handle<Image>)> = Vec::new();
+
+    for i in 1..12 {
+        let name = format!("Face{}", i);
+        images.push((
+            name.clone(),
+            asset_server.load(format!("sprites/Dogs/{}.png", name)),
+        ));
+    }
+    let name = String::from("FaceHarry");
+    images.push((
+        name.clone(),
+        asset_server.load(format!("sprites/Dogs/{}.png", name)),
+    ));
+
+    images.shuffle(&mut rand::thread_rng());
+
+    commands.insert_resource(DogResource {
+        json_data: names,
+        images,
+    })
+}
+
 pub fn despawn_enemies(
     mut commands: Commands,
     enemy_query: Query<Entity, With<Enemy>>,
@@ -59,7 +85,6 @@ pub fn update_enemy_direction(
     for event in collision_event.iter() {
         if let CollisionEvent::Started(entity1, entity2, _) = event {
             // For playing audio
-            direction_changed = true;
 
             // If we found a collision
             if let Some(contact_pair) =
@@ -75,6 +100,7 @@ pub fn update_enemy_direction(
                         }
                     })
                 {
+                    direction_changed = true;
                     enemy
                         .direction
                         .reflect(contact_pair.manifold(0).unwrap().normal());
@@ -92,6 +118,7 @@ pub fn update_enemy_direction(
                         }
                     })
                 {
+                    direction_changed = true;
                     enemy
                         .direction
                         .reflect(contact_pair.manifold(0).unwrap().normal());
@@ -99,9 +126,10 @@ pub fn update_enemy_direction(
                     entities_flags = entities_flags | 0b10;
                 }
             }
+            // TODO: profile this break disabled
             // Break if got actual collision
             if entities_flags != 0b00 {
-                break;
+                continue;
             }
         }
     }
@@ -133,12 +161,13 @@ pub fn spawn_enemy_on_game_progress(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
+    mut dogs_resource: ResMut<DogResource>,
+    names_assets: Res<Assets<DogNames>>,
     score: ResMut<Score>,
-    mut names_list: Local<HashMap<String, String>>,
+    mut already_spawned_data: Local<(HashSet<String>, u8)>,
     mut picked_event: EventReader<FishWasPickedEvent>,
     mut arriving_event: EventWriter<EnemyIsArrivingEvent>,
 ) {
-    // let score = score.get_score("Kitty").unwrap();
     let name = picked_event
         .iter()
         .map(|event| event.0.clone())
@@ -164,25 +193,25 @@ pub fn spawn_enemy_on_game_progress(
         let random_x = rand.gen::<f32>() * window.width();
         let random_y = rand.gen::<f32>() * window.height();
 
-        let mut name = generate_rand_name();
-        while names_list.contains_key(&name) {
-            name = generate_rand_name();
-        }
-        names_list.insert(name.clone(), String::new());
+        let (name, texture, scale_modifier) = generate_dog(
+            &mut dogs_resource,
+            names_assets,
+            &mut already_spawned_data,
+        );
 
-        commands
+        let entity = commands
             .spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        custom_size: Some(Vec2::splat(SPACESHIP_SIZE)),
+                        custom_size: Some(DOG_SIZE * scale_modifier),
                         ..default()
                     },
                     transform: Transform::from_xyz(random_x, random_y, 10.),
-                    texture: asset_server.load("sprites/Dog.png"),
+                    texture,
                     ..default()
                 },
                 RigidBody::Dynamic,
-                Collider::ball(SPACESHIP_SIZE / 2.),
+                Collider::ball(DOG_SIZE.x * scale_modifier * 0.47),
                 Velocity {
                     linvel: Vec2::new(random_x, random_y),
                     angvel: 0.3,
@@ -194,18 +223,24 @@ pub fn spawn_enemy_on_game_progress(
                     direction: Vec2::new(rand.gen::<f32>(), rand.gen::<f32>())
                         .normalize(),
                 },
-                Name::new(name),
+                Name::new(name.clone()),
             ))
             .with_children(|parent| {
                 parent
                     .spawn(SpriteBundle {
                         sprite: Sprite {
-                            custom_size: Some(Vec2::splat(65.)),
+                            custom_size: Some(
+                                Vec2::splat(125.) * scale_modifier,
+                            ),
                             ..default()
                         },
                         texture: asset_server
                             .load("sprites/Dog's spacesuit.png"),
-                        transform: Transform::from_xyz(-12.8, 13.2, 1.),
+                        transform: Transform::from_xyz(
+                            -12.8 * 2. * scale_modifier,
+                            13.2 * 2. * scale_modifier,
+                            1.,
+                        ),
                         ..default()
                     })
                     .with_children(|parent| {
@@ -213,7 +248,10 @@ pub fn spawn_enemy_on_game_progress(
                             SpriteBundle {
                                 sprite: Sprite {
                                     custom_size: Some(
-                                        Vec2::new(104., 101.) / 5.,
+                                        Vec2::new(
+                                            104. * 2. * scale_modifier,
+                                            101. * 2. * scale_modifier,
+                                        ) / 5.,
                                     ),
                                     anchor: Anchor::Custom(Vec2::new(
                                         0.55, -0.55,
@@ -228,7 +266,27 @@ pub fn spawn_enemy_on_game_progress(
                             PatchOfLight,
                         ));
                     });
-            });
+            })
+            .id();
+        if name == "Doggy Potter" {
+            let wand = commands
+                .spawn((
+                    Collider::cuboid(10., 130.),
+                    ActiveEvents::COLLISION_EVENTS,
+                    SpriteBundle {
+                        transform: Transform {
+                            translation: Vec3::new(-49.2, -51.6, -0.5),
+                            rotation: Quat::from_rotation_z(-4.2),
+                            scale: Vec3::new(0.3, 0.3, 0.),
+                            ..default()
+                        },
+                        texture: asset_server.load("sprites/Magic wand.png"),
+                        ..default()
+                    },
+                ))
+                .id();
+            commands.entity(entity).push_children(&[wand]);
+        }
     }
     arriving_event.send(EnemyIsArrivingEvent(name));
 }
@@ -257,36 +315,72 @@ pub fn rotate_patch_of_light(
     }
 }
 
-const FIRST_NAMES: [&str; 26] = [
-    "Arnold", "Misha", "Adam", "Juan", "Ivan", "Toby", "Fox", "Robert",
-    "Antonio", "Rabbit", "Buddy", "Wolf", "El Torro", "Shepard", "Pedro",
-    "Ricardo", "Dummy", "Bob", "Bean", "Button", "Samuel", "Teddy", "Goobboy"
-    "Bill", "Jackie", "Peter", 
-];
-
-const LAST_NAMES: [&str; 6] =
-    ["Little", "Big", "Daring", "Cowardly", "Kind", "Peaceful"];
-
-const NICKNAMES: [&str; 3] = ["Dark", "Light", "Sniffing"];
-
-fn generate_rand_name() -> String {
+fn generate_dog(
+    dogs_resource: &mut ResMut<DogResource>,
+    names_assets: Res<Assets<DogNames>>,
+    already_spawned_data: &mut Local<(HashSet<String>, u8)>,
+) -> (String, Handle<Image>, f32) {
+    // Rand
     let mut rand = rand::thread_rng();
     let last_name_possibility = rand.gen::<bool>();
     let nickname_possibility = rand.gen::<bool>() && last_name_possibility;
 
+    // Get handles
+    let dogs_names = names_assets.get(&dogs_resource.json_data).unwrap();
+    let filename = dogs_resource.images[already_spawned_data.1 as usize]
+        .0
+        .clone();
+    let image = dogs_resource.images[already_spawned_data.1 as usize]
+        .1
+        .clone();
+
+    {
+        if already_spawned_data.1 < 11 {
+            already_spawned_data.1 += 1;
+        } else {
+            already_spawned_data.1 = 0;
+            // Shuffle sprites on next round of spawning
+            dogs_resource.images.shuffle(&mut rand);
+        }
+    }
+    // let mut default_scale = rand.gen_range(0.3..1.2);
+    let mut default_scale = 0.5;
+
+    // Handle Doggy Potter case
+    if &filename == "FaceHarry" {
+        return (String::from("Doggy Potter"), image, default_scale);
+    }
+
+    // Handle Big Kid case
+    if &filename == "Face8" {
+        default_scale = 1.0;
+    }
+
+    // Generate name
     let mut name = String::new();
-    name.push_str(FIRST_NAMES[rand.gen_range(0..FIRST_NAMES.len())]);
-
-    if last_name_possibility {
-        name = LAST_NAMES[rand.gen_range(0..LAST_NAMES.len())].to_string()
-            + " "
-            + &name;
+    loop {
+        name.push_str(
+            &dogs_names.first_names
+                [rand.gen_range(0..dogs_names.first_names.len())],
+        );
+        if last_name_possibility {
+            name = dogs_names.last_names
+                [rand.gen_range(0..dogs_names.last_names.len())]
+            .to_string()
+                + " "
+                + &name;
+        }
+        if nickname_possibility {
+            name = name
+                + " of "
+                + &dogs_names.nicknames
+                    [rand.gen_range(0..dogs_names.nicknames.len())]
+                .to_string();
+        }
+        if !already_spawned_data.0.contains(&name) {
+            break;
+        }
     }
-    if nickname_possibility {
-        name = name
-            + " of "
-            + &NICKNAMES[rand.gen_range(0..NICKNAMES.len())].to_string();
-    }
 
-    name
+    (name, image, default_scale)
 }

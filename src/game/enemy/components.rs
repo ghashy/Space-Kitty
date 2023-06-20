@@ -1,4 +1,11 @@
-use bevy::prelude::*;
+use bevy::{
+    asset::{Asset, AssetLoader, LoadedAsset},
+    prelude::*,
+    reflect::TypeUuid,
+};
+use serde::Deserialize;
+
+// ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(Component)]
 pub struct Enemy {

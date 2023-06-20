@@ -13,8 +13,8 @@ use crate::{events::PlayerHit, game::player::components::Player};
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let img1 = asset_server.load("sprites/Cat's state Life.png");
-    let img2 = asset_server.load("sprites/Cat's state No life.png");
+    let img1 = asset_server.load("sprites/Starship - life.png");
+    let img2 = asset_server.load("sprites/Starship - no life.png");
 
     commands
         .spawn((
@@ -28,41 +28,33 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|parent| {
             parent
                 .spawn(NodeBundle {
-                    // background_color: BackgroundColor(Color::GREEN),
-                    style: RIGHT_SIDE_BLOCK,
+                    style: HEARTS_ROW,
+                    // background_color: BackgroundColor(Color::PINK),
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent
-                        .spawn(NodeBundle {
-                            style: HEARTS_ROW,
-                            // background_color: BackgroundColor(Color::PINK),
-                            ..default()
-                        })
-                        .with_children(|parent| {
-                            for mut id in 1..=LIVES_COUNT {
-                                id += LIVES_ID_OFFSET as u64;
-                                parent.spawn((
-                                    ImageBundle {
-                                        style: CAT_FACE,
-                                        image: img1.clone().into(),
-                                        ..default()
-                                    },
-                                    HeartImage(id, img1.clone(), img2.clone()),
-                                ));
-                            }
-                        });
-                    parent.spawn((
-                        NodeBundle {
-                            // background_color: BackgroundColor(
-                            //     Color::ORANGE_RED,
-                            // ),
-                            style: MESSAGES_BAR,
-                            ..default()
-                        },
-                        MessagesList,
-                    ));
+                    for mut id in 1..=LIVES_COUNT {
+                        id += LIVES_ID_OFFSET as u64;
+                        parent.spawn((
+                            ImageBundle {
+                                style: STARSHIP_LIFE,
+                                image: img1.clone().into(),
+                                ..default()
+                            },
+                            HeartImage(id, img1.clone(), img2.clone()),
+                        ));
+                    }
                 });
+            parent.spawn((
+                NodeBundle {
+                    // background_color: BackgroundColor(
+                    //     Color::ORANGE_RED,
+                    // ),
+                    style: MESSAGES_BAR,
+                    ..default()
+                },
+                MessagesList,
+            ));
         });
 }
 
@@ -80,33 +72,58 @@ pub fn listen_hit_events(
     mut hud_state: ResMut<NextState<HudLivesState>>,
 ) {
     for event in player_hit_events.iter() {
-        println!("Player was hit! health: {}", event.remaining_health);
         hud_state.set(HudLivesState::Update);
     }
 }
 
 pub fn update_messages(
     mut commands: Commands,
-    mut list: Query<Entity, With<MessagesList>>,
+    list: Query<Entity, With<MessagesList>>,
     asset_server: Res<AssetServer>,
     mut picked_fish_events: EventReader<FishWasPickedEvent>,
 ) {
     for event in picked_fish_events.iter() {
-        let label = TextBundle::from_section(
-            format!("{} got another one!", &event.0),
-            TextStyle {
-                font: asset_server.load("fonts/Abaddon Bold.ttf"),
-                font_size: 25.,
-                color: Color::WHITE,
-            },
-        )
-        .with_style(Style::default());
+        let label = (
+            TextBundle::from_sections([
+                TextSection::new(
+                    format!("{}", &event.0),
+                    TextStyle {
+                        font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                        font_size: 25.,
+                        color: Color::GREEN,
+                    },
+                ),
+                TextSection::new(
+                    " got another one!",
+                    TextStyle {
+                        font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                        font_size: 25.,
+                        color: Color::WHITE,
+                    },
+                ),
+            ]),
+            Message(Timer::new(
+                std::time::Duration::from_secs(3),
+                TimerMode::Once,
+            )),
+        );
         let id = commands.spawn(label).id();
         commands.entity(list.single()).push_children(&[id]);
     }
 }
 
-pub fn remove_message() {}
+pub fn remove_message_on_timeout(
+    mut commands: Commands,
+    mut labels_query: Query<(Entity, &mut Message, &Parent)>,
+    time: Res<Time>,
+) {
+    for (entity, mut message, parent) in labels_query.iter_mut() {
+        if message.0.tick(time.delta()).just_finished() {
+            commands.entity(parent.get()).remove_children(&[entity]);
+            commands.entity(entity).despawn();
+        }
+    }
+}
 
 pub fn update_lives(
     mut commands: Commands,

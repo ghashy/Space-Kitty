@@ -37,6 +37,9 @@ impl Plugin for GameUiPlugin {
             // Systems
             .add_system(update_messages.in_set(OnUpdate(AppState::Game)))
             .add_system(update_lives.in_set(OnUpdate(HudLivesState::Update)))
+            .add_system(
+                remove_message_on_timeout.in_set(OnUpdate(AppState::Game)),
+            )
             // Exit State Systems
             .add_system(despawn_hud.in_schedule(OnExit(AppState::Game)));
     }
