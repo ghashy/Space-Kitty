@@ -48,11 +48,11 @@ impl Plugin for GamePlugin {
             .add_plugin(GameUiPlugin)
             // Systems
             .add_systems(
-                (
-                    toggle_simulation_on_input_event,
-                    system_camera_follows_player,
-                )
+                (toggle_simulation_on_input_event,)
                     .in_set(OnUpdate(AppState::Game)),
+            )
+            .add_system(
+                system_camera_follows_player.in_base_set(CoreSet::Update),
             )
             // Exit State Systems
             .add_systems(

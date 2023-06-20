@@ -111,11 +111,26 @@ pub fn system_camera_follows_player(
         &Transform,
         (With<Player>, Without<Camera2d>, Without<BackgroundImage>),
     >,
+    time: Res<Time>,
 ) {
     if let Ok(player) = player_query.get_single() {
         if let Ok(mut camera_transform) = camera_query.get_single_mut() {
-            camera_transform.translation.x = player.translation.x;
-            camera_transform.translation.y = player.translation.y;
+            camera_transform.translation.x += (player.translation.x
+                - camera_transform.translation.x)
+                * time.delta_seconds()
+                * 5.;
+            camera_transform.translation.y += (player.translation.y
+                - camera_transform.translation.y)
+                * time.delta_seconds()
+                * 5.;
+
+            // camera_transform.translation.x = player.translation.x;
+            // camera_transform.translation.y = player.translation.y;
+            // camera_transform.translation = camera_transform
+            //     .translation
+            //     .truncate()
+            //     .lerp(player.translation.truncate(), 0.1)
+            //     .extend(camera_transform.translation.z);
             if let Ok(mut background_transform) =
                 background_image_query.get_single_mut()
             {
