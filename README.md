@@ -25,6 +25,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 
 ### Coding:
 
+- [ ] Implement audio
 - [ ] Dog’s message when rotating wildly
 - [ ] Status bar
 - [x] Dog’s spawn outside the screen
