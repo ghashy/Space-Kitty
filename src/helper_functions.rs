@@ -1,9 +1,11 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub trait VectorUtilities<T> {
     type Item;
+    fn new_rand() -> Self;
     fn reflect(&mut self, _rhs: T) -> Self;
     fn rotated(&self, angle: Self::Item) -> Self;
     fn to_unit_rad(&self) -> Self::Item;
@@ -12,13 +14,11 @@ pub trait VectorUtilities<T> {
 impl VectorUtilities<Vec2> for Vec2 {
     type Item = f32;
 
-    // fn reflect(&mut self, rhs: Vec2) -> Self {
-    //     let scalar = 2. * self.dot(rhs) / rhs.dot(rhs);
-
-    //     self.x = self.x - (rhs.x * scalar);
-    //     self.y = self.y - (rhs.y * scalar);
-    //     *self
-    // }
+    fn new_rand() -> Self {
+        let mut rng = rand::thread_rng();
+        Vec2::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0))
+            .normalize()
+    }
 
     #[must_use]
     #[inline]

@@ -248,6 +248,7 @@ pub fn enemy_hit_player(
     }
 }
 
+// TODO: add collision sound
 fn handle_collision(
     enemies_query: &Query<'_, '_, Entity, With<Enemy>>,
     collided_with: &Entity,

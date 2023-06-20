@@ -1,4 +1,9 @@
-use bevy::{prelude::*, sprite::Anchor, utils::HashSet, window::PrimaryWindow};
+use bevy::{
+    prelude::*,
+    sprite::Anchor,
+    utils::HashSet,
+    window::{self, PrimaryWindow},
+};
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 use std::ops::Range;
@@ -157,6 +162,25 @@ pub fn update_enemy_direction(
     }
 }
 
+pub fn system_add_collider_to_enemy(
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    mut commands: Commands,
+    mut entity_query: Query<(Entity, &mut Enemy, &Transform)>,
+) {
+    for (entity, mut enemy, transform) in entity_query.iter_mut() {
+        if !enemy.has_collider {
+            let window = window_query.single();
+            let size = DOG_SIZE * enemy.scale;
+            if is_in_window(window, size, transform) {
+                commands
+                    .entity(entity)
+                    .insert(Collider::ball(DOG_SIZE.x * enemy.scale * 0.47));
+                enemy.has_collider = true;
+            }
+        }
+    }
+}
+
 pub fn spawn_enemy_on_game_progress(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -189,9 +213,14 @@ pub fn spawn_enemy_on_game_progress(
 
     if score % 5 == 0 {
         let window = window_query.get_single().unwrap();
-        let mut rand = thread_rng();
-        let random_x = rand.gen::<f32>() * window.width();
-        let random_y = rand.gen::<f32>() * window.height();
+        let center = Vec2::new(window.width() / 2., window.height() / 2.);
+
+        let mut rand_point = Vec2::new_rand();
+        rand_point.x *= window.width() + window.width() * rand_point.x.signum();
+        rand_point.y *=
+            window.height() + window.height() * rand_point.y.signum();
+
+        let direction = (center - rand_point).normalize();
 
         let (name, texture, scale_modifier) = generate_dog(
             &mut dogs_resource,
@@ -206,22 +235,26 @@ pub fn spawn_enemy_on_game_progress(
                         custom_size: Some(DOG_SIZE * scale_modifier),
                         ..default()
                     },
-                    transform: Transform::from_xyz(random_x, random_y, 10.),
+                    transform: Transform::from_xyz(
+                        rand_point.x,
+                        rand_point.y,
+                        10.,
+                    ),
                     texture,
                     ..default()
                 },
                 RigidBody::Dynamic,
-                Collider::ball(DOG_SIZE.x * scale_modifier * 0.47),
                 Velocity {
-                    linvel: Vec2::new(random_x, random_y),
+                    linvel: direction,
                     angvel: 0.3,
                 },
                 Sleeping::disabled(),
                 ActiveCollisionTypes::all(),
                 ActiveEvents::COLLISION_EVENTS,
                 Enemy {
-                    direction: Vec2::new(rand.gen::<f32>(), rand.gen::<f32>())
-                        .normalize(),
+                    direction,
+                    has_collider: false,
+                    scale: scale_modifier,
                 },
                 Name::new(name.clone()),
             ))
@@ -270,20 +303,16 @@ pub fn spawn_enemy_on_game_progress(
             .id();
         if name == "Doggy Potter" {
             let wand = commands
-                .spawn((
-                    Collider::cuboid(10., 130.),
-                    ActiveEvents::COLLISION_EVENTS,
-                    SpriteBundle {
-                        transform: Transform {
-                            translation: Vec3::new(-49.2, -51.6, -0.5),
-                            rotation: Quat::from_rotation_z(-4.2),
-                            scale: Vec3::new(0.3, 0.3, 0.),
-                            ..default()
-                        },
-                        texture: asset_server.load("sprites/Magic wand.png"),
+                .spawn(SpriteBundle {
+                    transform: Transform {
+                        translation: Vec3::new(-49.2, -51.6, -0.5),
+                        rotation: Quat::from_rotation_z(-4.2),
+                        scale: Vec3::new(0.3, 0.3, 0.),
                         ..default()
                     },
-                ))
+                    texture: asset_server.load("sprites/Magic wand.png"),
+                    ..default()
+                })
                 .id();
             commands.entity(entity).push_children(&[wand]);
         }
@@ -383,4 +412,13 @@ fn generate_dog(
     }
 
     (name, image, default_scale)
+}
+
+fn is_in_window(window: &Window, size: Vec2, transform: &Transform) -> bool {
+    let pos = transform.translation.truncate();
+    let size = size + Vec2::new(2., 2.);
+    pos.x - size.x > 0.0
+        && pos.x + size.x < window.width()
+        && pos.y - size.y > 0.0
+        && pos.y + size.y < window.height()
 }

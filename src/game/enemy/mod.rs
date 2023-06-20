@@ -40,6 +40,7 @@ impl Plugin for EnemyPlugin {
                     enemy_movement,
                     spawn_enemy_on_game_progress,
                     rotate_patch_of_light,
+                    system_add_collider_to_enemy,
                 )
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),
