@@ -10,7 +10,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 
 ### Design:
 - [x] Fish-boss
-- [ ] Audio design
+- [x] Audio design
 - [x] Rotating antenna
 - [x] Design border, 10 dog’s skins, new cat’s skin
 - [x] Add fish score icon
