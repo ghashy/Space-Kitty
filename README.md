@@ -4,11 +4,13 @@ This is a game about a Kitty, which floats in Space in search of fish-crackers, 
 The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
 
 ## Screenshot:
+
 ![Screenshot 2023-06-12 at 23 50 21](https://github.com/ghashy/Space-Kitty/assets/109857267/db89aa10-a0ef-459a-9c5e-61163d1541d1)
 
 ## To-do:
 
 ### Design:
+
 - [x] Fish-boss
 - [ ] Audio design
 - [x] Rotating antenna
@@ -22,9 +24,10 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Design Message box
 
 ### Coding:
+
 - [ ] Dog’s message when rotating wildly
 - [ ] Status bar
-- [ ] Dog’s spawn outside the screen
+- [x] Dog’s spawn outside the screen
 - [ ] Entity’s message when collecting every first and 10th cracker
 - [ ] Dog’s message when 2 dogs colliding (inline)
 - [ ] Message when new dog arriving
@@ -32,3 +35,4 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix
+- [ ] Every 7th cracker add Animal's enjoy sound
