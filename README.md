@@ -23,7 +23,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ### Coding:
 - [ ] Dog’s message when rotating wildly
 - [ ] Status bar
-- [ ] Dog’s spawn outside the screen
+- [x] Dog’s spawn outside the screen
 - [ ] Entity’s message when collecting every first and 10th cracker
 - [ ] Dog’s message when 2 dogs colliding (inline)
 - [ ] Message when new dog arriving
