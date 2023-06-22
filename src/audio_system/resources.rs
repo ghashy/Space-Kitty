@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_kira_audio::AudioSource;
 
 #[derive(Resource)]
 pub struct SamplePack {

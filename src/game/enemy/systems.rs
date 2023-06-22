@@ -1,9 +1,5 @@
-use bevy::{
-    prelude::*,
-    sprite::Anchor,
-    utils::HashSet,
-    window::{self, PrimaryWindow},
-};
+use bevy::{prelude::*, sprite::Anchor, utils::HashSet, window::PrimaryWindow};
+use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 use std::ops::Range;
@@ -76,7 +72,7 @@ pub fn update_enemy_direction(
     mut enemy_query: Query<(Entity, &mut Enemy), With<Enemy>>,
     mut collision_event: EventReader<CollisionEvent>,
     rapier_context: Res<RapierContext>,
-    audio: Res<Audio>,
+    audio: Res<bevy_kira_audio::prelude::Audio>,
     sample_pack: Res<SamplePack>,
 ) {
     let mut direction_changed = false;
@@ -139,7 +135,7 @@ pub fn update_enemy_direction(
         }
     }
     // Randomly play one of sound effects
-    let sound_effect: &Handle<AudioSource>;
+    let sound_effect: &Handle<bevy_kira_audio::prelude::AudioSource>;
     let mut rng = thread_rng();
     if direction_changed {
         if entities_flags != 0b11 {

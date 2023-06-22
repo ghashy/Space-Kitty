@@ -1,6 +1,7 @@
 use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
+use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -203,7 +204,7 @@ pub fn enemy_hit_player(
     enemies: Query<Entity, With<Enemy>>,
     mut player_query: Query<(Entity, &mut Player), Without<Enemy>>,
     mut player_state: ResMut<NextState<PlayerState>>,
-    audio: Res<Audio>,
+    audio: Res<bevy_kira_audio::prelude::Audio>,
     sample_pack: Res<SamplePack>,
     _game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
@@ -256,7 +257,7 @@ fn handle_collision(
     player_entity: Entity,
     player_state: &mut ResMut<'_, NextState<PlayerState>>,
     commands: &mut Commands<'_, '_>,
-    audio: &Res<'_, Audio>,
+    audio: &Res<'_, bevy_kira_audio::prelude::Audio>,
     sample_pack: &Res<'_, SamplePack>,
     event_writer: &mut EventWriter<'_, PlayerHit>,
 ) -> bool {

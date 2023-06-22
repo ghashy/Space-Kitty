@@ -5,8 +5,17 @@ edition = "2021"
 description = "Crate with game about Kitty in Space"
 
 [dependencies]
-# bevy = { version = "0.10.1", features = ["dynamic_linking"] }
-bevy = "0.10.1"
+bevy = { version = "0.10.1", default-features = false, features = [
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_winit",
+    "bevy_asset",
+    "bevy_sprite",
+    "bevy_ui",
+    "vorbis",
+    "png"
+]}
+bevy_kira_audio = "0.15.0"
 bevy_egui = "0.20.3"
 bevy-inspector-egui = "0.18.3"
 bevy_rapier2d = "0.21.0"

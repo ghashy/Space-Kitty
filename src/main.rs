@@ -101,6 +101,7 @@ fn main() {
         // Plugins
         // + 2 percents on cpu
         .add_plugin(HanabiPlugin)
+        .add_plugin(bevy_kira_audio::AudioPlugin)
         // +1.1 percent on cpu
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
         .add_plugin(GamePlugin)

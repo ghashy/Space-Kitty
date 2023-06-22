@@ -1,4 +1,5 @@
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::*, *};
 use interpolation::EaseFunction;
@@ -86,7 +87,7 @@ pub fn check_collision(
     mut commands: Commands,
     entity_query: Query<(Entity, &Name), Or<(With<Player>, With<Enemy>)>>,
     mut fish_query: Query<(Entity, &Parent), With<Fish>>,
-    audio: Res<Audio>,
+    audio: Res<bevy_kira_audio::prelude::Audio>,
     sample_pack: Res<SamplePack>,
     mut picked_event: EventWriter<FishWasPickedEvent>,
 ) {
