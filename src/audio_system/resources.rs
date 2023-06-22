@@ -11,5 +11,7 @@ pub struct SamplePack {
     pub imp_med_0: Handle<AudioSource>,
     pub imp_med_1: Handle<AudioSource>,
     pub exp: Handle<AudioSource>,
-    pub pick_star: Handle<AudioSource>,
+    pub pick_fish: Handle<AudioSource>,
+    pub title_theme: Handle<AudioSource>,
+    pub main_theme: Handle<AudioSource>,
 }

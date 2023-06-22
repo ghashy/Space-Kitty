@@ -39,7 +39,11 @@ pub fn setup(
         imp_med_0: asset_server.load("audio/impact/Medium_00.ogg"),
         imp_med_1: asset_server.load("audio/impact/Medium_01.ogg"),
         exp: asset_server.load("audio/explosionCrunch_000.ogg"),
-        pick_star: asset_server.load("audio/laserLarge_000.ogg"),
+        pick_fish: asset_server.load("audio/laserLarge_000.ogg"),
+        title_theme: asset_server
+            .load("audio/Space Kitty - Title main theme.ogg"),
+        main_theme: asset_server
+            .load("audio/Space Kitty - Title screen theme.ogg"),
     });
 
     commands.spawn((SpatialBundle::default(), Comets, Name::new("Comets")));

@@ -100,7 +100,7 @@ pub fn check_collision(
                             commands
                                 .entity(fish_pack.get())
                                 .remove_children(&[fish_entity]);
-                            audio.play(sample_pack.pick_star.clone_weak());
+                            audio.play(sample_pack.pick_fish.clone_weak());
                             commands.entity(fish_entity).despawn();
                             picked_event
                                 .send(FishWasPickedEvent(name.to_string()));
@@ -114,7 +114,7 @@ pub fn check_collision(
                             commands
                                 .entity(fish_pack.get())
                                 .remove_children(&[fish_entity]);
-                            audio.play(sample_pack.pick_star.clone_weak());
+                            audio.play(sample_pack.pick_fish.clone_weak());
                             commands.entity(fish_entity).despawn();
                             picked_event
                                 .send(FishWasPickedEvent(name.to_string()));

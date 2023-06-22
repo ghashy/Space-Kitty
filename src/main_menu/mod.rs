@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::systems::{interactions::*, layout::*};
+use self::systems::{interactions::*, layout::*, play_title_theme};
 use crate::AppState;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
@@ -20,8 +20,9 @@ impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app
             // Entery State Systems
-            .add_system(
-                spawn_main_menu.in_schedule(OnEnter(AppState::MainMenu)),
+            .add_systems(
+                (spawn_main_menu, play_title_theme)
+                    .in_schedule(OnEnter(AppState::MainMenu)),
             )
             // Interaction Systems
             .add_systems(

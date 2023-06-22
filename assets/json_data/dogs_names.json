@@ -1,0 +1,32 @@
+{
+  "first_names": [
+    "Arnold",
+    "Misha",
+    "Adam",
+    "Juan",
+    "Ivan",
+    "Toby",
+    "Fox",
+    "Robert",
+    "Antonio",
+    "Rabbit",
+    "Buddy",
+    "Wolf",
+    "El Torro",
+    "Shepard",
+    "Pedro",
+    "Ricardo",
+    "Dummy",
+    "Bob",
+    "Bean",
+    "Button",
+    "Samuel",
+    "Teddy",
+    "Goobboy",
+    "Bill",
+    "Jackie",
+    "Peter"
+  ],
+  "last_names": ["Little", "Big", "Daring", "Cowardly", "Kind", "Peaceful"],
+  "nicknames": ["Dark", "Light", "Sniffing"]
+}
