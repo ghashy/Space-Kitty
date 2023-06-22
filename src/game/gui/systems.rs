@@ -5,9 +5,11 @@ use std::println;
 // ───── Current Crate Import ─────────────────────────────────────────────── //
 
 use super::{components::*, styles::*, HudLivesState, LIVES_ID_OFFSET};
+use crate::game::enemy::components::EnemyIsArrivingEvent;
 use crate::game::fish::components::FishWasPickedEvent;
 use crate::game::gui::animation::*;
 use crate::game::player::LIVES_COUNT;
+use crate::game::score::ScoreUpdateEvent;
 use crate::{events::PlayerHit, game::player::components::Player};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -80,9 +82,48 @@ pub fn update_messages(
     mut commands: Commands,
     list: Query<Entity, With<MessagesList>>,
     asset_server: Res<AssetServer>,
-    mut picked_fish_events: EventReader<FishWasPickedEvent>,
+    mut score_update_event: EventReader<ScoreUpdateEvent>,
+    mut arriving_events: EventReader<EnemyIsArrivingEvent>,
 ) {
-    for event in picked_fish_events.iter() {
+    for event in score_update_event.iter() {
+        let suffix = match event.event_type.get_score() % 10 {
+            1 => "st",
+            2 => "nd",
+            3 => "d",
+            _ => "th",
+        };
+        let label = (
+            TextBundle::from_sections([
+                TextSection::new(
+                    format!("{}", &event.name),
+                    TextStyle {
+                        font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                        font_size: 25.,
+                        color: Color::GREEN,
+                    },
+                ),
+                TextSection::new(
+                    format!(
+                        " got his {}{} cracker!",
+                        event.event_type.get_score(),
+                        suffix
+                    ),
+                    TextStyle {
+                        font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                        font_size: 25.,
+                        color: Color::WHITE,
+                    },
+                ),
+            ]),
+            Message(Timer::new(
+                std::time::Duration::from_secs(3),
+                TimerMode::Once,
+            )),
+        );
+        let id = commands.spawn(label).id();
+        commands.entity(list.single()).push_children(&[id]);
+    }
+    for event in arriving_events.iter() {
         let label = (
             TextBundle::from_sections([
                 TextSection::new(
@@ -94,11 +135,19 @@ pub fn update_messages(
                     },
                 ),
                 TextSection::new(
-                    " got another one!",
+                    " is ",
                     TextStyle {
                         font: asset_server.load("fonts/Abaddon Bold.ttf"),
                         font_size: 25.,
                         color: Color::WHITE,
+                    },
+                ),
+                TextSection::new(
+                    "arriving!",
+                    TextStyle {
+                        font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                        font_size: 25.,
+                        color: Color::ORANGE,
                     },
                 ),
             ]),

@@ -2,7 +2,10 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use super::resources::{HighScores, Score};
+use super::{
+    resources::{HighScores, Score},
+    ScoreUpdateEvent,
+};
 use crate::{
     events::GameOver,
     game::{
@@ -41,6 +44,7 @@ pub fn high_scores_updated(high_scores: ResMut<HighScores>) {
 
 pub fn update_score(
     mut picked_event: EventReader<FishWasPickedEvent>,
+    mut score_update_event: EventWriter<ScoreUpdateEvent>,
     entity_query: Query<
         (&Name, &Handle<Image>),
         Or<(With<Player>, With<Enemy>)>,
@@ -50,7 +54,14 @@ pub fn update_score(
     for event in picked_event.iter() {
         for (name, image) in entity_query.iter() {
             if name.as_str() == event.0 {
-                score.add_score_to(&event.0, image.clone());
+                let new_score = score.add_score_to(&event.0, image.clone());
+
+                if new_score % 7 == 0 || new_score == 1 {
+                    score_update_event.send(ScoreUpdateEvent::new(
+                        name.into(),
+                        super::ScoreEventType::ReachedMilestone(new_score),
+                    ))
+                }
             }
         }
     }

@@ -26,14 +26,15 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ### Coding:
 
 - [ ] Implement audio
+- [ ] Implement highscore system
 - [ ] Dog’s message when rotating wildly
-- [ ] Status bar
+- [x] Status bar
 - [x] Dog’s spawn outside the screen
-- [ ] Entity’s message when collecting every first and 10th cracker
+- [x] Entity’s message when collecting every first and 10th cracker
 - [ ] Dog’s message when 2 dogs colliding (inline)
-- [ ] Message when new dog arriving
+- [x] Message when new dog arriving
 - [ ] Crackers particles when kitty colliding with dog
-- [ ] Decrease Magic Wand's scale
+- [x] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix
 - [ ] Every 7th cracker add Animal's enjoy sound

@@ -13,12 +13,14 @@ pub struct Score {
 }
 
 impl Score {
-    pub fn add_score_to(&mut self, who: &str, image: Handle<Image>) {
+    pub fn add_score_to(&mut self, who: &str, image: Handle<Image>) -> u32 {
         let old_score = match self.data.get(who) {
             Some((_, score)) => *score,
             None => 0,
         };
-        self.data.insert(who.to_string(), (image, old_score + 1));
+        let new_score = old_score + 1;
+        self.data.insert(who.to_string(), (image, new_score));
+        new_score
     }
 
     pub fn get_score(&self, for_who: &str) -> Result<u32, ScoreError> {

@@ -212,9 +212,8 @@ pub fn spawn_enemy_on_game_progress(
         let center = Vec2::new(window.width() / 2., window.height() / 2.);
 
         let mut rand_point = Vec2::new_rand();
-        rand_point.x *= window.width() + window.width() * rand_point.x.signum();
-        rand_point.y *=
-            window.height() + window.height() * rand_point.y.signum();
+        rand_point.x *= 1000.;
+        rand_point.y *= 1000.;
 
         let direction = (center - rand_point).normalize();
 
@@ -301,9 +300,9 @@ pub fn spawn_enemy_on_game_progress(
             let wand = commands
                 .spawn(SpriteBundle {
                     transform: Transform {
-                        translation: Vec3::new(-49.2, -51.6, -0.5),
+                        translation: Vec3::new(-38.3, -42.8, -0.5),
                         rotation: Quat::from_rotation_z(-4.2),
-                        scale: Vec3::new(0.3, 0.3, 0.),
+                        scale: Vec3::new(0.2, 0.2, 0.),
                         ..default()
                     },
                     texture: asset_server.load("sprites/Magic wand.png"),
@@ -312,8 +311,8 @@ pub fn spawn_enemy_on_game_progress(
                 .id();
             commands.entity(entity).push_children(&[wand]);
         }
+        arriving_event.send(EnemyIsArrivingEvent(name));
     }
-    arriving_event.send(EnemyIsArrivingEvent(name));
 }
 
 pub fn rotate_patch_of_light(
