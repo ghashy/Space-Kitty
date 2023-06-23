@@ -398,7 +398,7 @@ fn generate_dog(
         }
         if nickname_possibility {
             name = name
-                + " of "
+                + " aka "
                 + &dogs_names.nicknames
                     [rand.gen_range(0..dogs_names.nicknames.len())]
                 .to_string();
