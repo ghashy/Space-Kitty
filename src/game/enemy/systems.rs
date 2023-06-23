@@ -8,7 +8,11 @@ use super::{
     components::{Enemy, EnemyIsArrivingEvent, PatchOfLight},
     *,
 };
-use crate::{audio::assets::AudioSource, helper_functions::*};
+use crate::{
+    audio::assets::AudioSource,
+    game::score::{ScoreEventType, ScoreUpdateEvent},
+    helper_functions::*,
+};
 use crate::{
     audio::resources::KiraManager,
     game::{player::DOG_SIZE, score::resources::Score},
@@ -187,27 +191,19 @@ pub fn spawn_enemy_on_game_progress(
     names_assets: Res<Assets<DogNames>>,
     score: ResMut<Score>,
     mut already_spawned_data: Local<(HashSet<String>, u8)>,
-    mut picked_event: EventReader<FishWasPickedEvent>,
+    mut picked_event: EventReader<ScoreUpdateEvent>,
     mut arriving_event: EventWriter<EnemyIsArrivingEvent>,
 ) {
-    let name = picked_event
-        .iter()
-        .map(|event| event.0.clone())
-        .find(|name| name == "Kitty");
+    let event = picked_event.iter().find(|event| event.name == "Kitty");
 
     // If we didn't found any Kitty in these events return
-    if name == None {
+    if let None = event {
         return;
     }
 
-    let name = name.unwrap();
+    let score = event.unwrap().event_type.get_score();
 
-    // If there are no score for such name
-    if let Err(_) = score.get_score(&name) {
-        return;
-    }
-
-    let score = score.get_score(&name).unwrap();
+    println!("Kitty has {} ", score);
 
     if score % 7 == 0 {
         let window = window_query.get_single().unwrap();

@@ -56,6 +56,7 @@ pub fn update_score(
             if name.as_str() == event.0 {
                 let new_score = score.add_score_to(&event.0, image.clone());
 
+                println!("{} picked {} fishes!", name, new_score);
                 if new_score % 7 == 0 || new_score == 1 {
                     score_update_event.send(ScoreUpdateEvent::new(
                         name.into(),
