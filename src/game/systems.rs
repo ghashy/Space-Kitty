@@ -128,7 +128,6 @@ pub fn despawn_borders(
     }
 }
 
-// BUG: Audio
 pub fn play_main_theme(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,

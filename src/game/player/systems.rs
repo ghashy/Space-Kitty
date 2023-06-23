@@ -380,7 +380,6 @@ pub fn count_player_invulnerability_timer(
         if timer.0.tick(time.delta()).finished() {
             player_state.set(PlayerState::Vulnerable);
             commands.entity(entity).remove::<PlayerInvulnerableTimer>();
-            println!("VULNERABILITY!");
         }
     }
 }

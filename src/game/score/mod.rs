@@ -26,7 +26,14 @@ impl Plugin for ScorePlugin {
             // Systems
             .add_system(update_highscores)
             .add_system(high_scores_updated)
-            .add_system(update_score.in_set(OnUpdate(AppState::Game)))
+            .add_system(
+                update_score
+                    // IMPORTANT: we should update score before we spawn
+                    // enemy on game progress, because spawning depends on
+                    // score value.
+                    .run_if(in_state(AppState::Game))
+                    .in_base_set(CoreSet::First),
+            )
             // Exit State Systems
             .add_system(remove_score.in_schedule(OnExit(AppState::Game)));
     }

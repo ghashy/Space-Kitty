@@ -14,7 +14,6 @@ pub mod layout;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-// BUG: Audio
 pub fn play_title_theme(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,

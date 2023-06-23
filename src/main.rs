@@ -74,7 +74,10 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         // IMPORTANT: Options for release build
-                        // resolution: WindowResolution::new(1280., 720.)
+                        resolution: WindowResolution::new(
+                            1280. / 1.1,
+                            720. / 1.1,
+                        ),
                         //     .with_scale_factor_override(1.5),
                         // mode: WindowMode::SizedFullscreen,
                         title: String::from("Space Kitty"),
