@@ -46,21 +46,20 @@ impl Plugin for PlayerPlugin {
             // Enter State Systems
             .add_system(spawn_player.in_schedule(OnEnter(AppState::Game)))
             // Systems
-            .add_systems(
-                (
-                    player_movement.in_set(PlayerSystemSet::Movement),
-                    enemy_hit_player,
-                )
+            .add_system(
+                player_movement
+                    .in_set(PlayerSystemSet::Movement)
+                    .in_set(OnUpdate(SimulationState::Running))
+                    .in_set(OnUpdate(AppState::Game)),
+            )
+            .add_system(
+                enemy_hit_player
                     .in_set(OnUpdate(SimulationState::Running))
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(PlayerState::Vulnerable)),
             )
             .add_systems(
-                (
-                    player_movement.in_set(PlayerSystemSet::Movement),
-                    count_player_invulnerability_timer,
-                    blink_player,
-                )
+                (count_player_invulnerability_timer, blink_player)
                     .in_set(OnUpdate(SimulationState::Running))
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(PlayerState::Invulnerable)),

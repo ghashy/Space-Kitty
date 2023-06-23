@@ -37,7 +37,7 @@ impl Plugin for GamePlugin {
             .add_state::<SimulationState>()
             // Enter State Systems
             .add_systems(
-                (resume_simulation, spawn_world_borders)
+                (resume_simulation, spawn_world_borders, play_main_theme)
                     .in_schedule(OnEnter(AppState::Game)),
             )
             // Plugins
@@ -53,7 +53,7 @@ impl Plugin for GamePlugin {
             )
             // Exit State Systems
             .add_systems(
-                (pause_simulation, despawn_borders)
+                (pause_simulation, despawn_borders, stop_main_theme)
                     .in_schedule(OnExit(AppState::Game)),
             );
     }

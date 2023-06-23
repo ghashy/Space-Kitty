@@ -1,9 +1,11 @@
-use bevy::prelude::*;
-use bevy_kira_audio::{
-    AudioChannel, AudioControl, AudioEasing, AudioTween, MainTrack, *,
-};
+use std::time::Duration;
 
-use crate::audio_system::resources::SamplePack;
+use bevy::prelude::*;
+
+use crate::audio::{
+    assets::AudioSource,
+    resources::{KiraManager, SamplePack, SoundHandleResource},
+};
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
@@ -13,8 +15,24 @@ pub mod layout;
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn play_title_theme(
-    audio: Res<AudioChannel<MainTrack>>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
+    mut sound_handle: ResMut<SoundHandleResource>,
 ) {
-    let mut a = audio.play(sample_pack.main_theme.clone_weak()).handle();
+    let handle = kira_manager
+        .play(audio_assets.get(&sample_pack.main_theme).unwrap().get())
+        .unwrap();
+    sound_handle.main_theme = Some(handle);
+}
+
+pub fn stop_title_theme(mut sound_handle: ResMut<SoundHandleResource>) {
+    if let Some(ref mut handle) = sound_handle.main_theme {
+        handle
+            .stop(kira::tween::Tween {
+                duration: Duration::from_millis(200),
+                ..default()
+            })
+            .unwrap();
+    }
 }

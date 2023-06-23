@@ -1,5 +1,4 @@
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::*, *};
 use interpolation::EaseFunction;
@@ -7,7 +6,8 @@ use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::audio_system::resources::SamplePack;
+use crate::audio::assets::AudioSource;
+use crate::audio::resources::{KiraManager, SamplePack};
 use crate::game::{enemy::components::Enemy, player::components::Player};
 
 use super::{
@@ -87,7 +87,8 @@ pub fn check_collision(
     mut commands: Commands,
     entity_query: Query<(Entity, &Name), Or<(With<Player>, With<Enemy>)>>,
     mut fish_query: Query<(Entity, &Parent), With<Fish>>,
-    audio: Res<bevy_kira_audio::prelude::Audio>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
     mut picked_event: EventWriter<FishWasPickedEvent>,
 ) {
@@ -100,7 +101,16 @@ pub fn check_collision(
                             commands
                                 .entity(fish_pack.get())
                                 .remove_children(&[fish_entity]);
-                            audio.play(sample_pack.pick_fish.clone_weak());
+
+                            let handle =
+                                get_random_pick_fish_sample(&sample_pack);
+                            // Play audio
+                            kira_manager
+                                .play(audio_assets.get(handle).unwrap().get())
+                                .unwrap()
+                                .set_volume(0.3, kira::tween::Tween::default())
+                                .unwrap();
+
                             commands.entity(fish_entity).despawn();
                             picked_event
                                 .send(FishWasPickedEvent(name.to_string()));
@@ -114,7 +124,15 @@ pub fn check_collision(
                             commands
                                 .entity(fish_pack.get())
                                 .remove_children(&[fish_entity]);
-                            audio.play(sample_pack.pick_fish.clone_weak());
+                            // Play audio
+                            kira_manager
+                                .play(
+                                    audio_assets
+                                        .get(&sample_pack.pick_fish1)
+                                        .unwrap()
+                                        .get(),
+                                )
+                                .unwrap();
                             commands.entity(fish_entity).despawn();
                             picked_event
                                 .send(FishWasPickedEvent(name.to_string()));
@@ -182,4 +200,33 @@ fn get_fish_tween(start: Vec3) -> Tween<Transform> {
     .with_repeat_count(RepeatCount::Infinite)
     .with_repeat_strategy(RepeatStrategy::MirroredRepeat);
     tween
+}
+
+fn get_random_pick_fish_sample<'a>(
+    sample_pack: &'a Res<SamplePack>,
+) -> &'a Handle<AudioSource> {
+    match rand::thread_rng().gen_range(0..21) {
+        0 => &sample_pack.pick_fish1,
+        1 => &sample_pack.pick_fish2,
+        2 => &sample_pack.pick_fish3,
+        3 => &sample_pack.pick_fish4,
+        4 => &sample_pack.pick_fish5,
+        5 => &sample_pack.pick_fish6,
+        6 => &sample_pack.pick_fish7,
+        7 => &sample_pack.pick_fish8,
+        8 => &sample_pack.pick_fish9,
+        9 => &sample_pack.pick_fish10,
+        10 => &sample_pack.pick_fish11,
+        11 => &sample_pack.pick_fish12,
+        12 => &sample_pack.pick_fish13,
+        13 => &sample_pack.pick_fish14,
+        14 => &sample_pack.pick_fish15,
+        15 => &sample_pack.pick_fish16,
+        16 => &sample_pack.pick_fish17,
+        17 => &sample_pack.pick_fish18,
+        18 => &sample_pack.pick_fish19,
+        19 => &sample_pack.pick_fish20,
+        20 => &sample_pack.pick_fish21,
+        _ => unreachable!(),
+    }
 }

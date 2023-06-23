@@ -1,14 +1,22 @@
+use std::time::Duration;
+
 use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
-use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_tweening::Tween;
+use kira::modulator::tweener::{TweenerBuilder, TweenerHandle};
+use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
+use kira::track::{TrackBuilder, TrackHandle};
+use kira::Volume;
+use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{components::*, PLAYER_SPEED};
 use super::{PlayerState, SPACESHIP_SIZE};
-use crate::audio_system::resources::SamplePack;
+use crate::audio::assets::AudioSource;
+use crate::audio::resources::{KiraManager, SamplePack};
 use crate::events::{GameOver, PlayerHit};
 use crate::game::enemy::components::*;
 use crate::game::score::resources::Score;
@@ -153,9 +161,14 @@ pub fn player_movement(
         &mut Transform,
         (With<RocketEngineSprite>, Without<Player>),
     >,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
+    mut local_is_playing: Local<bool>,
+    mut local_engine_handle: Local<Option<StaticSoundHandle>>,
 ) {
     if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
-        let mut direction = Vec3::ZERO;
+        let mut direction = Vec2::ZERO;
 
         let top = KeyCode::W;
         let down = KeyCode::S;
@@ -163,16 +176,16 @@ pub fn player_movement(
         let right = KeyCode::D;
 
         if keyboard_input.pressed(left) {
-            direction += Vec3::new(-1., 0., 0.);
+            direction += Vec2::new(-1., 0.);
         }
         if keyboard_input.pressed(right) {
-            direction += Vec3::new(1., 0., 0.);
+            direction += Vec2::new(1., 0.);
         }
         if keyboard_input.pressed(top) {
-            direction += Vec3::new(0., 1., 0.);
+            direction += Vec2::new(0., 1.);
         }
         if keyboard_input.pressed(down) {
-            direction += Vec3::new(0., -1., 0.);
+            direction += Vec2::new(0., -1.);
         }
 
         // If there are some input
@@ -182,15 +195,55 @@ pub fn player_movement(
             rotate_transform_with_parent_calibration(
                 &player_transform.rotation,
                 &mut rocket_transform_query.single_mut(),
-                direction.truncate() * -1.,
+                direction * -1.,
                 // Our sprite was drawn in this axis
                 Vec2::NEG_Y,
                 Some(&time),
             );
+
+            // Play engine audio
+            // Button was just pressed
+            if !*local_is_playing {
+                let rand_pos = rand::thread_rng().gen_range(0.0..3.0);
+                let sample = audio_assets
+                    .get(&sample_pack.engine)
+                    .unwrap()
+                    .get()
+                    .with_settings(StaticSoundSettings::new().volume(0.01));
+                let mut handle = kira_manager.play(sample).unwrap();
+                // For playing from rand position
+                handle.seek_to(rand_pos).unwrap();
+                handle
+                    .set_volume(
+                        0.21,
+                        kira::tween::Tween {
+                            duration: Duration::from_millis(100),
+                            ..default()
+                        },
+                    )
+                    .unwrap();
+                handle.set_loop_region(..).unwrap();
+                *local_is_playing = true;
+
+                *local_engine_handle = Some(handle);
+            }
+        } else {
+            // Stop only if already playing
+            if *local_is_playing {
+                if let Some(ref mut handle) = *local_engine_handle {
+                    if let Err(e) = handle.stop(kira::tween::Tween {
+                        duration: Duration::from_secs(1),
+                        easing: kira::tween::Easing::OutPowf(1.),
+                        ..default()
+                    }) {
+                        println!("Error engine sound stopping: {}", e);
+                    }
+                    *local_is_playing = false;
+                }
+            }
         }
 
-        player.force =
-            direction.truncate() * PLAYER_SPEED * time.delta_seconds();
+        player.force = direction * PLAYER_SPEED * time.delta_seconds();
 
         if let Ok(mut spawner) = spawner_query.get_single_mut() {
             spawner.set_active(direction.length() > 0.0);
@@ -204,7 +257,8 @@ pub fn enemy_hit_player(
     enemies: Query<Entity, With<Enemy>>,
     mut player_query: Query<(Entity, &mut Player), Without<Enemy>>,
     mut player_state: ResMut<NextState<PlayerState>>,
-    audio: Res<bevy_kira_audio::prelude::Audio>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
     _game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
@@ -222,7 +276,8 @@ pub fn enemy_hit_player(
                         player_entity,
                         &mut player_state,
                         &mut commands,
-                        &audio,
+                        &mut kira_manager,
+                        &audio_assets,
                         &sample_pack,
                         &mut event_writer,
                     ) {
@@ -237,7 +292,8 @@ pub fn enemy_hit_player(
                         player_entity,
                         &mut player_state,
                         &mut commands,
-                        &audio,
+                        &mut kira_manager,
+                        &audio_assets,
                         &sample_pack,
                         &mut event_writer,
                     ) {
@@ -257,7 +313,8 @@ fn handle_collision(
     player_entity: Entity,
     player_state: &mut ResMut<'_, NextState<PlayerState>>,
     commands: &mut Commands<'_, '_>,
-    audio: &Res<'_, bevy_kira_audio::prelude::Audio>,
+    kira_manager: &mut NonSendMut<KiraManager>,
+    audio_assets: &Res<Assets<AudioSource>>,
     sample_pack: &Res<'_, SamplePack>,
     event_writer: &mut EventWriter<'_, PlayerHit>,
 ) -> bool {
@@ -265,6 +322,16 @@ fn handle_collision(
         // Collision
         if player.health > 1 {
             player.health -= 1;
+
+            // Play alarm sound
+            let sound_data = audio_assets
+                .get(&sample_pack.alarm)
+                .unwrap()
+                .get()
+                .with_settings(StaticSoundSettings::new().volume(0.5));
+            kira_manager.play(sound_data).unwrap();
+            println!("Collision!!!");
+
             // Spawn Timer to Player entity
             commands
                 .entity(player_entity)
@@ -275,7 +342,7 @@ fn handle_collision(
             player_state.set(PlayerState::Invulnerable);
         } else {
             player.health -= 1;
-            audio.play(sample_pack.exp.clone());
+
             despawn_player(commands, player_entity);
 
             // TODO: handle gameover event, add function to score to get highest score

@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{
     prelude::*,
     window::{PrimaryWindow, WindowResized},
@@ -7,7 +9,12 @@ use bevy_rapier2d::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::{
-    helper_functions::get_camera_borders, systems::handle_pressing_g_key,
+    audio::{
+        assets::AudioSource,
+        resources::{KiraManager, SamplePack, SoundHandleResource},
+    },
+    helper_functions::get_camera_borders,
+    systems::handle_pressing_g_key,
 };
 
 use super::{components::Wall, SimulationState};
@@ -118,5 +125,28 @@ pub fn despawn_borders(
 ) {
     for border in borders_query.iter() {
         commands.entity(border).despawn();
+    }
+}
+
+pub fn play_main_theme(
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
+    mut sound_handle: ResMut<SoundHandleResource>,
+) {
+    let handle = kira_manager
+        .play(audio_assets.get(&sample_pack.title_theme).unwrap().get())
+        .unwrap();
+    sound_handle.main_theme = Some(handle);
+}
+
+pub fn stop_main_theme(mut sound_handle: ResMut<SoundHandleResource>) {
+    if let Some(ref mut handle) = sound_handle.title_theme {
+        handle
+            .stop(kira::tween::Tween {
+                duration: Duration::from_millis(200),
+                ..default()
+            })
+            .unwrap();
     }
 }

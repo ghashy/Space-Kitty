@@ -1,5 +1,4 @@
 use bevy::{prelude::*, sprite::Anchor, utils::HashSet, window::PrimaryWindow};
-use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 use std::ops::Range;
@@ -10,11 +9,13 @@ use super::{
     components::{Enemy, EnemyIsArrivingEvent, PatchOfLight},
     *,
 };
-use crate::game::{player::DOG_SIZE, score::resources::Score};
-use crate::helper_functions::*;
+use crate::{audio::assets::AudioSource, helper_functions::*};
 use crate::{
-    audio_system::resources::SamplePack,
-    game::fish::components::FishWasPickedEvent,
+    audio::resources::KiraManager,
+    game::{player::DOG_SIZE, score::resources::Score},
+};
+use crate::{
+    audio::resources::SamplePack, game::fish::components::FishWasPickedEvent,
 };
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -72,7 +73,8 @@ pub fn update_enemy_direction(
     mut enemy_query: Query<(Entity, &mut Enemy), With<Enemy>>,
     mut collision_event: EventReader<CollisionEvent>,
     rapier_context: Res<RapierContext>,
-    audio: Res<bevy_kira_audio::prelude::Audio>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
 ) {
     let mut direction_changed = false;
@@ -134,28 +136,29 @@ pub fn update_enemy_direction(
             }
         }
     }
+    // TODO: Enable sound when samples will ready
     // Randomly play one of sound effects
-    let sound_effect: &Handle<bevy_kira_audio::prelude::AudioSource>;
-    let mut rng = thread_rng();
-    if direction_changed {
-        if entities_flags != 0b11 {
-            sound_effect = match rng.gen::<bool>() {
-                true => &sample_pack.imp_med_0,
-                false => &sample_pack.imp_med_1,
-            }
-        } else {
-            sound_effect = match rng.gen_range::<u16, Range<u16>>(0..5) {
-                0 => &sample_pack.imp_light_0,
-                1 => &sample_pack.imp_light_1,
-                2 => &sample_pack.imp_light_2,
-                3 => &sample_pack.imp_light_3,
-                4 => &sample_pack.imp_light_4,
-                _ => &sample_pack.exp,
-            }
-        }
+    // let sound_effect: &Handle<AudioSource>;
+    // let mut rng = thread_rng();
+    // if direction_changed {
+    //     if entities_flags != 0b11 {
+    //         sound_effect = match rng.gen::<bool>() {
+    //             true => &sample_pack.imp_med_0,
+    //             false => &sample_pack.imp_med_1,
+    //         }
+    //     } else {
+    //         sound_effect = match rng.gen_range::<u16, Range<u16>>(0..5) {
+    //             0 => &sample_pack.imp_light_0,
+    //             1 => &sample_pack.imp_light_1,
+    //             2 => &sample_pack.imp_light_2,
+    //             3 => &sample_pack.imp_light_3,
+    //             4 => &sample_pack.imp_light_4,
+    //             _ => &sample_pack.exp,
+    //         }
+    //     }
 
-        audio.play(sound_effect.clone());
-    }
+    //     audio.play(sound_effect.clone());
+    // }
 }
 
 pub fn system_add_collider_to_enemy(
@@ -212,8 +215,8 @@ pub fn spawn_enemy_on_game_progress(
         let center = Vec2::new(window.width() / 2., window.height() / 2.);
 
         let mut rand_point = Vec2::new_rand();
-        rand_point.x *= 1000.;
-        rand_point.y *= 1000.;
+        rand_point *= 1000.;
+        rand_point += center;
 
         let direction = (center - rand_point).normalize();
 
