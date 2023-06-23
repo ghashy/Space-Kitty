@@ -14,15 +14,17 @@ pub mod layout;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
+// BUG: Audio
 pub fn play_title_theme(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
     mut sound_handle: ResMut<SoundHandleResource>,
 ) {
-    let handle = kira_manager
+    let mut handle = kira_manager
         .play(audio_assets.get(&sample_pack.main_theme).unwrap().get())
         .unwrap();
+    handle.set_loop_region(..).unwrap();
     sound_handle.main_theme = Some(handle);
 }
 

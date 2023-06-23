@@ -1,4 +1,4 @@
-use bevy::{prelude::*, reflect::TypeUuid};
+use bevy::reflect::TypeUuid;
 use serde::Deserialize;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //

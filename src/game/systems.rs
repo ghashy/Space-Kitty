@@ -128,16 +128,18 @@ pub fn despawn_borders(
     }
 }
 
+// BUG: Audio
 pub fn play_main_theme(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
     mut sound_handle: ResMut<SoundHandleResource>,
 ) {
-    let handle = kira_manager
+    let mut handle = kira_manager
         .play(audio_assets.get(&sample_pack.title_theme).unwrap().get())
         .unwrap();
-    sound_handle.main_theme = Some(handle);
+    handle.set_loop_region(..).unwrap();
+    sound_handle.title_theme = Some(handle);
 }
 
 pub fn stop_main_theme(mut sound_handle: ResMut<SoundHandleResource>) {

@@ -4,11 +4,7 @@ use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
 use bevy_rapier2d::prelude::*;
-use bevy_tweening::Tween;
-use kira::modulator::tweener::{TweenerBuilder, TweenerHandle};
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
-use kira::track::{TrackBuilder, TrackHandle};
-use kira::Volume;
 use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -248,6 +244,19 @@ pub fn player_movement(
         if let Ok(mut spawner) = spawner_query.get_single_mut() {
             spawner.set_active(direction.length() > 0.0);
         }
+    } else {
+        if *local_is_playing {
+            if let Some(ref mut handle) = *local_engine_handle {
+                if let Err(e) = handle.stop(kira::tween::Tween {
+                    duration: Duration::from_secs(1),
+                    easing: kira::tween::Easing::OutPowf(1.),
+                    ..default()
+                }) {
+                    println!("Error engine sound stopping: {}", e);
+                }
+                *local_is_playing = false;
+            }
+        }
     }
 }
 
@@ -307,21 +316,22 @@ pub fn enemy_hit_player(
 
 // TODO: add collision sound
 fn handle_collision(
-    enemies_query: &Query<'_, '_, Entity, With<Enemy>>,
+    enemies_query: &Query<Entity, With<Enemy>>,
     collided_with: &Entity,
-    mut player: Mut<'_, Player>,
+    mut player: Mut<Player>,
     player_entity: Entity,
-    player_state: &mut ResMut<'_, NextState<PlayerState>>,
-    commands: &mut Commands<'_, '_>,
+    player_state: &mut ResMut<NextState<PlayerState>>,
+    commands: &mut Commands,
     kira_manager: &mut NonSendMut<KiraManager>,
     audio_assets: &Res<Assets<AudioSource>>,
-    sample_pack: &Res<'_, SamplePack>,
-    event_writer: &mut EventWriter<'_, PlayerHit>,
+    sample_pack: &Res<SamplePack>,
+    event_writer: &mut EventWriter<PlayerHit>,
 ) -> bool {
     if enemies_query.iter().any(|e| e == *collided_with) {
         // Collision
         if player.health > 1 {
             player.health -= 1;
+            println!("Collision!!!");
 
             // Play alarm sound
             let sound_data = audio_assets
@@ -330,7 +340,6 @@ fn handle_collision(
                 .get()
                 .with_settings(StaticSoundSettings::new().volume(0.5));
             kira_manager.play(sound_data).unwrap();
-            println!("Collision!!!");
 
             // Spawn Timer to Player entity
             commands

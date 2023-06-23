@@ -10,11 +10,8 @@ use std::ops::DerefMut;
 
 use super::assets::AudioSource;
 
-// ───── Constants ────────────────────────────────────────────────────────── //
-
-const AUDIO_SAMPLES_COUNT: usize = 3;
-
 // ───── Body ─────────────────────────────────────────────────────────────── //
+
 #[derive(Resource, Default)]
 pub struct SoundHandleResource {
     pub title_theme: Option<StaticSoundHandle>,

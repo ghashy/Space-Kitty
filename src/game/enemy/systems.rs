@@ -1,7 +1,6 @@
 use bevy::{prelude::*, sprite::Anchor, utils::HashSet, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
-use std::ops::Range;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -210,7 +209,7 @@ pub fn spawn_enemy_on_game_progress(
 
     let score = score.get_score(&name).unwrap();
 
-    if score % 5 == 0 {
+    if score % 7 == 0 {
         let window = window_query.get_single().unwrap();
         let center = Vec2::new(window.width() / 2., window.height() / 2.);
 
