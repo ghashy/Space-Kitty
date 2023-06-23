@@ -38,3 +38,12 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Rework collision system
 - [x] Resizing screen fix
 - [ ] Every 7th cracker add Animal's enjoy sound
+- [ ] Implement logic "Smart god"
+
+#### Buff system (future features):
+
+- [ ] Speed
+- [ ] Health
+- [ ] Shield
+- [ ] Water gun
+- [ ] Dog locator
