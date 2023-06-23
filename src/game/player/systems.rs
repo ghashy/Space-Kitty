@@ -296,7 +296,7 @@ pub fn enemy_hit_player(
                     // Second entity is player
                     if handle_collision(
                         &enemies,
-                        entity2,
+                        entity1,
                         player,
                         player_entity,
                         &mut player_state,
