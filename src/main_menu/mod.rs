@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::systems::{interactions::*, layout::*, play_title_theme};
+use self::systems::{
+    interactions::*, layout::*, play_title_theme, stop_title_theme,
+};
 use crate::AppState;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
@@ -30,8 +32,9 @@ impl Plugin for MainMenuPlugin {
                     .in_set(OnUpdate(AppState::MainMenu)),
             )
             // Exit State Systems
-            .add_system(
-                despawn_main_menu.in_schedule(OnExit(AppState::MainMenu)),
+            .add_systems(
+                (despawn_main_menu, stop_title_theme)
+                    .in_schedule(OnExit(AppState::MainMenu)),
             );
     }
 }

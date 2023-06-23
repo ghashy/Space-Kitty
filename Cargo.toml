@@ -12,10 +12,9 @@ bevy = { version = "0.10.1", default-features = false, features = [
     "bevy_asset",
     "bevy_sprite",
     "bevy_ui",
-    "vorbis",
     "png"
 ]}
-bevy_kira_audio = "0.15.0"
+kira = "0.8.4"
 bevy_egui = "0.20.3"
 bevy-inspector-egui = "0.18.3"
 bevy_rapier2d = "0.21.0"

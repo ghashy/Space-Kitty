@@ -26,6 +26,7 @@ use bevy_tweening::TweeningPlugin;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use asset_loader::JsonAssetLoader;
+use audio::AudioPlugin;
 use components::*;
 use debug::DebugPlugin;
 use game::GamePlugin;
@@ -38,7 +39,7 @@ use transition::TransitionPlugin;
 
 // Modules in folders
 pub mod asset_loader;
-pub mod audio_system;
+pub mod audio;
 pub mod game;
 pub mod main_menu;
 
@@ -94,6 +95,7 @@ fn main() {
         .add_startup_system(spawn_background_stars)
         .add_startup_system(spawn_background_texture)
         .add_startup_system(spawn_dust)
+        .add_startup_system(setup_audio_assets)
         // States
         .add_state::<AppState>()
         // Events
@@ -101,7 +103,7 @@ fn main() {
         // Plugins
         // + 2 percents on cpu
         .add_plugin(HanabiPlugin)
-        .add_plugin(bevy_kira_audio::AudioPlugin)
+        .add_plugin(AudioPlugin)
         // +1.1 percent on cpu
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
         .add_plugin(GamePlugin)
@@ -109,6 +111,11 @@ fn main() {
         .add_plugin(MainMenuPlugin)
         .add_plugin(DebugPlugin)
         .add_plugin(TransitionPlugin)
+        // Audio loading system
+        .add_system(
+            update_app_state_after_audio_loaded
+                .in_set(OnUpdate(AppState::AudioLoading)),
+        )
         // Gui Update Systems
         .add_systems(
             (
@@ -134,6 +141,7 @@ fn main() {
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum AppState {
     #[default]
+    AudioLoading,
     MainMenu,
     Game,
     GameOver,

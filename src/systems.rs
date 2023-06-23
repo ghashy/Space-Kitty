@@ -18,35 +18,97 @@ use crate::game::SimulationState;
 use crate::resources::CometTimer;
 use crate::AppState;
 use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
-use crate::{audio_system::resources::SamplePack, COMET_SPEED};
+use crate::{audio::resources::SamplePack, COMET_SPEED};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn setup(
     mut commands: Commands,
     mut rapier_config: ResMut<RapierConfiguration>,
-    asset_server: ResMut<AssetServer>,
 ) {
     // Setup physics gravity
     rapier_config.gravity = Vec2::ZERO;
 
+    commands.spawn((SpatialBundle::default(), Comets, Name::new("Comets")));
+}
+
+pub fn setup_audio_assets(
+    mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
+) {
     commands.insert_resource(SamplePack {
-        imp_light_0: asset_server.load("audio/impact/Light_00.ogg"),
-        imp_light_1: asset_server.load("audio/impact/Light_01.ogg"),
-        imp_light_2: asset_server.load("audio/impact/Light_02.ogg"),
-        imp_light_3: asset_server.load("audio/impact/Light_03.ogg"),
-        imp_light_4: asset_server.load("audio/impact/Light_04.ogg"),
-        imp_med_0: asset_server.load("audio/impact/Medium_00.ogg"),
-        imp_med_1: asset_server.load("audio/impact/Medium_01.ogg"),
-        exp: asset_server.load("audio/explosionCrunch_000.ogg"),
-        pick_fish: asset_server.load("audio/laserLarge_000.ogg"),
+        pick_fish1: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 1.wav"),
+        pick_fish2: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 2.wav"),
+        pick_fish3: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 3.wav"),
+        pick_fish4: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 4.wav"),
+        pick_fish5: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 5.wav"),
+        pick_fish6: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 6.wav"),
+        pick_fish7: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 7.wav"),
+        pick_fish8: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 8.wav"),
+        pick_fish9: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 9.wav"),
+        pick_fish10: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 10.wav"),
+        pick_fish11: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 11.wav"),
+        pick_fish12: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 12.wav"),
+        pick_fish13: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 13.wav"),
+        pick_fish14: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 14.wav"),
+        pick_fish15: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 15.wav"),
+        pick_fish16: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 16.wav"),
+        pick_fish17: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 17.wav"),
+        pick_fish18: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 18.wav"),
+        pick_fish19: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 19.wav"),
+        pick_fish20: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 20.wav"),
+        pick_fish21: asset_server
+            .load("audio/SFX/Crackers/Space Kitty - Cracker 21.wav"),
         title_theme: asset_server
             .load("audio/Space Kitty - Title main theme.ogg"),
         main_theme: asset_server
             .load("audio/Space Kitty - Title screen theme.ogg"),
+        alarm: asset_server.load("audio/SFX/Space Kitty - Alarm (no life).wav"),
+        engine: asset_server.load("audio/SFX/Space Kitty  - Jet engine.wav"),
     });
+}
 
-    commands.spawn((SpatialBundle::default(), Comets, Name::new("Comets")));
+pub fn update_app_state_after_audio_loaded(
+    mut commands: Commands,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    sample_pack: Res<SamplePack>,
+    asset_server: Res<AssetServer>,
+) {
+    for item in sample_pack.iter() {
+        match asset_server.get_load_state(item) {
+            bevy::asset::LoadState::Loaded => continue,
+            bevy::asset::LoadState::NotLoaded => return,
+            bevy::asset::LoadState::Loading => return,
+            bevy::asset::LoadState::Failed => {
+                panic!("Can not load audio assets!")
+            }
+            bevy::asset::LoadState::Unloaded => {
+                panic!("Audio assets were unloaded!")
+            }
+        }
+    }
+
+    next_app_state.set(AppState::MainMenu);
 }
 
 pub fn spawn_camera(
