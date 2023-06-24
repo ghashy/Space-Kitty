@@ -189,7 +189,6 @@ pub fn spawn_enemy_on_game_progress(
     asset_server: Res<AssetServer>,
     mut dogs_resource: ResMut<DogResource>,
     names_assets: Res<Assets<DogNames>>,
-    score: ResMut<Score>,
     mut already_spawned_data: Local<(HashSet<String>, u8)>,
     mut picked_event: EventReader<ScoreUpdateEvent>,
     mut arriving_event: EventWriter<EnemyIsArrivingEvent>,
@@ -202,8 +201,6 @@ pub fn spawn_enemy_on_game_progress(
     }
 
     let score = event.unwrap().event_type.get_score();
-
-    println!("Kitty has {} ", score);
 
     if score % 7 == 0 {
         let window = window_query.get_single().unwrap();

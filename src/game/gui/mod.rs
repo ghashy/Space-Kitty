@@ -32,6 +32,9 @@ impl Plugin for GameUiPlugin {
             .add_system(
                 listen_hit_events
                     .in_set(OnUpdate(AppState::Game))
+                    // BUG: Game is not enter Idle state after exiting in menu
+                    // from game state during last kitty's shuttle gui
+                    // animation
                     .in_set(OnUpdate(HudLivesState::Idle)),
             )
             // Systems

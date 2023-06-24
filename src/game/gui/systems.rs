@@ -73,6 +73,7 @@ pub fn listen_hit_events(
     mut hud_state: ResMut<NextState<HudLivesState>>,
 ) {
     for event in player_hit_events.iter() {
+        println!("Got hit event");
         hud_state.set(HudLivesState::Update);
     }
 }

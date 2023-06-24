@@ -274,97 +274,59 @@ pub fn enemy_hit_player(
     _score: Res<Score>,
 ) {
     for event in collision_events.iter() {
-        if let Ok((player_entity, player)) = player_query.get_single_mut() {
+        if let Ok((player_entity, mut player)) = player_query.get_single_mut() {
             if let CollisionEvent::Started(entity1, entity2, _) = event {
+                let collided_with;
+
                 if player_entity == *entity1 {
-                    // First entity is player
-                    if handle_collision(
-                        &enemies,
-                        entity2,
-                        player,
-                        player_entity,
-                        &mut player_state,
-                        &mut commands,
-                        &mut kira_manager,
-                        &audio_assets,
-                        &sample_pack,
-                        &mut event_writer,
-                    ) {
-                        break;
-                    }
+                    collided_with = *entity2;
                 } else if player_entity == *entity2 {
-                    // Second entity is player
-                    if handle_collision(
-                        &enemies,
-                        entity1,
-                        player,
-                        player_entity,
-                        &mut player_state,
-                        &mut commands,
-                        &mut kira_manager,
-                        &audio_assets,
-                        &sample_pack,
-                        &mut event_writer,
-                    ) {
-                        break;
+                    collided_with = *entity1;
+                } else {
+                    continue;
+                }
+
+                if enemies.iter().any(|e| e == collided_with) {
+                    // Collision
+                    if player.health > 1 {
+                        player.health -= 1;
+
+                        // Play alarm sound
+                        let sound_data = audio_assets
+                            .get(&sample_pack.alarm)
+                            .unwrap()
+                            .get()
+                            .with_settings(
+                                StaticSoundSettings::new().volume(0.5),
+                            );
+                        kira_manager.play(sound_data).unwrap();
+
+                        // Spawn Timer to Player entity
+                        commands.entity(player_entity).insert(
+                            PlayerInvulnerableTimer(Timer::from_seconds(
+                                3.,
+                                TimerMode::Once,
+                            )),
+                        );
+                        player_state.set(PlayerState::Invulnerable);
+                    } else {
+                        player.health -= 1;
+
+                        despawn_player(&mut commands, player_entity);
+
+                        // TODO: handle gameover event, add function to score to get highest score
+                        // game_over_event_writer.send(GameOver {
+                        //     final_score: score.value,
+                        // })
                     }
+                    println!("Send hit event");
+                    event_writer.send(PlayerHit {
+                        remaining_health: player.health,
+                    });
                 }
             }
         }
     }
-}
-
-// TODO: add collision sound
-fn handle_collision(
-    enemies_query: &Query<Entity, With<Enemy>>,
-    collided_with: &Entity,
-    mut player: Mut<Player>,
-    player_entity: Entity,
-    player_state: &mut ResMut<NextState<PlayerState>>,
-    commands: &mut Commands,
-    kira_manager: &mut NonSendMut<KiraManager>,
-    audio_assets: &Res<Assets<AudioSource>>,
-    sample_pack: &Res<SamplePack>,
-    event_writer: &mut EventWriter<PlayerHit>,
-) -> bool {
-    if enemies_query.iter().any(|e| e == *collided_with) {
-        // Collision
-        if player.health > 1 {
-            player.health -= 1;
-            println!("Collision!!!");
-
-            // Play alarm sound
-            let sound_data = audio_assets
-                .get(&sample_pack.alarm)
-                .unwrap()
-                .get()
-                .with_settings(StaticSoundSettings::new().volume(0.5));
-            kira_manager.play(sound_data).unwrap();
-
-            // Spawn Timer to Player entity
-            commands
-                .entity(player_entity)
-                .insert(PlayerInvulnerableTimer(Timer::from_seconds(
-                    3.,
-                    TimerMode::Once,
-                )));
-            player_state.set(PlayerState::Invulnerable);
-        } else {
-            player.health -= 1;
-
-            despawn_player(commands, player_entity);
-
-            // TODO: handle gameover event, add function to score to get highest score
-            // game_over_event_writer.send(GameOver {
-            //     final_score: score.value,
-            // })
-        }
-        event_writer.send(PlayerHit {
-            remaining_health: player.health,
-        });
-        return true;
-    }
-    false
 }
 
 pub fn count_player_invulnerability_timer(
