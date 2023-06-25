@@ -4,7 +4,8 @@ use std::time::Duration;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-pub fn animate_heart_down(commands: &mut Commands, entity: Entity, id: u64) {
+pub fn animate_heart_out(commands: &mut Commands, entity: Entity, id: u64) {
+    // Old image scale down
     let tween = Tween::new(
         EaseFunction::CubicIn,
         Duration::from_millis(500),
@@ -23,23 +24,20 @@ pub fn animate_heart_down(commands: &mut Commands, entity: Entity, id: u64) {
                 end: Vec3::ZERO,
             },
         )
-        .with_completed_event(id),
+        .with_completed_event(id)
+        // New image scale up
+        .then(
+            Tween::new(
+                EaseFunction::CubicIn,
+                Duration::from_millis(300),
+                TransformScaleLens {
+                    start: Vec3::ZERO,
+                    end: Vec3::splat(1.),
+                },
+            )
+            .with_repeat_count(RepeatCount::Finite(1)),
+        ),
     );
-
-    commands.entity(entity).insert(Animator::new(tween));
-}
-
-pub fn animate_heart_up(commands: &mut Commands, entity: Entity, id: u64) {
-    let tween = Tween::new(
-        EaseFunction::CubicIn,
-        Duration::from_millis(300),
-        TransformScaleLens {
-            start: Vec3::ZERO,
-            end: Vec3::splat(1.),
-        },
-    )
-    .with_repeat_count(RepeatCount::Finite(1))
-    .with_completed_event(id);
 
     commands.entity(entity).insert(Animator::new(tween));
 }
