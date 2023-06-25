@@ -24,33 +24,17 @@ pub struct GameUiPlugin;
 impl Plugin for GameUiPlugin {
     fn build(&self, app: &mut App) {
         app
-            // States
-            .add_state::<HudLivesState>()
             // Enter State Systems
             .add_system(spawn_hud.in_schedule(OnEnter(AppState::Game)))
             // Update Hud State
-            .add_system(
-                listen_hit_events
-                    .in_set(OnUpdate(AppState::Game))
-                    // BUG: Game is not enter Idle state after exiting in menu
-                    // from game state during last kitty's shuttle gui
-                    // animation
-                    .in_set(OnUpdate(HudLivesState::Idle)),
-            )
+            .add_system(listen_hit_events.in_set(OnUpdate(AppState::Game)))
             // Systems
             .add_system(update_messages.in_set(OnUpdate(AppState::Game)))
-            .add_system(update_lives.in_set(OnUpdate(HudLivesState::Update)))
+            // .add_system(update_lives.in_set(OnUpdate(HudLivesState::Update)))
             .add_system(
                 remove_message_on_timeout.in_set(OnUpdate(AppState::Game)),
             )
             // Exit State Systems
             .add_system(despawn_hud.in_schedule(OnExit(AppState::Game)));
     }
-}
-
-#[derive(States, Clone, Copy, Hash, PartialEq, Eq, Default, Debug)]
-pub enum HudLivesState {
-    #[default]
-    Idle,
-    Update,
 }

@@ -3,10 +3,9 @@ use bevy_tweening::TweenCompleted;
 
 // ───── Current Crate Import ─────────────────────────────────────────────── //
 
-use super::{components::*, styles::*, HudLivesState, LIVES_ID_OFFSET};
+use super::animation::animate_heart_out;
+use super::{components::*, styles::*, LIVES_ID_OFFSET};
 use crate::game::enemy::components::EnemyIsArrivingEvent;
-use crate::game::fish::components::FishWasPickedEvent;
-use crate::game::gui::animation::*;
 use crate::game::player::LIVES_COUNT;
 use crate::game::score::ScoreUpdateEvent;
 use crate::{events::PlayerHit, game::player::components::Player};
@@ -35,7 +34,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 })
                 .with_children(|parent| {
                     for mut id in 1..=LIVES_COUNT {
-                        id += LIVES_ID_OFFSET as u64;
+                        id += LIVES_ID_OFFSET;
                         parent.spawn((
                             ImageBundle {
                                 style: STARSHIP_LIFE,
@@ -57,25 +56,6 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                 MessagesList,
             ));
         });
-}
-
-pub fn despawn_hud(
-    mut commands: Commands,
-    hud_query: Query<Entity, With<Hud>>,
-) {
-    commands
-        .entity(hud_query.get_single().unwrap())
-        .despawn_recursive();
-}
-
-pub fn listen_hit_events(
-    mut player_hit_events: EventReader<PlayerHit>,
-    mut hud_state: ResMut<NextState<HudLivesState>>,
-) {
-    for event in player_hit_events.iter() {
-        println!("Got hit event");
-        hud_state.set(HudLivesState::Update);
-    }
 }
 
 pub fn update_messages(
@@ -174,61 +154,52 @@ pub fn remove_message_on_timeout(
     }
 }
 
-pub fn update_lives(
+pub fn despawn_hud(
     mut commands: Commands,
-    mut tween_event: EventReader<TweenCompleted>,
-    // State
-    mut hud_state: ResMut<NextState<HudLivesState>>,
-    // Local
-    mut started_tweens: Local<(bool, bool)>,
-    // Queries
+    hud_query: Query<Entity, With<Hud>>,
+) {
+    commands
+        .entity(hud_query.get_single().unwrap())
+        .despawn_recursive();
+}
+
+pub fn listen_hit_events(
+    mut commands: Commands,
+    mut player_hit_events: EventReader<PlayerHit>,
+    mut animation_events: EventReader<TweenCompleted>,
     player_query: Query<&Player>,
     mut heart_images: Query<(Entity, &mut UiImage, &HeartImage)>,
 ) {
-    // Animation phase 1
-    if !started_tweens.0 {
-        let health = match player_query.get_single() {
-            Ok(player) => player.health,
-            Err(_) => 0,
-        };
-
-        for (entity, _, &HeartImage(id, _, _)) in heart_images.iter() {
-            if id == ((health + 1) as u64) + LIVES_ID_OFFSET {
-                animate_heart_down(&mut commands, entity, id);
-                started_tweens.0 = true;
-                return;
-            }
+    if let Some(_) = player_hit_events.iter().next() {
+        if let Ok(player) = player_query.get_single() {
+            let id = player.health as u64 + LIVES_ID_OFFSET + 1;
+            let entity = heart_images
+                .iter_mut()
+                .filter(|(_, _, heart_image)| heart_image.0 == id)
+                .next()
+                .unwrap()
+                .0;
+            animate_heart_out(&mut commands, entity, id);
+        } else {
+            let id = LIVES_ID_OFFSET + 1;
+            let entity = heart_images
+                .iter_mut()
+                .filter(|(_, _, heart_image)| heart_image.0 == id)
+                .next()
+                .unwrap()
+                .0;
+            animate_heart_out(&mut commands, entity, id);
         }
     }
 
-    // Animation phase 2
-    // Check all tween events
-    for event in tween_event.iter() {
-        let event_id = event.user_data;
-        let lives_range = LIVES_ID_OFFSET..=LIVES_ID_OFFSET + LIVES_COUNT;
-        // We should to process only lives animation events here
-        if !(lives_range).contains(&event_id) {
-            continue;
-        }
-
-        // Filter all other images except our current animing image
-        let mut our_image = heart_images
-            .iter_mut()
-            .filter(|(_, _, heart_image)| heart_image.0 == event_id);
-
-        if let Some((entity, mut image, heart_image)) = our_image.next() {
-            // End of animation
-            if started_tweens.1 {
-                started_tweens.0 = false;
-                started_tweens.1 = false;
-                hud_state.set(HudLivesState::Idle);
-                return;
-            }
-
-            // Change texture
-            image.texture = heart_image.2.clone_weak();
-            animate_heart_up(&mut commands, entity, heart_image.0);
-            started_tweens.1 = true;
+    for event in animation_events.iter() {
+        if (400..500).contains(&event.user_data) {
+            let mut our_image = heart_images
+                .iter_mut()
+                .filter(|(_, _, heart_image)| heart_image.0 == event.user_data)
+                .next()
+                .unwrap();
+            our_image.1.texture = (our_image.2).2.clone_weak();
             return;
         }
     }

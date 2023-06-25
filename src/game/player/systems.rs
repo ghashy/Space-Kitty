@@ -138,9 +138,11 @@ pub fn spawn_player(
 pub fn despawn_player_on_exit_game_state(
     mut commands: Commands,
     player_query: Query<Entity, With<Player>>,
+    mut player_state: ResMut<NextState<PlayerState>>,
 ) {
     if let Ok(player) = player_query.get_single() {
         despawn_player(&mut commands, player);
+        player_state.set(PlayerState::Vulnerable);
     }
 }
 
@@ -319,7 +321,6 @@ pub fn enemy_hit_player(
                         //     final_score: score.value,
                         // })
                     }
-                    println!("Send hit event");
                     event_writer.send(PlayerHit {
                         remaining_health: player.health,
                     });
