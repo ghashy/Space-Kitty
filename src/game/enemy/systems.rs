@@ -5,7 +5,7 @@ use rand::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{
-    components::{Enemy, EnemyIsArrivingEvent, PatchOfLight},
+    components::{Enemy, MessageBox, PatchOfLight},
     *,
 };
 use crate::{
@@ -139,35 +139,22 @@ pub fn update_enemy_direction(
             }
         }
     }
-    // TODO: Enable sound when samples will ready
-    // Randomly play one of sound effects
-    // let sound_effect: &Handle<AudioSource>;
-    // let mut rng = thread_rng();
-    // if direction_changed {
-    //     if entities_flags != 0b11 {
-    //         sound_effect = match rng.gen::<bool>() {
-    //             true => &sample_pack.imp_med_0,
-    //             false => &sample_pack.imp_med_1,
-    //         }
-    //     } else {
-    //         sound_effect = match rng.gen_range::<u16, Range<u16>>(0..5) {
-    //             0 => &sample_pack.imp_light_0,
-    //             1 => &sample_pack.imp_light_1,
-    //             2 => &sample_pack.imp_light_2,
-    //             3 => &sample_pack.imp_light_3,
-    //             4 => &sample_pack.imp_light_4,
-    //             _ => &sample_pack.exp,
-    //         }
-    //     }
-
-    //     audio.play(sound_effect.clone());
-    // }
+    // Play audio
+    if direction_changed {
+        kira_manager
+            .play(audio_assets.get(&sample_pack.wall_collision).unwrap().get())
+            .unwrap();
+    }
 }
 
 pub fn system_add_collider_to_enemy(
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut commands: Commands,
     mut entity_query: Query<(Entity, &mut Enemy, &Transform)>,
+    mut events: EventWriter<MessageBoxRequest>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
 ) {
     for (entity, mut enemy, transform) in entity_query.iter_mut() {
         if !enemy.has_collider {
@@ -178,7 +165,58 @@ pub fn system_add_collider_to_enemy(
                     .entity(entity)
                     .insert(Collider::ball(DOG_SIZE.x * enemy.scale * 0.47));
                 enemy.has_collider = true;
+
+                events.send(MessageBoxRequest(entity));
+
+                // Hello bark sound
+                kira_manager
+                    .play(
+                        audio_assets
+                            .get(get_random_bark(&sample_pack))
+                            .unwrap()
+                            .get(),
+                    )
+                    .unwrap();
             }
+        }
+    }
+}
+
+pub fn spawn_message_box(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut events: EventReader<MessageBoxRequest>,
+    entity_query: Query<(&Children, &Transform)>,
+) {
+    for event in events.iter() {
+        let (children, transform) = entity_query.get(event.0).unwrap();
+        let mut message_box_transform = Transform::default();
+        rotate_transform_with_parent_calibration(
+            &transform.rotation,
+            &mut message_box_transform,
+            Vec2::NEG_X,
+            Vec2::NEG_X,
+            None,
+        );
+        let message_box = commands
+            .spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        anchor: Anchor::Custom(Vec2::new(0.45, -0.45)),
+                        ..default()
+                    },
+                    transform: Transform {
+                        scale: Vec3::new(0.3, 0.3, 0.),
+                        ..message_box_transform
+                    },
+                    texture: asset_server.load("sprites/Message icon.png"),
+                    ..default()
+                },
+                MessageBox,
+            ))
+            .id();
+        if let Some(ch) = children.iter().next() {
+            commands.entity(*ch).push_children(&[message_box]);
         }
     }
 }
@@ -334,6 +372,30 @@ pub fn rotate_patch_of_light(
     }
 }
 
+pub fn rotate_message_box(
+    mut message_box_query: Query<(Entity, &mut Transform), With<MessageBox>>,
+    parents_query: Query<&Parent>,
+    transforms_query: Query<&Transform, (With<Enemy>, Without<MessageBox>)>,
+) {
+    for (entity, mut transform) in message_box_query.iter_mut() {
+        let mut common_rotation = Quat::IDENTITY;
+        // Collect all parents rotation
+        for parent in parents_query.iter_ancestors(entity) {
+            if let Ok(transform) = transforms_query.get(parent) {
+                common_rotation = common_rotation.mul_quat(transform.rotation);
+            }
+        }
+        // Apply rotation to patch
+        rotate_transform_with_parent_calibration(
+            &common_rotation,
+            &mut transform,
+            Vec2::NEG_X,
+            Vec2::NEG_X,
+            None,
+        );
+    }
+}
+
 fn generate_dog(
     dogs_resource: &mut ResMut<DogResource>,
     names_assets: Res<Assets<DogNames>>,
@@ -411,4 +473,24 @@ fn is_in_window(window: &Window, size: Vec2, transform: &Transform) -> bool {
         && pos.x + size.x < window.width()
         && pos.y - size.y > 0.0
         && pos.y + size.y < window.height()
+}
+
+fn get_random_bark<'a>(
+    sample_pack: &'a Res<SamplePack>,
+) -> &'a Handle<AudioSource> {
+    match rand::thread_rng().gen_range(0..12) {
+        0 => &sample_pack.bark1,
+        1 => &sample_pack.bark2,
+        2 => &sample_pack.bark3,
+        3 => &sample_pack.bark4,
+        4 => &sample_pack.bark5,
+        5 => &sample_pack.bark6,
+        6 => &sample_pack.bark7,
+        7 => &sample_pack.bark8,
+        8 => &sample_pack.bark9,
+        9 => &sample_pack.bark10,
+        10 => &sample_pack.bark11,
+        11 => &sample_pack.bark12,
+        _ => unreachable!(),
+    }
 }

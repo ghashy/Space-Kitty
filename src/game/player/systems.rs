@@ -5,6 +5,8 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
 use bevy_rapier2d::prelude::*;
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
+use kira::track::effect::reverb::ReverbBuilder;
+use kira::track::{TrackBuilder, TrackHandle};
 use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -14,6 +16,7 @@ use super::{PlayerState, SPACESHIP_SIZE};
 use crate::audio::assets::AudioSource;
 use crate::audio::resources::{KiraManager, SamplePack};
 use crate::events::{GameOver, PlayerHit};
+use crate::game::components::Wall;
 use crate::game::enemy::components::*;
 use crate::game::score::resources::Score;
 use crate::helper_functions::*;
@@ -262,10 +265,12 @@ pub fn player_movement(
     }
 }
 
-pub fn enemy_hit_player(
+pub fn handle_player_collision(
+    state: Res<State<PlayerState>>,
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     enemies: Query<Entity, With<Enemy>>,
+    walls: Query<Entity, With<Wall>>,
     mut player_query: Query<(Entity, &mut Player), Without<Enemy>>,
     mut player_state: ResMut<NextState<PlayerState>>,
     mut kira_manager: NonSendMut<KiraManager>,
@@ -274,6 +279,7 @@ pub fn enemy_hit_player(
     _game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
     _score: Res<Score>,
+    mut local_audio_subtrack: Local<Option<TrackHandle>>,
 ) {
     for event in collision_events.iter() {
         if let Ok((player_entity, mut player)) = player_query.get_single_mut() {
@@ -288,7 +294,9 @@ pub fn enemy_hit_player(
                     continue;
                 }
 
-                if enemies.iter().any(|e| e == collided_with) {
+                if enemies.iter().any(|e| e == collided_with)
+                    && state.0 == PlayerState::Vulnerable
+                {
                     // Collision
                     if player.health > 1 {
                         player.health -= 1;
@@ -300,6 +308,16 @@ pub fn enemy_hit_player(
                             .get()
                             .with_settings(
                                 StaticSoundSettings::new().volume(0.5),
+                            );
+                        kira_manager.play(sound_data).unwrap();
+
+                        // Play meow sound
+                        let sound_data = audio_assets
+                            .get(get_random_meow(&sample_pack))
+                            .unwrap()
+                            .get()
+                            .with_settings(
+                                StaticSoundSettings::new().volume(0.8),
                             );
                         kira_manager.play(sound_data).unwrap();
 
@@ -324,6 +342,28 @@ pub fn enemy_hit_player(
                     event_writer.send(PlayerHit {
                         remaining_health: player.health,
                     });
+                } else if walls.iter().any(|e| collided_with == e) {
+                    if (*local_audio_subtrack).is_none() {
+                        *local_audio_subtrack = Some(
+                            kira_manager
+                                .add_sub_track(TrackBuilder::new())
+                                .unwrap(),
+                        );
+                    }
+                    let sub = (*local_audio_subtrack).as_ref().unwrap();
+
+                    // Play meow sound
+                    let sound_data = audio_assets
+                        .get(&sample_pack.meow5)
+                        .unwrap()
+                        .get()
+                        .with_settings(
+                            StaticSoundSettings::new()
+                                .volume(0.35)
+                                .output_destination(sub),
+                        );
+
+                    kira_manager.play(sound_data).unwrap();
                 }
             }
         }
@@ -374,5 +414,21 @@ pub fn blink_player(
                     .set_a((timer.0.elapsed_secs() * 8.).sin().abs());
             }
         }
+    }
+}
+
+fn get_random_meow<'a>(
+    sample_pack: &'a Res<SamplePack>,
+) -> &'a Handle<AudioSource> {
+    match rand::thread_rng().gen_range(0..8) {
+        0 => &sample_pack.meow1,
+        1 => &sample_pack.meow2,
+        2 => &sample_pack.meow3,
+        3 => &sample_pack.meow4,
+        4 => &sample_pack.meow5,
+        5 => &sample_pack.meow6,
+        6 => &sample_pack.meow7,
+        7 => &sample_pack.meowroar,
+        _ => unreachable!(),
     }
 }

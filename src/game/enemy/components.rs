@@ -12,5 +12,5 @@ pub struct Enemy {
 #[derive(Component)]
 pub struct PatchOfLight;
 
-// Event
-pub struct EnemyIsArrivingEvent(pub String);
+#[derive(Component)]
+pub struct MessageBox;

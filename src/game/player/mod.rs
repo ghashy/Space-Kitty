@@ -53,10 +53,9 @@ impl Plugin for PlayerPlugin {
                     .in_set(OnUpdate(AppState::Game)),
             )
             .add_system(
-                enemy_hit_player
+                handle_player_collision
                     .in_set(OnUpdate(SimulationState::Running))
-                    .in_set(OnUpdate(AppState::Game))
-                    .in_set(OnUpdate(PlayerState::Vulnerable)),
+                    .in_set(OnUpdate(AppState::Game)), // .in_set(OnUpdate(PlayerState::Vulnerable)),
             )
             .add_systems(
                 (count_player_invulnerability_timer, blink_player)

@@ -1,7 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::*, *};
-use interpolation::EaseFunction;
 use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //

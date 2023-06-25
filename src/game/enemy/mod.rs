@@ -2,10 +2,7 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::{
-    assets::DogNames, components::EnemyIsArrivingEvent, resources::DogResource,
-    systems::*,
-};
+use self::{assets::DogNames, resources::DogResource, systems::*};
 use super::SimulationState;
 use crate::AppState;
 
@@ -31,6 +28,7 @@ impl Plugin for EnemyPlugin {
             .add_asset::<DogNames>()
             // Events
             .add_event::<EnemyIsArrivingEvent>()
+            .add_event::<MessageBoxRequest>()
             // Enter State Systems
             .add_system(load_resources.in_schedule(OnEnter(AppState::Game)))
             // Systems
@@ -40,7 +38,9 @@ impl Plugin for EnemyPlugin {
                     enemy_movement,
                     spawn_enemy_on_game_progress,
                     rotate_patch_of_light,
+                    rotate_message_box,
                     system_add_collider_to_enemy,
+                    spawn_message_box,
                 )
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),
@@ -49,3 +49,8 @@ impl Plugin for EnemyPlugin {
             .add_system(despawn_enemies.in_schedule(OnExit(AppState::Game)));
     }
 }
+
+// Events
+pub struct EnemyIsArrivingEvent(pub String);
+
+pub struct MessageBoxRequest(Entity);

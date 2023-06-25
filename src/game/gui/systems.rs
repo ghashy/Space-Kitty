@@ -5,7 +5,7 @@ use bevy_tweening::TweenCompleted;
 
 use super::animation::animate_heart_out;
 use super::{components::*, styles::*, LIVES_ID_OFFSET};
-use crate::game::enemy::components::EnemyIsArrivingEvent;
+use crate::game::enemy::EnemyIsArrivingEvent;
 use crate::game::player::LIVES_COUNT;
 use crate::game::score::ScoreUpdateEvent;
 use crate::{events::PlayerHit, game::player::components::Player};

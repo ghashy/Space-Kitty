@@ -79,6 +79,29 @@ pub fn setup_audio_assets(
             .load("audio/SFX/Crackers/Space Kitty - Cracker 20.wav"),
         pick_fish21: asset_server
             .load("audio/SFX/Crackers/Space Kitty - Cracker 21.wav"),
+        bark1: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 1.wav"),
+        bark2: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 2.wav"),
+        bark3: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 3.wav"),
+        bark4: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 4.wav"),
+        bark5: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 5.wav"),
+        bark6: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 6.wav"),
+        bark7: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 7.wav"),
+        bark8: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 8.wav"),
+        bark9: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 9.wav"),
+        bark10: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 10.wav"),
+        bark11: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 11.wav"),
+        bark12: asset_server.load("audio/SFX/Barks/Space Kitty - Bark 12.wav"),
+        meow1: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 1.wav"),
+        meow2: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 2.wav"),
+        meow3: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 3.wav"),
+        meow4: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 4.wav"),
+        meow5: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 5.wav"),
+        meow6: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 6.wav"),
+        meow7: asset_server.load("audio/SFX/Meows/Space Kitty - Meow 7.wav"),
+        meowroar: asset_server
+            .load("audio/SFX/Meows/Space Kitty - Meow Roar.wav"),
+        wall_collision: asset_server
+            .load("audio/SFX/Space Kitty - Wall collision.wav"),
         title_theme: asset_server
             .load("audio/Space Kitty - Title main theme.ogg"),
         main_theme: asset_server
@@ -89,7 +112,6 @@ pub fn setup_audio_assets(
 }
 
 pub fn update_app_state_after_audio_loaded(
-    mut commands: Commands,
     mut next_app_state: ResMut<NextState<AppState>>,
     sample_pack: Res<SamplePack>,
     asset_server: Res<AssetServer>,
