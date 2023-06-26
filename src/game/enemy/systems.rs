@@ -13,7 +13,7 @@ use rand::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{
-    components::{Enemy, MessageBox, PatchOfLight},
+    components::{DogType, Enemy, MessageBox, PatchOfLight},
     *,
 };
 use crate::audio::resources::SamplePack;
@@ -26,7 +26,7 @@ use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 enum PhraseType {
-    Hello,
+    Hello(DogType),
     Rotation,
     Picking,
 }
@@ -174,9 +174,14 @@ pub fn system_add_collider_to_enemy(
                     .insert(Collider::ball(DOG_SIZE.x * enemy.scale * 0.47));
                 enemy.has_collider = true;
 
+                // Send event
                 events.send(MessageBoxRequest(
                     entity,
-                    generate_phrase(&dogs_resource, &assets, PhraseType::Hello),
+                    generate_phrase(
+                        &dogs_resource,
+                        &assets,
+                        PhraseType::Hello(enemy.dog_type),
+                    ),
                 ));
 
                 // Hello bark sound
@@ -240,7 +245,7 @@ pub fn spawn_message_box(
                     )
                     .with_alignment(TextAlignment::Center),
                     text_2d_bounds: Text2dBounds {
-                        size: Vec2::new(344.3, 186.1),
+                        size: Vec2::new(320.3, 186.1),
                     },
 
                     ..default()
@@ -282,7 +287,7 @@ pub fn spawn_enemy_on_game_progress(
 
         let direction = (center - rand_point).normalize();
 
-        let (name, texture, scale_modifier) = generate_dog(
+        let (name, texture, scale_modifier, dog_type) = generate_dog(
             &mut dogs_resource,
             names_assets,
             &mut already_spawned_data,
@@ -315,6 +320,7 @@ pub fn spawn_enemy_on_game_progress(
                     direction,
                     has_collider: false,
                     scale: scale_modifier,
+                    dog_type,
                 },
                 Name::new(name.clone()),
             ))
@@ -463,7 +469,7 @@ fn generate_dog(
     dogs_resource: &mut ResMut<DogResource>,
     assets: Res<Assets<DogData>>,
     already_spawned_data: &mut Local<(HashSet<String>, u8)>,
-) -> (String, Handle<Image>, f32) {
+) -> (String, Handle<Image>, f32, DogType) {
     // Rand
     let mut rand = rand::thread_rng();
     let last_name_possibility = rand.gen::<bool>();
@@ -487,17 +493,23 @@ fn generate_dog(
             dogs_resource.images.shuffle(&mut rand);
         }
     }
-    // let mut default_scale = rand.gen_range(0.3..1.2);
     let mut default_scale = 0.5;
+    let mut default_dog_type = DogType::Ordinary;
 
     // Handle Doggy Potter case
     if &filename == "FaceHarry" {
-        return (String::from("Doggy Potter"), image, default_scale);
+        return (
+            String::from("Doggy Potter"),
+            image,
+            default_scale,
+            DogType::Harry,
+        );
     }
 
     // Handle Big Kid case
     if &filename == "Face8" {
         default_scale = 1.0;
+        default_dog_type = DogType::BigBoy;
     }
 
     // Generate name
@@ -526,7 +538,7 @@ fn generate_dog(
         }
     }
 
-    (name, image, default_scale)
+    (name, image, default_scale, default_dog_type)
 }
 
 fn is_in_window(window: &Window, size: Vec2, transform: &Transform) -> bool {
@@ -568,9 +580,12 @@ fn generate_phrase(
 
     // Get handles
     let vec = match phrs_type {
-        PhraseType::Hello => {
-            &assets.get(&dogs_resource.json_data).unwrap().hellos
-        }
+        PhraseType::Hello(dog_type) => match dog_type {
+            DogType::Harry => {
+                &assets.get(&dogs_resource.json_data).unwrap().potters_hellos
+            }
+            _ => &assets.get(&dogs_resource.json_data).unwrap().hellos,
+        },
         PhraseType::Rotation => {
             &assets
                 .get(&dogs_resource.json_data)
