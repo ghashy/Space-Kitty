@@ -28,5 +28,8 @@
     "Peter"
   ],
   "last_names": ["Little", "Big", "Daring", "Cowardly", "Kind", "Peaceful"],
-  "nicknames": ["SlippersEater", "Sharick", "Sniffer"]
+  "nicknames": ["SlippersEater", "Sharick", "Sniffer"],
+  "hellos": ["Hello!"],
+  "wildly_rotations": ["I'm wildly rotating!"],
+  "fish_picking": ["Another one!"]
 }

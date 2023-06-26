@@ -1,4 +1,7 @@
-use bevy::{prelude::*, sprite::Anchor, utils::HashSet, window::PrimaryWindow};
+use bevy::{
+    prelude::*, sprite::Anchor, text::Text2dBounds, utils::HashSet,
+    window::PrimaryWindow,
+};
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
@@ -8,24 +11,23 @@ use super::{
     components::{Enemy, MessageBox, PatchOfLight},
     *,
 };
+use crate::audio::resources::SamplePack;
 use crate::{
-    audio::assets::AudioSource,
-    game::score::{ScoreEventType, ScoreUpdateEvent},
+    audio::assets::AudioSource, game::score::ScoreUpdateEvent,
     helper_functions::*,
 };
-use crate::{
-    audio::resources::KiraManager,
-    game::{player::DOG_SIZE, score::resources::Score},
-};
-use crate::{
-    audio::resources::SamplePack, game::fish::components::FishWasPickedEvent,
-};
+use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
+enum PhraseType {
+    Hello,
+    Rotation,
+    Picking,
+}
+
 pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let names: Handle<DogNames> =
-        asset_server.load("json_data/dogs_names.json");
+    let names: Handle<DogData> = asset_server.load("json_data/dogs_data.json");
 
     let mut images: Vec<(String, Handle<Image>)> = Vec::new();
 
@@ -134,9 +136,9 @@ pub fn update_enemy_direction(
             }
             // TODO: profile this break disabled
             // Break if got actual collision
-            if entities_flags != 0b00 {
-                continue;
-            }
+            // if entities_flags != 0b00 {
+            //     continue;
+            // }
         }
     }
     // Play audio
@@ -152,6 +154,8 @@ pub fn system_add_collider_to_enemy(
     mut commands: Commands,
     mut entity_query: Query<(Entity, &mut Enemy, &Transform)>,
     mut events: EventWriter<MessageBoxRequest>,
+    dogs_resource: Res<DogResource>,
+    assets: Res<Assets<DogData>>,
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
@@ -166,7 +170,11 @@ pub fn system_add_collider_to_enemy(
                     .insert(Collider::ball(DOG_SIZE.x * enemy.scale * 0.47));
                 enemy.has_collider = true;
 
-                events.send(MessageBoxRequest(entity));
+                events.send(MessageBoxRequest(
+                    entity,
+                    generate_phrase(&dogs_resource, &assets, PhraseType::Hello),
+                    3,
+                ));
 
                 // Hello bark sound
                 kira_manager
@@ -182,13 +190,14 @@ pub fn system_add_collider_to_enemy(
     }
 }
 
+// FIXME
 pub fn spawn_message_box(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut events: EventReader<MessageBoxRequest>,
+    mut message_box_show_events: EventReader<MessageBoxRequest>,
     entity_query: Query<(&Children, &Transform)>,
 ) {
-    for event in events.iter() {
+    for event in message_box_show_events.iter() {
         let (children, transform) = entity_query.get(event.0).unwrap();
         let mut message_box_transform = Transform::default();
         rotate_transform_with_parent_calibration(
@@ -206,7 +215,7 @@ pub fn spawn_message_box(
                         ..default()
                     },
                     transform: Transform {
-                        scale: Vec3::new(0.3, 0.3, 0.),
+                        scale: Vec3::new(0.3, 0.3, 1.),
                         ..message_box_transform
                     },
                     texture: asset_server.load("sprites/Message icon.png"),
@@ -214,6 +223,27 @@ pub fn spawn_message_box(
                 },
                 MessageBox,
             ))
+            .with_children(|parent| {
+                parent.spawn(Text2dBundle {
+                    transform: Transform::from_translation(Vec3::new(
+                        -167.4, 180.2, 1.,
+                    )),
+                    text: Text::from_section(
+                        &event.1,
+                        TextStyle {
+                            color: Color::BLACK,
+                            font_size: 65.5,
+                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        },
+                    )
+                    .with_alignment(TextAlignment::Center),
+                    text_2d_bounds: Text2dBounds {
+                        size: Vec2::new(344.3, 186.1),
+                    },
+
+                    ..default()
+                });
+            })
             .id();
         if let Some(ch) = children.iter().next() {
             commands.entity(*ch).push_children(&[message_box]);
@@ -226,7 +256,7 @@ pub fn spawn_enemy_on_game_progress(
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
     mut dogs_resource: ResMut<DogResource>,
-    names_assets: Res<Assets<DogNames>>,
+    names_assets: Res<Assets<DogData>>,
     mut already_spawned_data: Local<(HashSet<String>, u8)>,
     mut picked_event: EventReader<ScoreUpdateEvent>,
     mut arriving_event: EventWriter<EnemyIsArrivingEvent>,
@@ -398,7 +428,7 @@ pub fn rotate_message_box(
 
 fn generate_dog(
     dogs_resource: &mut ResMut<DogResource>,
-    names_assets: Res<Assets<DogNames>>,
+    assets: Res<Assets<DogData>>,
     already_spawned_data: &mut Local<(HashSet<String>, u8)>,
 ) -> (String, Handle<Image>, f32) {
     // Rand
@@ -407,7 +437,7 @@ fn generate_dog(
     let nickname_possibility = rand.gen::<bool>() && last_name_possibility;
 
     // Get handles
-    let dogs_names = names_assets.get(&dogs_resource.json_data).unwrap();
+    let dogs_data = assets.get(&dogs_resource.json_data).unwrap();
     let filename = dogs_resource.images[already_spawned_data.1 as usize]
         .0
         .clone();
@@ -441,12 +471,12 @@ fn generate_dog(
     let mut name = String::new();
     loop {
         name.push_str(
-            &dogs_names.first_names
-                [rand.gen_range(0..dogs_names.first_names.len())],
+            &dogs_data.first_names
+                [rand.gen_range(0..dogs_data.first_names.len())],
         );
         if last_name_possibility {
-            name = dogs_names.last_names
-                [rand.gen_range(0..dogs_names.last_names.len())]
+            name = dogs_data.last_names
+                [rand.gen_range(0..dogs_data.last_names.len())]
             .to_string()
                 + " "
                 + &name;
@@ -454,8 +484,8 @@ fn generate_dog(
         if nickname_possibility {
             name = name
                 + " aka "
-                + &dogs_names.nicknames
-                    [rand.gen_range(0..dogs_names.nicknames.len())]
+                + &dogs_data.nicknames
+                    [rand.gen_range(0..dogs_data.nicknames.len())]
                 .to_string();
         }
         if !already_spawned_data.0.contains(&name) {
@@ -493,4 +523,31 @@ fn get_random_bark<'a>(
         11 => &sample_pack.bark12,
         _ => unreachable!(),
     }
+}
+
+fn generate_phrase(
+    dogs_resource: &Res<DogResource>,
+    assets: &Res<Assets<DogData>>,
+    phrs_type: PhraseType,
+) -> String {
+    // Rand
+    let mut rand = rand::thread_rng();
+
+    // Get handles
+    let vec = match phrs_type {
+        PhraseType::Hello => {
+            &assets.get(&dogs_resource.json_data).unwrap().hellos
+        }
+        PhraseType::Rotation => {
+            &assets
+                .get(&dogs_resource.json_data)
+                .unwrap()
+                .wildly_rotations
+        }
+        PhraseType::Picking => {
+            &assets.get(&dogs_resource.json_data).unwrap().fish_picking
+        }
+    };
+
+    vec.choose(&mut rand).unwrap_or(&String::new()).clone()
 }

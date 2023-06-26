@@ -259,7 +259,7 @@ fn spawn_player(
             parent.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        custom_size: Some(Vec2::new(520., 622.)),
+                        custom_size: Some(Vec2::new(520., 622.) / 2.),
                         flip_x: true,
                         ..default()
                     },

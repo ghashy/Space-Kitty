@@ -1,6 +1,7 @@
 use bevy::diagnostic::{
     Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
 };
+use bevy::text::Text2dBounds;
 use bevy::utils::HashMap;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_inspector_egui::{
@@ -43,6 +44,7 @@ impl Plugin for DebugPlugin {
             .add_plugin(RapierDebugRenderPlugin::default())
             .add_plugin(FrameTimeDiagnosticsPlugin::default())
             .add_plugin(EntityCountDiagnosticsPlugin::default())
+            .register_type::<Text2dBounds>()
             // .add_plugin(SystemInformationDiagnosticsPlugin::default())
             // Startup Systems
             .add_startup_system(setup)

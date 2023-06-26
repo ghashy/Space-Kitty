@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::{assets::DogNames, resources::DogResource, systems::*};
+use self::{assets::DogData, resources::DogResource, systems::*};
 use super::SimulationState;
 use crate::AppState;
 
@@ -25,7 +25,7 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
             // Assets
-            .add_asset::<DogNames>()
+            .add_asset::<DogData>()
             // Events
             .add_event::<EnemyIsArrivingEvent>()
             .add_event::<MessageBoxRequest>()
@@ -53,4 +53,4 @@ impl Plugin for EnemyPlugin {
 // Events
 pub struct EnemyIsArrivingEvent(pub String);
 
-pub struct MessageBoxRequest(Entity);
+pub struct MessageBoxRequest(Entity, String, u32);

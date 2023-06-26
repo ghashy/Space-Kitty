@@ -10,6 +10,7 @@
 //     missing_docs
 // )]
 
+use asset_loader::JsonAssetLoader;
 use bevy::{
     prelude::*,
     render::{
@@ -25,7 +26,6 @@ use bevy_tweening::TweeningPlugin;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use asset_loader::JsonAssetLoader;
 use audio::AudioPlugin;
 use components::*;
 use debug::DebugPlugin;
