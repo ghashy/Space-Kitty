@@ -12,13 +12,13 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ### Design:
 
 - [x] Fish-boss
-- [ ] Audio design
+- [x] Audio design
 - [ ] Rotating antenna
 - [x] Design border, 10 dog’s skins, new cat’s skin
 - [x] Add fish score icon
 - [x] Design new game icon
 - [x] Design health of the ship
-- [ ] Design Game Over screen
+- [x] Design Game Over screen
 - [ ] Design game presentation image
 - [x] Design animation for Big Buddy
 - [x] Design Message box
@@ -38,6 +38,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix
+- [ ] Doggy theme particles
 
 #### Buff system (future features):
 
