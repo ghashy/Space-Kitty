@@ -5,8 +5,88 @@ use bevy::prelude::*;
 pub const HUD_CONTAINER: Style = Style {
     display: Display::Flex,
     size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+    align_content: AlignContent::SpaceAround,
+    ..Style::DEFAULT
+};
+
+pub const LEFT_SIDE_HUD_CONTAINER: Style = Style {
+    display: Display::Flex,
+    size: Size::new(Val::Percent(50.), Val::Percent(100.)),
+    flex_direction: FlexDirection::Column,
+    align_items: AlignItems::FlexStart,
+    ..Style::DEFAULT
+};
+
+pub const CHART: Style = Style {
+    display: Display::Flex,
+    flex_direction: FlexDirection::Column,
+    margin: UiRect {
+        left: Val::Px(10.),
+        top: Val::Px(10.),
+        ..UiRect::DEFAULT
+    },
+    ..Style::DEFAULT
+};
+
+pub const ITEM: Style = Style {
+    position_type: PositionType::Absolute,
+    display: Display::Flex,
+    justify_content: JustifyContent::Center,
+    align_items: AlignItems::Center,
+    flex_direction: FlexDirection::Row,
+    ..Style::DEFAULT
+};
+
+pub const ITEM_IMAGE_BACK: Style = Style {
+    size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
+    margin: UiRect {
+        left: Val::Px(10.),
+        top: Val::Px(10.),
+        ..UiRect::DEFAULT
+    },
+    display: Display::Flex,
+    overflow: Overflow::Hidden,
+    ..Style::DEFAULT
+};
+
+pub const ITEM_IMAGE_CONTENT: Style = Style {
+    display: Display::Flex,
+    flex_direction: FlexDirection::Column,
+    ..Style::DEFAULT
+};
+
+pub const ITEM_IMAGE_BORDER: Style = Style {
+    size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
+    display: Display::Flex,
+    flex_direction: FlexDirection::Column,
+    ..Style::DEFAULT
+};
+
+pub const ITEM_TEXT: Style = Style {
+    margin: UiRect {
+        left: Val::Px(10.),
+        right: Val::Px(10.),
+        ..UiRect::DEFAULT
+    },
+    align_self: AlignSelf::Center,
+    align_content: AlignContent::Center,
+    align_items: AlignItems::Center,
+    ..Style::DEFAULT
+};
+
+pub const ITEM_FISH_IMAGE: Style = Style {
+    size: Size::new(Val::Px(163. / 5.2), Val::Px(124. / 5.2)),
+    display: Display::Flex,
+    flex_direction: FlexDirection::Column,
+    ..Style::DEFAULT
+};
+
+pub const RIGHT_SIDE_HUD_CONTAINER: Style = Style {
+    display: Display::Flex,
+    size: Size::new(Val::Percent(50.), Val::Percent(100.)),
     flex_direction: FlexDirection::Column,
     align_items: AlignItems::FlexEnd,
+    // align_self: AlignSelf::Start,
     ..Style::DEFAULT
 };
 

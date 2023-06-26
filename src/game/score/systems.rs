@@ -3,15 +3,12 @@ use bevy::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{
-    resources::{HighScores, Score},
+    resources::{Chart, HighScores, Score},
     ScoreUpdateEvent,
 };
-use crate::{
-    events::GameOver,
-    game::{
-        enemy::components::Enemy, fish::components::FishWasPickedEvent,
-        player::components::Player,
-    },
+use crate::game::{
+    enemy::components::Enemy, fish::components::FishWasPickedEvent,
+    player::components::Player,
 };
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -24,21 +21,19 @@ pub fn remove_score(mut commands: Commands) {
     commands.remove_resource::<Score>();
 }
 
-// TODO: Implement highscore system
-pub fn update_highscores(
-    mut _game_over_event_reader: EventReader<GameOver>,
-    mut _high_scores: ResMut<HighScores>,
-) {
-    // for event in game_over_event_reader.iter() {
-    //     high_scores
-    //         .scores
-    //         .push(("Player".to_string(), event.final_score));
-    // }
-}
+pub fn sort_highscores(scores: Option<Res<Score>>, mut chart: ResMut<Chart>) {
+    if let Some(scores) = scores {
+        if scores.is_changed() {
+            let mut vec = scores.data.iter().collect::<Vec<_>>();
+            vec.sort_by(|a, b| a.1 .1.cmp(&b.1 .1));
 
-pub fn high_scores_updated(high_scores: ResMut<HighScores>) {
-    if high_scores.is_changed() {
-        println!("High Scores: {:?}", high_scores);
+            chart.top1 =
+                vec.get(0).map(|&v| (v.0.clone(), v.1 .0.clone(), v.1 .1));
+            chart.top2 =
+                vec.get(1).map(|&v| (v.0.clone(), v.1 .0.clone(), v.1 .1));
+            chart.top3 =
+                vec.get(2).map(|&v| (v.0.clone(), v.1 .0.clone(), v.1 .1));
+        }
     }
 }
 

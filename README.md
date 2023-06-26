@@ -34,10 +34,10 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Dog’s message when picking cracker randomly
 - [x] Message when new dog arriving
 - [ ] Crackers particles when kitty colliding with dog
+- [ ] Drop 25% of Kitty's crackers on colliding with dog. Add all this crackers to the dog
 - [x] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix
-- [ ] Drop 25% of Kitty's crackers on colliding with dog. Add all this crackers to the dog
 
 #### Buff system (future features):
 
