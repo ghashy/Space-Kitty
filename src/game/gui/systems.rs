@@ -4,9 +4,10 @@ use bevy_tweening::TweenCompleted;
 // ───── Current Crate Import ─────────────────────────────────────────────── //
 
 use super::animation::animate_heart_out;
-use super::{components::*, styles::*, LIVES_ID_OFFSET};
+use super::{components::*, styles::*, CHART_SIZE, LIVES_ID_OFFSET};
 use crate::game::enemy::EnemyIsArrivingEvent;
 use crate::game::player::LIVES_COUNT;
+use crate::game::score::resources::Chart;
 use crate::game::score::ScoreUpdateEvent;
 use crate::{events::PlayerHit, game::player::components::Player};
 
@@ -20,42 +21,147 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn((
             NodeBundle {
                 style: HUD_CONTAINER,
-                // background_color: BackgroundColor(Color::RED),
                 ..default()
             },
             Hud,
         ))
         .with_children(|parent| {
+            // LEFT SCREEN SIDE
             parent
                 .spawn(NodeBundle {
-                    style: HEARTS_ROW,
-                    // background_color: BackgroundColor(Color::PINK),
+                    // background_color: BackgroundColor(Color::CYAN.with_a(0.5)),
+                    style: LEFT_SIDE_HUD_CONTAINER,
                     ..default()
                 })
                 .with_children(|parent| {
-                    for mut id in 1..=LIVES_COUNT {
-                        id += LIVES_ID_OFFSET;
-                        parent.spawn((
-                            ImageBundle {
-                                style: STARSHIP_LIFE,
-                                image: img1.clone().into(),
+                    parent
+                        .spawn((
+                            NodeBundle {
+                                style: CHART,
                                 ..default()
                             },
-                            HeartImage(id, img1.clone(), img2.clone()),
-                        ));
-                    }
+                            ChartBlock,
+                        ))
+                        .with_children(|parent| {
+                            // Items
+                            for _ in 0..CHART_SIZE {
+                                spawn_row(parent, &asset_server);
+                            }
+                        });
+                });
+            // RIGHT SCREEN SIDE
+            parent
+                .spawn(NodeBundle {
+                    style: RIGHT_SIDE_HUD_CONTAINER,
+                    // background_color: BackgroundColor(Color::RED),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn(NodeBundle {
+                            style: HEARTS_ROW,
+                            // background_color: BackgroundColor(Color::PINK),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            for mut id in 1..=LIVES_COUNT {
+                                id += LIVES_ID_OFFSET;
+                                parent.spawn((
+                                    ImageBundle {
+                                        style: STARSHIP_LIFE,
+                                        image: img1.clone().into(),
+                                        ..default()
+                                    },
+                                    HeartImage(id, img1.clone(), img2.clone()),
+                                ));
+                            }
+                        });
+                    parent.spawn((
+                        NodeBundle {
+                            // background_color: BackgroundColor(
+                            //     Color::ORANGE_RED,
+                            // ),
+                            style: MESSAGES_BAR,
+                            ..default()
+                        },
+                        MessagesList,
+                    ));
+                });
+        });
+}
+
+fn spawn_row(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+    parent
+        .spawn(NodeBundle {
+            style: ITEM, // row
+            ..default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn(ImageBundle {
+                    image: UiImage {
+                        texture: asset_server.load("sprites/Frame.png"),
+                        ..default()
+                    },
+                    style: ITEM_IMAGE_BACK,
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn((
+                            ImageBundle {
+                                style: ITEM_IMAGE_CONTENT,
+                                image: UiImage {
+                                    texture: asset_server
+                                        .load("sprites/Frame.png"),
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            TopImageMarker,
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn(ImageBundle {
+                                image: UiImage {
+                                    texture: asset_server
+                                        .load("sprites/Frame outline.png"),
+                                    ..default()
+                                },
+                                style: ITEM_IMAGE_BORDER,
+                                ..default()
+                            });
+                        });
                 });
             parent.spawn((
-                NodeBundle {
-                    // background_color: BackgroundColor(
-                    //     Color::ORANGE_RED,
-                    // ),
-                    style: MESSAGES_BAR,
+                TextBundle {
+                    style: ITEM_TEXT,
+                    text: Text::from_section(
+                        "Kitty",
+                        TextStyle {
+                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                            font_size: 24.,
+                            color: Color::WHITE,
+                        },
+                    ),
                     ..default()
                 },
-                MessagesList,
+                TopTextMarker,
             ));
+            parent.spawn(ImageBundle {
+                image: UiImage {
+                    texture: asset_server.load("sprites/Fish for score.png"),
+                    ..default()
+                },
+                style: ITEM_FISH_IMAGE,
+                ..default()
+            });
         });
+}
+
+pub fn update_chart(mut commands: Commands, chart: Res<Chart>) {
+    if chart.is_changed() {
+        println!("Chart is updated")
+    }
 }
 
 pub fn update_messages(

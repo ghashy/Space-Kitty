@@ -290,13 +290,13 @@ pub fn spawn_message_box(
         }
         // Hello bark sound
         kira_manager
-        .play(
-            audio_assets
-                .get(get_random_bark(&sample_pack))
-                .unwrap()
-                .get(),
-        )
-        .unwrap();
+            .play(
+                audio_assets
+                    .get(get_random_bark(&sample_pack))
+                    .unwrap()
+                    .get(),
+            )
+            .unwrap();
     }
 }
 
@@ -336,8 +336,8 @@ pub fn spawn_enemy_on_game_progress(
         );
 
         let mut rng = rand::thread_rng();
-        let mut angvel = if rng.gen_range(0..50) > 1 {0.3} else {7.};
-        angvel *= if rng.gen::<bool>() {1} else {-1};
+        let mut angvel = if rng.gen_range(0..50) > 1 { 0.3 } else { 7. };
+        angvel *= if rng.gen::<bool>() { 1. } else { -1. };
 
         let entity = commands
             .spawn((

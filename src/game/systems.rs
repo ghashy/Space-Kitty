@@ -5,6 +5,7 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_rapier2d::prelude::*;
+use kira::sound::static_sound::StaticSoundSettings;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -135,7 +136,13 @@ pub fn play_main_theme(
     mut sound_handle: ResMut<SoundHandleResource>,
 ) {
     let mut handle = kira_manager
-        .play(audio_assets.get(&sample_pack.title_theme).unwrap().get())
+        .play(
+            audio_assets
+                .get(&sample_pack.title_theme)
+                .unwrap()
+                .get()
+                .with_settings(StaticSoundSettings::new().volume(0.5)),
+        )
         .unwrap();
     handle.set_loop_region(..).unwrap();
     sound_handle.title_theme = Some(handle);

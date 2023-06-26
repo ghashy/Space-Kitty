@@ -37,7 +37,10 @@ impl Plugin for GamePlugin {
             .add_state::<SimulationState>()
             // Enter State Systems
             .add_systems(
-                (resume_simulation, spawn_world_borders, play_main_theme)
+                (
+                    resume_simulation,
+                    spawn_world_borders, /*play_main_theme*/
+                )
                     .in_schedule(OnEnter(AppState::Game)),
             )
             // Plugins

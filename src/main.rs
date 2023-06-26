@@ -78,10 +78,9 @@ fn main() {
                             1280. / 1.1,
                             720. / 1.1,
                         ),
-                        //     .with_scale_factor_override(1.5),
-                        // mode: WindowMode::SizedFullscreen,
-                        title: String::from("Space Kitty"),
-                        resizable: true,
+                        // .with_scale_factor_override(2.),
+                        // mode: WindowMode::Fullscreen,
+                        // title: String::from("Space Kitty"),
                         ..default()
                     }),
                     ..default()

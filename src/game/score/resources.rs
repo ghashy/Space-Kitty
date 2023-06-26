@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use bevy::{prelude::*, utils::HashMap};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -31,6 +33,7 @@ impl Score {
     }
 }
 
+// For store on the disk
 #[derive(Resource, Debug)]
 pub struct HighScores {
     pub scores: Vec<(Handle<Image>, String, u32)>,
@@ -40,4 +43,12 @@ impl Default for HighScores {
     fn default() -> Self {
         HighScores { scores: Vec::new() }
     }
+}
+
+// For in-game top chart
+#[derive(Resource, Default)]
+pub struct Chart {
+    pub top1: Option<(String, Handle<Image>, u32)>,
+    pub top2: Option<(String, Handle<Image>, u32)>,
+    pub top3: Option<(String, Handle<Image>, u32)>,
 }
