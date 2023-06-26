@@ -79,7 +79,7 @@ pub fn enemy_movement(
         if let Some(mut velocity) = velocity {
             velocity.linvel =
                 direction.truncate() * ENEMY_SPEED * time.delta_seconds();
-            if velocity.angvel > 12.0 && enemy.phrase_timer.finished() {
+            if velocity.angvel > 6.5 && enemy.phrase_timer.finished() {
                 message_box_request.send(MessageBoxRequest(
                     entity,
                     generate_phrase(
@@ -203,9 +203,6 @@ pub fn system_add_collider_to_enemy(
     mut events: EventWriter<MessageBoxRequest>,
     dogs_resource: Res<DogResource>,
     assets: Res<Assets<DogData>>,
-    mut kira_manager: NonSendMut<KiraManager>,
-    audio_assets: Res<Assets<AudioSource>>,
-    sample_pack: Res<SamplePack>,
 ) {
     for (entity, mut enemy, transform) in entity_query.iter_mut() {
         if !enemy.has_collider {
@@ -226,16 +223,6 @@ pub fn system_add_collider_to_enemy(
                         PhraseType::Hello(enemy.dog_type),
                     ),
                 ));
-
-                // Hello bark sound
-                kira_manager
-                    .play(
-                        audio_assets
-                            .get(get_random_bark(&sample_pack))
-                            .unwrap()
-                            .get(),
-                    )
-                    .unwrap();
             }
         }
     }
@@ -246,6 +233,9 @@ pub fn spawn_message_box(
     asset_server: Res<AssetServer>,
     mut message_box_show_events: EventReader<MessageBoxRequest>,
     entity_query: Query<(&Children, &Transform)>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
 ) {
     for event in message_box_show_events.iter() {
         let (children, transform) = entity_query.get(event.0).unwrap();
@@ -298,6 +288,15 @@ pub fn spawn_message_box(
         if let Some(ch) = children.iter().next() {
             commands.entity(*ch).push_children(&[message_box]);
         }
+        // Hello bark sound
+        kira_manager
+        .play(
+            audio_assets
+                .get(get_random_bark(&sample_pack))
+                .unwrap()
+                .get(),
+        )
+        .unwrap();
     }
 }
 
@@ -336,6 +335,10 @@ pub fn spawn_enemy_on_game_progress(
             &mut already_spawned_data,
         );
 
+        let mut rng = rand::thread_rng();
+        let mut angvel = if rng.gen_range(0..50) > 1 {0.3} else {7.};
+        angvel *= if rng.gen::<bool>() {1} else {-1};
+
         let entity = commands
             .spawn((
                 SpriteBundle {
@@ -354,7 +357,7 @@ pub fn spawn_enemy_on_game_progress(
                 RigidBody::Dynamic,
                 Velocity {
                     linvel: direction,
-                    angvel: 0.3,
+                    angvel,
                 },
                 Sleeping::disabled(),
                 ActiveCollisionTypes::all(),
@@ -364,7 +367,7 @@ pub fn spawn_enemy_on_game_progress(
                     has_collider: false,
                     scale: scale_modifier,
                     dog_type,
-                    phrase_timer: Timer::from_seconds(5., TimerMode::Once),
+                    phrase_timer: Timer::from_seconds(12., TimerMode::Once),
                 },
                 Name::new(name.clone()),
             ))

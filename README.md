@@ -13,32 +13,31 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 
 - [x] Fish-boss
 - [ ] Audio design
-- [x] Rotating antenna
+- [ ] Rotating antenna
 - [x] Design border, 10 dog’s skins, new cat’s skin
 - [x] Add fish score icon
 - [x] Design new game icon
 - [x] Design health of the ship
 - [ ] Design Game Over screen
 - [ ] Design game presentation image
-- [ ] Design animation for Big Buddy
+- [x] Design animation for Big Buddy
 - [x] Design Message box
 
 ### Coding:
 
-- [ ] Implement audio
+- [x] Implement audio
 - [ ] Implement highscore system
-- [ ] Dog’s message when rotating wildly
+- [x] Dog’s message when rotating wildly
 - [x] Status bar
 - [x] Dog’s spawn outside the screen
 - [x] Entity’s message when collecting every first and 10th cracker
-- [ ] Dog’s message when 2 dogs colliding (inline)
+- [x] Dog’s message when picking cracker randomly
 - [x] Message when new dog arriving
 - [ ] Crackers particles when kitty colliding with dog
 - [x] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix
-- [ ] Every 7th cracker add Animal's enjoy sound
-- [ ] Implement logic "Smart god"
+- [ ] Drop 25% of Kitty's crackers on colliding with dog. Add all this crackers to the dog
 
 #### Buff system (future features):
 
@@ -47,3 +46,4 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Shield
 - [ ] Water gun
 - [ ] Dog locator
+- [ ] Implement logic "Smart dog"
