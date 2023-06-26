@@ -10,6 +10,7 @@ pub struct DogData {
     pub last_names: Vec<String>,
     pub nicknames: Vec<String>,
     pub hellos: Vec<String>,
+    pub potters_hellos: Vec<String>,
     pub wildly_rotations: Vec<String>,
     pub fish_picking: Vec<String>,
 }

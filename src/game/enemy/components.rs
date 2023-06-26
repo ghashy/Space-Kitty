@@ -13,4 +13,4 @@ pub struct Enemy {
 pub struct PatchOfLight;
 
 #[derive(Component)]
-pub struct MessageBox;
+pub struct MessageBox(pub Timer, pub Option<Timer>);
