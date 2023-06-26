@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use bevy::{
-    prelude::*, sprite::Anchor, text::Text2dBounds, utils::HashSet,
+    ecs::event, prelude::*, sprite::Anchor, text::Text2dBounds, utils::HashSet,
     window::PrimaryWindow,
 };
 use bevy_rapier2d::prelude::*;
@@ -16,12 +16,14 @@ use super::{
     components::{DogType, Enemy, MessageBox, PatchOfLight},
     *,
 };
-use crate::audio::resources::SamplePack;
 use crate::{
     audio::assets::AudioSource, game::score::ScoreUpdateEvent,
     helper_functions::*,
 };
 use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
+use crate::{
+    audio::resources::SamplePack, game::fish::components::FishWasPickedEvent,
+};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -66,14 +68,55 @@ pub fn despawn_enemies(
 }
 
 pub fn enemy_movement(
-    mut enemy_query: Query<(Option<&mut Velocity>, &Enemy)>,
+    mut enemy_query: Query<(Entity, Option<&mut Velocity>, &mut Enemy)>,
     time: Res<Time>,
+    mut message_box_request: EventWriter<MessageBoxRequest>,
+    dogs_resource: Res<DogResource>,
+    assets: Res<Assets<DogData>>,
 ) {
-    for (velocity, enemy) in enemy_query.iter_mut() {
+    for (entity, velocity, mut enemy) in enemy_query.iter_mut() {
         let direction = enemy.direction.extend(0.);
         if let Some(mut velocity) = velocity {
             velocity.linvel =
                 direction.truncate() * ENEMY_SPEED * time.delta_seconds();
+            if velocity.angvel > 12.0 && enemy.phrase_timer.finished() {
+                message_box_request.send(MessageBoxRequest(
+                    entity,
+                    generate_phrase(
+                        &dogs_resource,
+                        &assets,
+                        PhraseType::Rotation,
+                    ),
+                ));
+                enemy.phrase_timer = generate_phrase_timer();
+            }
+        }
+    }
+}
+
+pub fn enemy_chatting(
+    mut enemy_query: Query<(Entity, &mut Enemy)>,
+    time: Res<Time>,
+    dogs_resource: Res<DogResource>,
+    assets: Res<Assets<DogData>>,
+    mut message_box_request: EventWriter<MessageBoxRequest>,
+    mut picked_fish_events: EventReader<FishWasPickedEvent>,
+) {
+    for (entity, mut enemy) in enemy_query.iter_mut() {
+        if enemy.phrase_timer.tick(time.delta()).finished() {
+            for event in picked_fish_events.iter() {
+                if event.1 == entity {
+                    message_box_request.send(MessageBoxRequest(
+                        entity,
+                        generate_phrase(
+                            &dogs_resource,
+                            &assets,
+                            PhraseType::Picking,
+                        ),
+                    ));
+                    enemy.phrase_timer = generate_phrase_timer();
+                }
+            }
         }
     }
 }
@@ -321,6 +364,7 @@ pub fn spawn_enemy_on_game_progress(
                     has_collider: false,
                     scale: scale_modifier,
                     dog_type,
+                    phrase_timer: Timer::from_seconds(5., TimerMode::Once),
                 },
                 Name::new(name.clone()),
             ))
@@ -598,4 +642,9 @@ fn generate_phrase(
     };
 
     vec.choose(&mut rand).unwrap_or(&String::new()).clone()
+}
+
+fn generate_phrase_timer() -> Timer {
+    let rand = rand::thread_rng().gen_range(3.0..10.0);
+    Timer::from_seconds(rand, TimerMode::Once)
 }

@@ -7,4 +7,4 @@ pub struct Fish {}
 pub struct FishPack;
 
 // Event
-pub struct FishWasPickedEvent(pub String);
+pub struct FishWasPickedEvent(pub String, pub Entity);

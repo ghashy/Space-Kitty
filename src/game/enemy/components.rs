@@ -15,6 +15,7 @@ pub struct Enemy {
     pub direction: Vec2,
     pub has_collider: bool,
     pub scale: f32,
+    pub phrase_timer: Timer,
 }
 
 #[derive(Component)]

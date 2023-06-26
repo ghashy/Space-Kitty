@@ -36,6 +36,7 @@ impl Plugin for EnemyPlugin {
                 (
                     update_enemy_direction,
                     enemy_movement,
+                    enemy_chatting,
                     spawn_enemy_on_game_progress,
                     rotate_patch_of_light,
                     update_message_box,

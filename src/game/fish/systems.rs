@@ -111,8 +111,10 @@ pub fn check_collision(
                                 .unwrap();
 
                             commands.entity(fish_entity).despawn();
-                            picked_event
-                                .send(FishWasPickedEvent(name.to_string()));
+                            picked_event.send(FishWasPickedEvent(
+                                name.to_string(),
+                                entity,
+                            ));
                             // Continue cycle if collision is resolved
                             continue 'outer;
                         }
@@ -133,8 +135,10 @@ pub fn check_collision(
                                 )
                                 .unwrap();
                             commands.entity(fish_entity).despawn();
-                            picked_event
-                                .send(FishWasPickedEvent(name.to_string()));
+                            picked_event.send(FishWasPickedEvent(
+                                name.to_string(),
+                                entity,
+                            ));
                             // Continue cycle if collision is resolved
                             continue 'outer;
                         }
