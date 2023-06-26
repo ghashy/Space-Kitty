@@ -127,7 +127,7 @@ fn spawn_row(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                                         .load("sprites/Frame outline.png"),
                                     ..default()
                                 },
-                                style: ITEM_IMAGE_BORDER,
+                                style: ITEM_IMAGE_OUTLINE,
                                 ..default()
                             });
                         });

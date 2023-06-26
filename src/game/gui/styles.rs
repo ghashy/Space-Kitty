@@ -31,9 +31,9 @@ pub const CHART: Style = Style {
 pub const ITEM: Style = Style {
     position_type: PositionType::Absolute,
     display: Display::Flex,
-    justify_content: JustifyContent::Center,
-    align_items: AlignItems::Center,
     flex_direction: FlexDirection::Row,
+    justify_content: JustifyContent::Center, // Try space-between
+    align_items: AlignItems::Center,
     ..Style::DEFAULT
 };
 
@@ -44,21 +44,19 @@ pub const ITEM_IMAGE_BACK: Style = Style {
         top: Val::Px(10.),
         ..UiRect::DEFAULT
     },
-    display: Display::Flex,
+    display: Display::Flex, // Maybe it's unnecessary
     overflow: Overflow::Hidden,
     ..Style::DEFAULT
 };
 
 pub const ITEM_IMAGE_CONTENT: Style = Style {
-    display: Display::Flex,
-    flex_direction: FlexDirection::Column,
+    display: Display::Flex, // Almost sure it's unnecessary
+    flex_direction: FlexDirection::Column, // Almost sure it's unnecessary
     ..Style::DEFAULT
 };
 
-pub const ITEM_IMAGE_BORDER: Style = Style {
+pub const ITEM_IMAGE_OUTLINE: Style = Style {
     size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
-    display: Display::Flex,
-    flex_direction: FlexDirection::Column,
     ..Style::DEFAULT
 };
 
@@ -68,16 +66,16 @@ pub const ITEM_TEXT: Style = Style {
         right: Val::Px(10.),
         ..UiRect::DEFAULT
     },
-    align_self: AlignSelf::Center,
-    align_content: AlignContent::Center,
-    align_items: AlignItems::Center,
+    align_self: AlignSelf::Center, // This parameter overrides "AlignItems::Center" in the ITEM
+    align_content: AlignContent::Center, // I think it's unnecessary
+    align_items: AlignItems::Center, // I think this is already said in the ITEM
     ..Style::DEFAULT
 };
 
 pub const ITEM_FISH_IMAGE: Style = Style {
     size: Size::new(Val::Px(163. / 5.2), Val::Px(124. / 5.2)),
-    display: Display::Flex,
-    flex_direction: FlexDirection::Column,
+    display: Display::Flex, // Almost sure it's unnecessary
+    flex_direction: FlexDirection::Column, // Almost sure it's unnecessary
     ..Style::DEFAULT
 };
 
