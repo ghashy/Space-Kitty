@@ -38,7 +38,7 @@ impl Plugin for EnemyPlugin {
                     enemy_movement,
                     spawn_enemy_on_game_progress,
                     rotate_patch_of_light,
-                    rotate_message_box,
+                    update_message_box,
                     system_add_collider_to_enemy,
                     spawn_message_box,
                 )
@@ -53,4 +53,4 @@ impl Plugin for EnemyPlugin {
 // Events
 pub struct EnemyIsArrivingEvent(pub String);
 
-pub struct MessageBoxRequest(Entity, String, u32);
+pub struct MessageBoxRequest(Entity, String);

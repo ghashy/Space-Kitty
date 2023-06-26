@@ -1,8 +1,13 @@
+use std::time::Duration;
+
 use bevy::{
     prelude::*, sprite::Anchor, text::Text2dBounds, utils::HashSet,
     window::PrimaryWindow,
 };
 use bevy_rapier2d::prelude::*;
+use bevy_tweening::{
+    lens::TransformScaleLens, Animator, EaseFunction, Tween, TweenCompleted,
+};
 use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -28,7 +33,6 @@ enum PhraseType {
 
 pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     let names: Handle<DogData> = asset_server.load("json_data/dogs_data.json");
-
     let mut images: Vec<(String, Handle<Image>)> = Vec::new();
 
     for i in 1..12 {
@@ -173,7 +177,6 @@ pub fn system_add_collider_to_enemy(
                 events.send(MessageBoxRequest(
                     entity,
                     generate_phrase(&dogs_resource, &assets, PhraseType::Hello),
-                    3,
                 ));
 
                 // Hello bark sound
@@ -190,7 +193,6 @@ pub fn system_add_collider_to_enemy(
     }
 }
 
-// FIXME
 pub fn spawn_message_box(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -221,12 +223,12 @@ pub fn spawn_message_box(
                     texture: asset_server.load("sprites/Message icon.png"),
                     ..default()
                 },
-                MessageBox,
+                MessageBox(Timer::from_seconds(3.5, TimerMode::Once), None),
             ))
             .with_children(|parent| {
                 parent.spawn(Text2dBundle {
                     transform: Transform::from_translation(Vec3::new(
-                        -167.4, 180.2, 1.,
+                        -160.4, 180.2, 1.,
                     )),
                     text: Text::from_section(
                         &event.1,
@@ -402,27 +404,58 @@ pub fn rotate_patch_of_light(
     }
 }
 
-pub fn rotate_message_box(
-    mut message_box_query: Query<(Entity, &mut Transform), With<MessageBox>>,
-    parents_query: Query<&Parent>,
-    transforms_query: Query<&Transform, (With<Enemy>, Without<MessageBox>)>,
+pub fn despawn_message_box(
+    mut commands: Commands,
+    mut message_box_query: Query<(&mut MessageBox, Entity)>,
+    time: Res<Time>,
 ) {
-    for (entity, mut transform) in message_box_query.iter_mut() {
-        let mut common_rotation = Quat::IDENTITY;
-        // Collect all parents rotation
-        for parent in parents_query.iter_ancestors(entity) {
-            if let Ok(transform) = transforms_query.get(parent) {
-                common_rotation = common_rotation.mul_quat(transform.rotation);
+    for (mut message_box, entity) in message_box_query.iter_mut() {
+        if let Some(ref mut timer) = message_box.1 {
+            if timer.tick(time.delta()).just_finished() {
+                commands.entity(entity).despawn_recursive();
             }
         }
-        // Apply rotation to patch
-        rotate_transform_with_parent_calibration(
-            &common_rotation,
-            &mut transform,
-            Vec2::NEG_X,
-            Vec2::NEG_X,
-            None,
-        );
+    }
+}
+
+pub fn update_message_box(
+    mut commands: Commands,
+    mut message_box_query: Query<(&mut MessageBox, Entity, &mut Transform)>,
+    parents_query: Query<&Parent>,
+    transforms_query: Query<&Transform, (With<Enemy>, Without<MessageBox>)>,
+    time: Res<Time>,
+) {
+    for (mut message_box, entity, mut transform) in message_box_query.iter_mut()
+    {
+        if message_box.0.tick(time.delta()).just_finished() {
+            let scale_tween = Tween::new(
+                EaseFunction::CubicOut,
+                Duration::from_millis(700),
+                TransformScaleLens {
+                    start: Vec3::splat(0.3),
+                    end: Vec3::splat(0.),
+                },
+            );
+            message_box.1 = Some(Timer::from_seconds(0.7, TimerMode::Once));
+            commands.entity(entity).insert(Animator::new(scale_tween));
+        } else {
+            let mut common_rotation = Quat::IDENTITY;
+            // Collect all parents rotation
+            for parent in parents_query.iter_ancestors(entity) {
+                if let Ok(transform) = transforms_query.get(parent) {
+                    common_rotation =
+                        common_rotation.mul_quat(transform.rotation);
+                }
+            }
+            // Apply rotation to patch
+            rotate_transform_with_parent_calibration(
+                &common_rotation,
+                &mut transform,
+                Vec2::NEG_X,
+                Vec2::NEG_X,
+                None,
+            );
+        }
     }
 }
 
