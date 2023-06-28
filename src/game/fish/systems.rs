@@ -84,7 +84,7 @@ pub fn tick_fish_spawn_timer(
 pub fn check_collision(
     mut collision_events: EventReader<CollisionEvent>,
     mut commands: Commands,
-    entity_query: Query<(Entity, &Name), Or<(With<Player>, With<Enemy>)>>,
+    entity_query: Query<Entity, Or<(With<Player>, With<Enemy>)>>,
     mut fish_query: Query<(Entity, &Parent), With<Fish>>,
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
@@ -95,7 +95,7 @@ pub fn check_collision(
         if let CollisionEvent::Started(entity1, entity2, _) = event {
             for (fish_entity, fish_pack) in fish_query.iter_mut() {
                 if fish_entity == *entity1 {
-                    for (entity, name) in entity_query.iter() {
+                    for entity in entity_query.iter() {
                         if entity == *entity2 {
                             commands
                                 .entity(fish_pack.get())
@@ -111,16 +111,14 @@ pub fn check_collision(
                                 .unwrap();
 
                             commands.entity(fish_entity).despawn();
-                            picked_event.send(FishWasPickedEvent(
-                                name.to_string(),
-                                entity,
-                            ));
+                            picked_event.send(FishWasPickedEvent(entity));
+
                             // Continue cycle if collision is resolved
                             continue 'outer;
                         }
                     }
                 } else if fish_entity == *entity2 {
-                    for (entity, name) in entity_query.iter() {
+                    for entity in entity_query.iter() {
                         if entity == *entity1 {
                             commands
                                 .entity(fish_pack.get())
@@ -134,11 +132,9 @@ pub fn check_collision(
                                         .get(),
                                 )
                                 .unwrap();
+
                             commands.entity(fish_entity).despawn();
-                            picked_event.send(FishWasPickedEvent(
-                                name.to_string(),
-                                entity,
-                            ));
+                            picked_event.send(FishWasPickedEvent(entity));
                             // Continue cycle if collision is resolved
                             continue 'outer;
                         }

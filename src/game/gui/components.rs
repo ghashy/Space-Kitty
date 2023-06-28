@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -15,10 +15,12 @@ pub struct Message(pub Timer);
 pub struct HeartImage(pub u64, pub Handle<Image>, pub Handle<Image>);
 
 #[derive(Component)]
-pub struct ChartBlock;
+pub struct ChartBlock {
+    pub entities: HashMap<Entity, Entity>,
+}
 
 #[derive(Component)]
-pub struct TopImageMarker;
-
-#[derive(Component)]
-pub struct TopTextMarker;
+pub struct ChartRow {
+    pub idx: usize,
+    pub entity: Option<Entity>,
+}

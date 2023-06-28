@@ -1,10 +1,14 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
-use bevy_tweening::TweenCompleted;
+use bevy::utils::HashMap;
+use bevy_tweening::lens::UiPositionLens;
+use bevy_tweening::{Animator, EaseFunction, Tween, TweenCompleted};
 
 // ───── Current Crate Import ─────────────────────────────────────────────── //
 
 use super::animation::animate_heart_out;
-use super::{components::*, styles::*, CHART_SIZE, LIVES_ID_OFFSET};
+use super::{components::*, styles::*, LIVES_ID_OFFSET};
 use crate::game::enemy::EnemyIsArrivingEvent;
 use crate::game::player::LIVES_COUNT;
 use crate::game::score::resources::Chart;
@@ -29,38 +33,30 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
             // LEFT SCREEN SIDE
             parent
                 .spawn(NodeBundle {
-                    // background_color: BackgroundColor(Color::CYAN.with_a(0.5)),
                     style: LEFT_SIDE_HUD_CONTAINER,
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent
-                        .spawn((
-                            NodeBundle {
-                                style: CHART,
-                                ..default()
-                            },
-                            ChartBlock,
-                        ))
-                        .with_children(|parent| {
-                            // Items
-                            for _ in 0..CHART_SIZE {
-                                spawn_row(parent, &asset_server);
-                            }
-                        });
+                    parent.spawn((
+                        NodeBundle {
+                            style: CHART,
+                            ..default()
+                        },
+                        ChartBlock {
+                            entities: HashMap::new(),
+                        },
+                    ));
                 });
             // RIGHT SCREEN SIDE
             parent
                 .spawn(NodeBundle {
                     style: RIGHT_SIDE_HUD_CONTAINER,
-                    // background_color: BackgroundColor(Color::RED),
                     ..default()
                 })
                 .with_children(|parent| {
                     parent
                         .spawn(NodeBundle {
                             style: HEARTS_ROW,
-                            // background_color: BackgroundColor(Color::PINK),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -78,9 +74,6 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                         });
                     parent.spawn((
                         NodeBundle {
-                            // background_color: BackgroundColor(
-                            //     Color::ORANGE_RED,
-                            // ),
                             style: MESSAGES_BAR,
                             ..default()
                         },
@@ -90,12 +83,33 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn spawn_row(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+fn spawn_row(
+    parent: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    text: &str,
+    texture: Handle<Image>,
+    content_style: Style,
+    pos: usize,
+) -> Entity {
     parent
-        .spawn(NodeBundle {
-            style: ITEM, // row
-            ..default()
-        })
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    position: UiRect::top(Val::Px(pos as f32 * 75.)),
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Row,
+                    justify_content: JustifyContent::SpaceBetween,
+                    align_items: AlignItems::Center,
+                    ..Style::DEFAULT
+                },
+                ..default()
+            },
+            ChartRow {
+                idx: pos,
+                entity: None,
+            },
+        ))
         .with_children(|parent| {
             parent
                 .spawn(ImageBundle {
@@ -108,18 +122,14 @@ fn spawn_row(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 })
                 .with_children(|parent| {
                     parent
-                        .spawn((
-                            ImageBundle {
-                                style: ITEM_IMAGE_CONTENT,
-                                image: UiImage {
-                                    texture: asset_server
-                                        .load("sprites/Frame.png"),
-                                    ..default()
-                                },
+                        .spawn((ImageBundle {
+                            style: content_style,
+                            image: UiImage {
+                                texture,
                                 ..default()
                             },
-                            TopImageMarker,
-                        ))
+                            ..default()
+                        },))
                         .with_children(|parent| {
                             parent.spawn(ImageBundle {
                                 image: UiImage {
@@ -132,21 +142,18 @@ fn spawn_row(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                             });
                         });
                 });
-            parent.spawn((
-                TextBundle {
-                    style: ITEM_TEXT,
-                    text: Text::from_section(
-                        "Kitty",
-                        TextStyle {
-                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                            font_size: 24.,
-                            color: Color::WHITE,
-                        },
-                    ),
-                    ..default()
-                },
-                TopTextMarker,
-            ));
+            parent.spawn((TextBundle {
+                style: ITEM_TEXT,
+                text: Text::from_section(
+                    text,
+                    TextStyle {
+                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font_size: 20.,
+                        color: Color::WHITE,
+                    },
+                ),
+                ..default()
+            },));
             parent.spawn(ImageBundle {
                 image: UiImage {
                     texture: asset_server.load("sprites/Fish for score.png"),
@@ -155,12 +162,98 @@ fn spawn_row(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 style: ITEM_FISH_IMAGE,
                 ..default()
             });
-        });
+        })
+        .id()
 }
 
-pub fn update_chart(mut commands: Commands, chart: Res<Chart>) {
+/// `drawn_block` contains pairs: K: Entity (of character), V: Entity (of UI)
+pub fn spawn_rows_from_backend(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    chart: Res<Chart>,
+    mut chart_block: Query<(Entity, &mut ChartBlock)>,
+    mut chart_rows: Query<(&mut ChartRow, &Children)>,
+    mut texts: Query<&mut Text>,
+) {
     if chart.is_changed() {
-        println!("Chart is updated")
+        let (block_entity, mut drawn_block) = chart_block.single_mut();
+        let mut removed_keys = Vec::new();
+
+        // Figure out which entities are not exist for now, despawn their rows
+        for (character, ui) in drawn_block.entities.iter() {
+            if let None = chart.get_pos(*character) {
+                commands.entity(*ui).despawn_recursive();
+                removed_keys.push(*character);
+            }
+        }
+
+        // Remove unexistent entities from `drawn_block`
+        removed_keys.iter().for_each(|key| {
+            drawn_block.entities.remove(key);
+        });
+
+        // Iterate chart from backend, and spawn if not spawned rows from chart
+        for (idx, item) in chart.lines.iter().enumerate() {
+            if !drawn_block.entities.contains_key(&item.entity) && idx < 3 {
+                commands.entity(block_entity).with_children(|parent| {
+                    let row_id = spawn_row(
+                        parent,
+                        &asset_server,
+                        &(item.name.to_string()
+                            + ": "
+                            + &item.score.to_string()),
+                        item.image.clone(),
+                        ITEM_IMAGE_CONTENT,
+                        idx,
+                    );
+                    // Push this entity to list of drawn entities
+                    drawn_block.entities.insert(item.entity, row_id);
+                });
+            }
+        }
+
+        // Correct rows positions, update scores
+        for (character, ui) in drawn_block.entities.iter() {
+            if let Some(idx) = chart.get_pos(*character) {
+                if let Ok((mut chart_row, child)) = chart_rows.get_mut(*ui) {
+                    // Update scores
+                    let scoreline = chart
+                        .get_line(idx)
+                        .expect("Error get ScoreLine from chart");
+
+                    let mut text = texts
+                        .get_mut(*child.iter().take(2).last().unwrap())
+                        .unwrap();
+
+                    text.sections = vec![TextSection {
+                        value: scoreline.name.to_string()
+                            + ": "
+                            + &scoreline.score.to_string(),
+                        style: TextStyle {
+                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                            font_size: 20.,
+                            color: Color::WHITE,
+                        },
+                    }];
+
+                    // Correct positions
+                    if chart_row.idx != idx {
+                        let tween = Tween::new(
+                            EaseFunction::QuadraticInOut,
+                            Duration::from_millis(700),
+                            UiPositionLens {
+                                start: UiRect::top(Val::Px(
+                                    chart_row.idx as f32 * 75.,
+                                )),
+                                end: UiRect::top(Val::Px(idx as f32 * 75.)),
+                            },
+                        );
+                        chart_row.idx = idx;
+                        commands.entity(*ui).insert(Animator::new(tween));
+                    }
+                }
+            }
+        }
     }
 }
 

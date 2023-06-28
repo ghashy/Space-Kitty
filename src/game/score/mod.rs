@@ -25,7 +25,8 @@ impl Plugin for ScorePlugin {
             // Enter State Systems
             .add_system(insert_score.in_schedule(OnEnter(AppState::Game)))
             // Systems
-            .add_system(sort_highscores)
+            .add_system(update_chart_data)
+            .add_system(update_highscores)
             .add_system(
                 update_score
                     // IMPORTANT: we should update score before we spawn
@@ -42,7 +43,7 @@ impl Plugin for ScorePlugin {
 // Events
 
 pub struct ScoreUpdateEvent {
-    pub name: String,
+    pub name: Name,
     pub event_type: ScoreEventType,
 }
 
@@ -52,7 +53,7 @@ pub enum ScoreEventType {
 }
 
 impl ScoreUpdateEvent {
-    pub fn new(name: String, event_type: ScoreEventType) -> Self {
+    pub fn new(name: Name, event_type: ScoreEventType) -> Self {
         ScoreUpdateEvent { name, event_type }
     }
 }

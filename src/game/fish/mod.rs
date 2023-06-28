@@ -38,10 +38,7 @@ impl Plugin for FishPlugin {
             .add_system(spawn_fish.in_schedule(OnEnter(AppState::Game)))
             // Systems
             .add_systems(
-                (
-                    tick_fish_spawn_timer,
-                    /*spawn_fish_over_time,*/ check_collision,
-                )
+                (tick_fish_spawn_timer, spawn_fish_over_time, check_collision)
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),
             )

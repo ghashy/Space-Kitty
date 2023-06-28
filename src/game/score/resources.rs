@@ -1,34 +1,32 @@
-use std::collections::BTreeMap;
-
 use bevy::{prelude::*, utils::HashMap};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(Debug)]
 pub enum ScoreError {
-    NoEntityWithName(String),
+    NoScoreForEntity(Entity),
 }
 
 #[derive(Resource, Default)]
 pub struct Score {
-    pub data: HashMap<String, (Handle<Image>, u32)>,
+    pub data: HashMap<Entity, u32>,
 }
 
 impl Score {
-    pub fn add_score_to(&mut self, who: &str, image: Handle<Image>) -> u32 {
+    pub fn add_one_score_to(&mut self, who: &Entity) -> u32 {
         let old_score = match self.data.get(who) {
-            Some((_, score)) => *score,
+            Some(score) => *score,
             None => 0,
         };
         let new_score = old_score + 1;
-        self.data.insert(who.to_string(), (image, new_score));
+        self.data.insert(*who, new_score);
         new_score
     }
 
-    pub fn get_score(&self, for_who: &str) -> Result<u32, ScoreError> {
+    pub fn get_score(&self, for_who: &Entity) -> Result<u32, ScoreError> {
         match self.data.get(for_who) {
-            Some((_, score)) => Ok(*score),
-            None => Err(ScoreError::NoEntityWithName(String::from(for_who))),
+            Some(score) => Ok(*score),
+            None => Err(ScoreError::NoScoreForEntity(*for_who)),
         }
     }
 }
@@ -36,19 +34,37 @@ impl Score {
 // For store on the disk
 #[derive(Resource, Debug)]
 pub struct HighScores {
-    pub scores: Vec<(Handle<Image>, String, u32)>,
+    pub scores: HashMap<Name, (Handle<Image>, u32)>,
 }
 
 impl Default for HighScores {
     fn default() -> Self {
-        HighScores { scores: Vec::new() }
+        HighScores {
+            scores: HashMap::new(),
+        }
     }
+}
+
+#[derive(Debug)]
+pub struct ScoreLine {
+    pub name: Name,
+    pub entity: Entity,
+    pub image: Handle<Image>,
+    pub score: u32,
 }
 
 // For in-game top chart
 #[derive(Resource, Default)]
 pub struct Chart {
-    pub top1: Option<(String, Handle<Image>, u32)>,
-    pub top2: Option<(String, Handle<Image>, u32)>,
-    pub top3: Option<(String, Handle<Image>, u32)>,
+    pub lines: Vec<ScoreLine>,
+}
+
+impl Chart {
+    pub fn get_pos(&self, entity: Entity) -> Option<usize> {
+        self.lines.iter().position(|line| line.entity == entity)
+    }
+
+    pub fn get_line(&self, pos: usize) -> Option<&ScoreLine> {
+        self.lines.get(pos)
+    }
 }
