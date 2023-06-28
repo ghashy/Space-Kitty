@@ -39,13 +39,21 @@ pub const ITEM_IMAGE_BACK: Style = Style {
     ..Style::DEFAULT
 };
 
-pub const ITEM_IMAGE_CONTENT: Style = Style {
+pub const DOG_STYLE: Style = Style {
+    size: Size::new(Val::Px(240. / 2.3), Val::Px(241. / 2.3)),
+    position: UiRect::new(Val::Px(-6.), Val::Px(0.), Val::Px(-6.), Val::Px(0.)),
+    ..Style::DEFAULT
+};
+
+pub const KITTY_STYLE: Style = Style {
     size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
+    position: UiRect::new(Val::Px(-6.), Val::Px(0.), Val::Px(-6.), Val::Px(0.)),
     ..Style::DEFAULT
 };
 
 pub const ITEM_IMAGE_OUTLINE: Style = Style {
     size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
+    position: UiRect::new(Val::Px(6.), Val::Px(0.), Val::Px(6.), Val::Px(0.)),
     ..Style::DEFAULT
 };
 

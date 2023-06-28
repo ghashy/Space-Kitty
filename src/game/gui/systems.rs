@@ -154,14 +154,6 @@ fn spawn_row(
                 ),
                 ..default()
             },));
-            parent.spawn(ImageBundle {
-                image: UiImage {
-                    texture: asset_server.load("sprites/Fish for score.png"),
-                    ..default()
-                },
-                style: ITEM_FISH_IMAGE,
-                ..default()
-            });
         })
         .id()
 }
@@ -201,6 +193,12 @@ pub fn spawn_rows_from_backend(
         for (idx, item) in chart.lines.iter().enumerate() {
             if !drawn_block.entities.contains_key(&item.entity) && idx < 3 {
                 commands.entity(block_entity).with_children(|parent| {
+                    let style = if item.name.as_str() == "Kitty" {
+                        KITTY_STYLE
+                    } else {
+                        DOG_STYLE
+                    };
+
                     let row_id = spawn_row(
                         parent,
                         &asset_server,
@@ -208,7 +206,7 @@ pub fn spawn_rows_from_backend(
                             + ": "
                             + &item.score.to_string()),
                         item.image.clone(),
-                        ITEM_IMAGE_CONTENT,
+                        style,
                         idx,
                     );
                     // Push this entity to list of drawn entities

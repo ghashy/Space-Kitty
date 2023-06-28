@@ -15,7 +15,6 @@ use crate::{
         resources::{KiraManager, SamplePack, SoundHandleResource},
     },
     helper_functions::get_camera_borders,
-    systems::handle_pressing_g_key,
 };
 
 use super::{components::Wall, SimulationState};
