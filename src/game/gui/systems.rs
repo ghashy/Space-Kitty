@@ -184,6 +184,11 @@ pub fn spawn_rows_from_backend(
             if let None = chart.get_pos(*character) {
                 commands.entity(*ui).despawn_recursive();
                 removed_keys.push(*character);
+            } else if let Some(pos) = chart.get_pos(*character) {
+                if pos > 2 {
+                    commands.entity(*ui).despawn_recursive();
+                    removed_keys.push(*character);
+                }
             }
         }
 
