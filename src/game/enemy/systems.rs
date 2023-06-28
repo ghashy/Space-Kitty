@@ -17,8 +17,8 @@ use super::{
     *,
 };
 use crate::{
-    audio::assets::AudioSource, game::score::ScoreUpdateEvent,
-    helper_functions::*,
+    audio::assets::AudioSource, debug::AddValueToDebugEvent,
+    game::score::ScoreUpdateEvent, helper_functions::*,
 };
 use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
 use crate::{
@@ -102,10 +102,13 @@ pub fn enemy_chatting(
     mut message_box_request: EventWriter<MessageBoxRequest>,
     mut picked_fish_events: EventReader<FishWasPickedEvent>,
 ) {
+    let events: Vec<_> = picked_fish_events.iter().collect();
+    // First iterate enemy_query, because we need to tick all their timers
     for (entity, mut enemy) in enemy_query.iter_mut() {
         if enemy.phrase_timer.tick(time.delta()).finished() {
-            for event in picked_fish_events.iter() {
-                if event.1 == entity {
+            // Events need to not be consumed
+            for event in events.iter() {
+                if event.0 == entity {
                     message_box_request.send(MessageBoxRequest(
                         entity,
                         generate_phrase(
@@ -115,6 +118,7 @@ pub fn enemy_chatting(
                         ),
                     ));
                     enemy.phrase_timer = generate_phrase_timer();
+                    break;
                 }
             }
         }
@@ -310,7 +314,9 @@ pub fn spawn_enemy_on_game_progress(
     mut picked_event: EventReader<ScoreUpdateEvent>,
     mut arriving_event: EventWriter<EnemyIsArrivingEvent>,
 ) {
-    let event = picked_event.iter().find(|event| event.name == "Kitty");
+    let event = picked_event
+        .iter()
+        .find(|event| event.name.as_str().eq("Kitty"));
 
     // If we didn't found any Kitty in these events return
     if let None = event {
