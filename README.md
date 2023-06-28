@@ -26,7 +26,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ### Coding:
 
 - [x] Implement audio
-- [ ] Implement highscore system
+- [x] Implement highscore system
 - [x] Dog’s message when rotating wildly
 - [x] Status bar
 - [x] Dog’s spawn outside the screen
