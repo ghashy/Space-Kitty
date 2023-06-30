@@ -41,6 +41,8 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Rework collision system
 - [x] Resizing screen fix
 - [ ] Doggy theme particles
+- [ ] Add more fish when adding more dogs
+- [ ] Update avatar images
 
 #### Buff system (future features):
 
