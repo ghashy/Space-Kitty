@@ -12,7 +12,7 @@ use super::{components::*, styles::*, LIVES_ID_OFFSET};
 use crate::game::enemy::EnemyIsArrivingEvent;
 use crate::game::player::LIVES_COUNT;
 use crate::game::score::resources::Chart;
-use crate::game::score::ScoreUpdateEvent;
+use crate::game::score::{ScoreEventType, ScoreUpdateEvent};
 use crate::{events::PlayerHit, game::player::components::Player};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -274,6 +274,20 @@ pub fn update_messages(
             3 => "d",
             _ => "th",
         };
+        let message = match event.event_type {
+            ScoreEventType::ScoreDrop(how_much) => {
+                let ending = if how_much == 1 { "" } else { "s" };
+                format!(" dropped {} cracker{}!", how_much, ending)
+            }
+            _ => {
+                format!(
+                    " got his {}{} cracker!",
+                    event.event_type.get_score(),
+                    suffix
+                )
+            }
+        };
+
         let label = (
             TextBundle::from_sections([
                 TextSection::new(
@@ -285,11 +299,7 @@ pub fn update_messages(
                     },
                 ),
                 TextSection::new(
-                    format!(
-                        " got his {}{} cracker!",
-                        event.event_type.get_score(),
-                        suffix
-                    ),
+                    message,
                     TextStyle {
                         font: asset_server.load("fonts/Abaddon Bold.ttf"),
                         font_size: 25.,

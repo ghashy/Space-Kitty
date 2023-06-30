@@ -48,6 +48,7 @@ pub struct ScoreUpdateEvent {
 }
 
 pub enum ScoreEventType {
+    ScoreDrop(u32),
     NewHighscore(u32),
     ReachedMilestone(u32),
 }
@@ -63,6 +64,7 @@ impl ScoreEventType {
         match self {
             ScoreEventType::NewHighscore(score) => *score,
             ScoreEventType::ReachedMilestone(score) => *score,
+            ScoreEventType::ScoreDrop(score) => *score,
         }
     }
 }

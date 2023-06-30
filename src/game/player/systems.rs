@@ -1,14 +1,11 @@
-use std::ops::Deref;
-use std::time::Duration;
-
 use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
-use bevy_rapier2d::parry::query::ContactManifoldsWorkspace;
 use bevy_rapier2d::prelude::*;
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
 use kira::track::{TrackBuilder, TrackHandle};
 use rand::Rng;
+use std::time::Duration;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -20,6 +17,8 @@ use crate::events::{GameOver, PlayerHit};
 use crate::game::components::Wall;
 use crate::game::enemy::components::*;
 use crate::game::fish::FISH_SIZE;
+use crate::game::score::resources::Score;
+use crate::game::score::ScoreUpdateEvent;
 use crate::helper_functions::*;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -279,9 +278,8 @@ pub fn spawn_particles_on_collision_with_enemy(
         );
 
         let mut rng = rand::thread_rng();
-        let count: u32 = rng.gen_range(3..10);
 
-        for _ in 0..count {
+        for _ in 0..event.drop_count {
             let direction = event
                 .hit_normal
                 .rotated(std::f32::consts::PI)
@@ -360,7 +358,9 @@ pub fn handle_player_collision(
     sample_pack: Res<SamplePack>,
     _game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
+    mut score_events: EventWriter<ScoreUpdateEvent>,
     mut local_audio_subtrack: Local<Option<TrackHandle>>,
+    mut score: ResMut<Score>,
 ) {
     for event in collision_events.iter() {
         if let Ok((player_entity, global_transform, mut player)) =
@@ -377,7 +377,7 @@ pub fn handle_player_collision(
                     continue;
                 }
 
-                if let Some((enemy_entity, enemy_global_transform)) =
+                if let Some((_, enemy_global_transform)) =
                     enemies.iter().find(|(e, _)| {
                         *e == collided_with
                         // A little bit strange, but whatever
@@ -426,6 +426,22 @@ pub fn handle_player_collision(
                         //     final_score: score.value,
                         // })
                     }
+                    // Remove 25% from kitty's score
+                    let drop_count = match score.drop_score(player_entity, 0.25)
+                    {
+                        Ok(score) => {
+                            score_events.send(ScoreUpdateEvent {
+                            name: Name::from("Kitty"),
+                            event_type:
+                                crate::game::score::ScoreEventType::ScoreDrop(
+                                    score,
+                                ),
+                        }
+                        );
+                            score
+                        }
+                        Err(_) => panic!("No score for Kitty!"),
+                    };
                     // Write event with collision data
                     let hit_normal =
                         (enemy_global_transform.translation().truncate()
@@ -436,6 +452,7 @@ pub fn handle_player_collision(
                         remaining_health: player.health,
                         position,
                         hit_normal,
+                        drop_count,
                     });
                 } else if walls.iter().any(|e| collided_with == e) {
                     if (*local_audio_subtrack).is_none() {

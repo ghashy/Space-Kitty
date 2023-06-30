@@ -1,10 +1,11 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{prelude::*, reflect::Map, utils::HashMap};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(Debug)]
 pub enum ScoreError {
     NoScoreForEntity(Entity),
+    TooLowScoreCount,
 }
 
 #[derive(Resource, Default)]
@@ -21,6 +22,25 @@ impl Score {
         let new_score = old_score + 1;
         self.data.insert(*who, new_score);
         new_score
+    }
+
+    /// Drops score from entity and returns new score count, how much is in
+    /// range from 0 to 1 (percentage)
+    pub fn drop_score(
+        &mut self,
+        who: Entity,
+        percentage: f32,
+    ) -> Result<u32, ScoreError> {
+        if let Some(current) = self.data.get_mut(&who) {
+            if *current > 5 {
+                let drop_value = (*current as f32 * percentage) as u32;
+                *current -= drop_value;
+                return Ok(drop_value);
+            } else {
+                return Err(ScoreError::TooLowScoreCount);
+            }
+        }
+        Err(ScoreError::NoScoreForEntity(who))
     }
 
     pub fn get_score(&self, for_who: &Entity) -> Result<u32, ScoreError> {
