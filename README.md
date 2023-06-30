@@ -33,8 +33,8 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Entity’s message when collecting every first and 10th cracker
 - [x] Dog’s message when picking cracker randomly
 - [x] Message when new dog arriving
-- [ ] Crackers particles when kitty colliding with dog
-- [ ] Drop 25% of Kitty's crackers on colliding with dog. Add all this crackers to the dog
+- [x] Crackers particles when kitty colliding with dog
+- [x] Drop 25% of Kitty's crackers on colliding with dog.
 - [ ] Implement gameover screen
 - [ ] Document code
 - [x] Decrease Magic Wand's scale
