@@ -26,7 +26,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 ### Coding:
 
 - [x] Implement audio
-- [ ] Implement highscore system
+- [x] Implement highscore system
 - [x] Dog’s message when rotating wildly
 - [x] Status bar
 - [x] Dog’s spawn outside the screen
@@ -35,6 +35,8 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Message when new dog arriving
 - [ ] Crackers particles when kitty colliding with dog
 - [ ] Drop 25% of Kitty's crackers on colliding with dog. Add all this crackers to the dog
+- [ ] Implement gameover screen
+- [ ] Document code
 - [x] Decrease Magic Wand's scale
 - [x] Rework collision system
 - [x] Resizing screen fix

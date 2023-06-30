@@ -1,11 +1,12 @@
+use std::ops::Deref;
 use std::time::Duration;
 
 use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
+use bevy_rapier2d::parry::query::ContactManifoldsWorkspace;
 use bevy_rapier2d::prelude::*;
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
-use kira::track::effect::reverb::ReverbBuilder;
 use kira::track::{TrackBuilder, TrackHandle};
 use rand::Rng;
 
@@ -18,7 +19,7 @@ use crate::audio::resources::{KiraManager, SamplePack};
 use crate::events::{GameOver, PlayerHit};
 use crate::game::components::Wall;
 use crate::game::enemy::components::*;
-use crate::game::score::resources::Score;
+use crate::game::fish::FISH_SIZE;
 use crate::helper_functions::*;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -32,12 +33,13 @@ pub fn spawn_player(
     // Assume that there can be only one entity of PrimaryWindow at the time
     let window = window_query.get_single().unwrap();
 
+    // Prepare engine particles effect
     let mut color_gradient = Gradient::new();
     color_gradient.add_key(0.0, Vec4::new(0., 0.07, 0.06, 0.0));
     color_gradient.add_key(0.2, Vec4::new(0.06, 0.02, 0.10, 0.5));
     color_gradient.add_key(1.0, Vec4::new(0., 0., 0., 0.));
 
-    let effect = effects.add(
+    let engine_effect = effects.add(
         EffectAsset {
             name: "RocketFlame".to_string(),
             capacity: 1000,
@@ -128,7 +130,7 @@ pub fn spawn_player(
                             transform: Transform::from_translation(
                                 (Vec2::NEG_Y * 33.).extend(0.),
                             ),
-                            effect: ParticleEffect::new(effect)
+                            effect: ParticleEffect::new(engine_effect)
                                 .with_z_layer_2d(Some(0.)),
                             ..default()
                         },
@@ -265,24 +267,105 @@ pub fn player_movement(
     }
 }
 
+pub fn spawn_particles_on_collision_with_enemy(
+    mut commands: Commands,
+    mut hit_events: EventReader<PlayerHit>,
+    asset_server: Res<AssetServer>,
+) {
+    for event in hit_events.iter() {
+        println!(
+            "Hit position: {}, normal: {}",
+            event.position, event.hit_normal
+        );
+
+        let mut rng = rand::thread_rng();
+        let count: u32 = rng.gen_range(3..10);
+
+        for _ in 0..count {
+            let direction = event
+                .hit_normal
+                .rotated(std::f32::consts::PI)
+                .rotated(rng.gen_range(-0.9..0.9));
+            let velocity = rng.gen_range(200.0..300.0);
+            let timer = Timer::from_seconds(3., TimerMode::Once);
+            let position = (event.position.truncate()
+                + Vec2::new(rng.gen(), rng.gen()).normalize() * 20.)
+                .extend(event.position.z);
+
+            commands.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(FISH_SIZE),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(position)
+                        .with_rotation(Quat::from_rotation_z(rng.gen())),
+                    texture: asset_server.load("sprites/Fish.png"),
+                    ..default()
+                },
+                DropFishParticle {
+                    direction,
+                    velocity,
+                    timer,
+                },
+            ));
+        }
+
+        break;
+    }
+}
+
+pub fn poll_and_despawn_collision_particles(
+    mut commands: Commands,
+    mut particles_query: Query<(
+        Entity,
+        &mut Sprite,
+        &mut Transform,
+        &mut DropFishParticle,
+    )>,
+    time: Res<Time>,
+) {
+    for (entity, mut sprite, mut transform, mut particle) in
+        particles_query.iter_mut()
+    {
+        if particle.timer.tick(time.delta()).finished() {
+            commands.entity(entity).despawn();
+        } else {
+            let x =
+                particle.direction.x * time.delta_seconds() * particle.velocity;
+            let y =
+                particle.direction.y * time.delta_seconds() * particle.velocity;
+
+            transform.translation.x += x;
+            transform.translation.y += y;
+            sprite.color.set_a(particle.timer.percent_left());
+            particle.velocity = particle.velocity - time.delta_seconds() * 87.;
+        }
+    }
+}
+
 pub fn handle_player_collision(
     state: Res<State<PlayerState>>,
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
-    enemies: Query<Entity, With<Enemy>>,
+    enemies: Query<(Entity, &GlobalTransform), With<Enemy>>,
     walls: Query<Entity, With<Wall>>,
-    mut player_query: Query<(Entity, &mut Player), Without<Enemy>>,
+    mut player_query: Query<
+        (Entity, &GlobalTransform, &mut Player),
+        Without<Enemy>,
+    >,
     mut player_state: ResMut<NextState<PlayerState>>,
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
     _game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
-    _score: Res<Score>,
     mut local_audio_subtrack: Local<Option<TrackHandle>>,
 ) {
     for event in collision_events.iter() {
-        if let Ok((player_entity, mut player)) = player_query.get_single_mut() {
+        if let Ok((player_entity, global_transform, mut player)) =
+            player_query.get_single_mut()
+        {
             if let CollisionEvent::Started(entity1, entity2, _) = event {
                 let collided_with;
 
@@ -294,8 +377,12 @@ pub fn handle_player_collision(
                     continue;
                 }
 
-                if enemies.iter().any(|e| e == collided_with)
-                    && state.0 == PlayerState::Vulnerable
+                if let Some((enemy_entity, enemy_global_transform)) =
+                    enemies.iter().find(|(e, _)| {
+                        *e == collided_with
+                        // A little bit strange, but whatever
+                            && state.0 == PlayerState::Vulnerable
+                    })
                 {
                     // Collision
                     if player.health > 1 {
@@ -339,8 +426,16 @@ pub fn handle_player_collision(
                         //     final_score: score.value,
                         // })
                     }
+                    // Write event with collision data
+                    let hit_normal =
+                        (enemy_global_transform.translation().truncate()
+                            - global_transform.translation().truncate())
+                        .normalize();
+                    let position = global_transform.translation();
                     event_writer.send(PlayerHit {
                         remaining_health: player.health,
+                        position,
+                        hit_normal,
                     });
                 } else if walls.iter().any(|e| collided_with == e) {
                     if (*local_audio_subtrack).is_none() {

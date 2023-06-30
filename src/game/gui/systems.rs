@@ -171,7 +171,7 @@ pub fn spawn_rows_from_backend(
         let (block_entity, mut drawn_block) = chart_block.single_mut();
         let mut removed_keys = Vec::new();
 
-        // Figure out which entities are not exist for now, despawn their rows
+        // Figure out which entities are not exist now, despawn their rows
         for (character, ui) in drawn_block.entities.iter() {
             if let None = chart.get_pos(*character) {
                 commands.entity(*ui).despawn_recursive();

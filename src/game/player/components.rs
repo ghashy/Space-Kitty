@@ -13,3 +13,10 @@ pub struct RocketEngineParticles;
 
 #[derive(Component)]
 pub struct RocketEngineSprite;
+
+#[derive(Component)]
+pub struct DropFishParticle {
+    pub direction: Vec2,
+    pub velocity: f32,
+    pub timer: Timer,
+}

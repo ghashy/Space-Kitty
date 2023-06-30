@@ -52,10 +52,14 @@ impl Plugin for PlayerPlugin {
                     .in_set(OnUpdate(SimulationState::Running))
                     .in_set(OnUpdate(AppState::Game)),
             )
-            .add_system(
-                handle_player_collision
+            .add_systems(
+                (
+                    handle_player_collision,
+                    spawn_particles_on_collision_with_enemy,
+                    poll_and_despawn_collision_particles,
+                )
                     .in_set(OnUpdate(SimulationState::Running))
-                    .in_set(OnUpdate(AppState::Game)), // .in_set(OnUpdate(PlayerState::Vulnerable)),
+                    .in_set(OnUpdate(AppState::Game)),
             )
             .add_systems(
                 (count_player_invulnerability_timer, blink_player)
