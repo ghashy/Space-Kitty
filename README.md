@@ -43,6 +43,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Doggy theme particles
 - [ ] Add more fish when adding more dogs
 - [ ] Update avatar images
+- [ ] Add Big dog animation
 
 #### Buff system (future features):
 
