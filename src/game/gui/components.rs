@@ -24,3 +24,6 @@ pub struct ChartRow {
     pub idx: usize,
     pub entity: Option<Entity>,
 }
+
+#[derive(Component)]
+pub struct Avatar(pub Handle<Image>);

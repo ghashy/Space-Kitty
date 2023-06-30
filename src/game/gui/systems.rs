@@ -111,37 +111,14 @@ fn spawn_row(
             },
         ))
         .with_children(|parent| {
-            parent
-                .spawn(ImageBundle {
-                    image: UiImage {
-                        texture: asset_server.load("sprites/Frame.png"),
-                        ..default()
-                    },
-                    style: ITEM_IMAGE_BACK,
+            parent.spawn((ImageBundle {
+                style: content_style,
+                image: UiImage {
+                    texture,
                     ..default()
-                })
-                .with_children(|parent| {
-                    parent
-                        .spawn((ImageBundle {
-                            style: content_style,
-                            image: UiImage {
-                                texture,
-                                ..default()
-                            },
-                            ..default()
-                        },))
-                        .with_children(|parent| {
-                            parent.spawn(ImageBundle {
-                                image: UiImage {
-                                    texture: asset_server
-                                        .load("sprites/Frame outline.png"),
-                                    ..default()
-                                },
-                                style: ITEM_IMAGE_OUTLINE,
-                                ..default()
-                            });
-                        });
-                });
+                },
+                ..default()
+            },));
             parent.spawn((TextBundle {
                 style: ITEM_TEXT,
                 text: Text::from_section(
@@ -193,12 +170,6 @@ pub fn spawn_rows_from_backend(
         for (idx, item) in chart.lines.iter().enumerate() {
             if !drawn_block.entities.contains_key(&item.entity) && idx < 3 {
                 commands.entity(block_entity).with_children(|parent| {
-                    let style = if item.name.as_str() == "Kitty" {
-                        KITTY_STYLE
-                    } else {
-                        DOG_STYLE
-                    };
-
                     let row_id = spawn_row(
                         parent,
                         &asset_server,
@@ -206,7 +177,7 @@ pub fn spawn_rows_from_backend(
                             + ": "
                             + &item.score.to_string()),
                         item.image.clone(),
-                        style,
+                        AVATAR,
                         idx,
                     );
                     // Push this entity to list of drawn entities

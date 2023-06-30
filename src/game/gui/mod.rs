@@ -9,7 +9,7 @@ use crate::AppState;
 
 // Top-level modules
 mod animation;
-mod components;
+pub mod components;
 mod styles;
 mod systems;
 

@@ -28,32 +28,8 @@ pub const CHART: Style = Style {
     ..Style::DEFAULT
 };
 
-pub const ITEM_IMAGE_BACK: Style = Style {
+pub const AVATAR: Style = Style {
     size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
-    margin: UiRect {
-        left: Val::Px(10.),
-        top: Val::Px(10.),
-        ..UiRect::DEFAULT
-    },
-    overflow: Overflow::Hidden,
-    ..Style::DEFAULT
-};
-
-pub const DOG_STYLE: Style = Style {
-    size: Size::new(Val::Px(240. / 2.3), Val::Px(241. / 2.3)),
-    position: UiRect::new(Val::Px(-6.), Val::Px(0.), Val::Px(-6.), Val::Px(0.)),
-    ..Style::DEFAULT
-};
-
-pub const KITTY_STYLE: Style = Style {
-    size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
-    position: UiRect::new(Val::Px(-6.), Val::Px(0.), Val::Px(-6.), Val::Px(0.)),
-    ..Style::DEFAULT
-};
-
-pub const ITEM_IMAGE_OUTLINE: Style = Style {
-    size: Size::new(Val::Px(240. / 3.7), Val::Px(241. / 3.7)),
-    position: UiRect::new(Val::Px(6.), Val::Px(0.), Val::Px(6.), Val::Px(0.)),
     ..Style::DEFAULT
 };
 
@@ -63,11 +39,6 @@ pub const ITEM_TEXT: Style = Style {
         right: Val::Px(10.),
         ..UiRect::DEFAULT
     },
-    ..Style::DEFAULT
-};
-
-pub const ITEM_FISH_IMAGE: Style = Style {
-    size: Size::new(Val::Px(163. / 5.2), Val::Px(124. / 5.2)),
     ..Style::DEFAULT
 };
 

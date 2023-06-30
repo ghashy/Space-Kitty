@@ -8,7 +8,7 @@ use super::{
 };
 use crate::game::{
     enemy::components::Enemy, fish::components::FishWasPickedEvent,
-    player::components::Player,
+    gui::components::Avatar, player::components::Player,
 };
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -23,7 +23,7 @@ pub fn remove_score(mut commands: Commands) {
 
 pub fn update_chart_data(
     entities_query: Query<
-        (Entity, &Handle<Image>, &Name),
+        (Entity, &Avatar, &Name),
         Or<(With<Player>, With<Enemy>)>,
     >,
     scores: Option<Res<Score>>,
@@ -36,10 +36,10 @@ pub fn update_chart_data(
             chart.lines = scores
                 .iter()
                 .map(|&(&entity, &score)| {
-                    entities_query.iter().find_map(|(e, image, name)| {
+                    entities_query.iter().find_map(|(e, avatar, name)| {
                         if e == entity {
                             Some(ScoreLine {
-                                image: image.clone(),
+                                image: avatar.0.clone(),
                                 name: name.clone(),
                                 entity,
                                 score,

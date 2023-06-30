@@ -17,6 +17,7 @@ use crate::events::{GameOver, PlayerHit};
 use crate::game::components::Wall;
 use crate::game::enemy::components::*;
 use crate::game::fish::FISH_SIZE;
+use crate::game::gui::components::Avatar;
 use crate::game::score::resources::Score;
 use crate::game::score::ScoreUpdateEvent;
 use crate::helper_functions::*;
@@ -102,6 +103,7 @@ pub fn spawn_player(
             ActiveEvents::COLLISION_EVENTS,
             Restitution::coefficient(1.),
             Player { health: 3 },
+            Avatar(asset_server.load("sprites/Avatars/Frame Kitty.png")),
             Name::new("Kitty"),
         ))
         .with_children(|parent| {

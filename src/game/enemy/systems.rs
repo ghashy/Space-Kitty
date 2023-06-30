@@ -17,8 +17,9 @@ use super::{
     *,
 };
 use crate::{
-    audio::assets::AudioSource, debug::AddValueToDebugEvent,
-    game::score::ScoreUpdateEvent, helper_functions::*,
+    audio::assets::AudioSource,
+    game::{gui::components::Avatar, score::ScoreUpdateEvent},
+    helper_functions::*,
 };
 use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
 use crate::{
@@ -36,25 +37,31 @@ enum PhraseType {
 pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     let names: Handle<DogData> = asset_server.load("json_data/dogs_data.json");
     let mut images: Vec<(String, Handle<Image>)> = Vec::new();
+    let mut avatars: Vec<Handle<Image>> = Vec::new();
 
     for i in 1..12 {
-        let name = format!("Face{}", i);
+        let idx = format!("{}", i);
         images.push((
-            name.clone(),
-            asset_server.load(format!("sprites/Dogs/{}.png", name)),
+            idx.clone(),
+            asset_server.load(format!("sprites/Dogs/Face{}.png", idx)),
         ));
+        avatars.push(
+            asset_server.load(format!("sprites/Avatars/Frame Dog {}.png", idx)),
+        );
     }
     let name = String::from("FaceHarry");
     images.push((
         name.clone(),
         asset_server.load(format!("sprites/Dogs/{}.png", name)),
     ));
+    avatars.push(asset_server.load("sprites/Avatars/Frame Harry.png"));
 
     images.shuffle(&mut rand::thread_rng());
 
     commands.insert_resource(DogResource {
         json_data: names,
         images,
+        avatars,
     })
 }
 
@@ -335,7 +342,7 @@ pub fn spawn_enemy_on_game_progress(
 
         let direction = (center - rand_point).normalize();
 
-        let (name, texture, scale_modifier, dog_type) = generate_dog(
+        let (name, texture, scale_modifier, dog_type, avatar) = generate_dog(
             &mut dogs_resource,
             names_assets,
             &mut already_spawned_data,
@@ -375,6 +382,7 @@ pub fn spawn_enemy_on_game_progress(
                     dog_type,
                     phrase_timer: Timer::from_seconds(12., TimerMode::Once),
                 },
+                avatar,
                 Name::new(name.clone()),
             ))
             .with_children(|parent| {
@@ -522,7 +530,7 @@ fn generate_dog(
     dogs_resource: &mut ResMut<DogResource>,
     assets: Res<Assets<DogData>>,
     already_spawned_data: &mut Local<(HashSet<String>, u8)>,
-) -> (String, Handle<Image>, f32, DogType) {
+) -> (String, Handle<Image>, f32, DogType, Avatar) {
     // Rand
     let mut rand = rand::thread_rng();
     let last_name_possibility = rand.gen::<bool>();
@@ -536,6 +544,8 @@ fn generate_dog(
     let image = dogs_resource.images[already_spawned_data.1 as usize]
         .1
         .clone();
+    let avatar =
+        Avatar(dogs_resource.avatars[already_spawned_data.1 as usize].clone());
 
     {
         if already_spawned_data.1 < 11 {
@@ -556,6 +566,7 @@ fn generate_dog(
             image,
             default_scale,
             DogType::Harry,
+            avatar,
         );
     }
 
@@ -591,7 +602,7 @@ fn generate_dog(
         }
     }
 
-    (name, image, default_scale, default_dog_type)
+    (name, image, default_scale, default_dog_type, avatar)
 }
 
 fn is_in_window(window: &Window, size: Vec2, transform: &Transform) -> bool {
