@@ -46,6 +46,7 @@ impl Plugin for EnemyPlugin {
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),
             )
+            .add_system(animate_big_boy.in_set(OnUpdate(AppState::Game)))
             // Exit State Systems
             .add_system(despawn_enemies.in_schedule(OnExit(AppState::Game)));
     }

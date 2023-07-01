@@ -23,3 +23,6 @@ pub struct PatchOfLight;
 
 #[derive(Component)]
 pub struct MessageBox(pub Timer, pub Option<Timer>);
+
+#[derive(Component)]
+pub struct BoyAnimation(pub Timer, pub u8);

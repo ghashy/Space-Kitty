@@ -17,7 +17,10 @@ use super::{
 };
 use crate::{
     audio::assets::AudioSource,
-    game::{gui::components::Avatar, score::ScoreUpdateEvent},
+    game::{
+        enemy::components::BoyAnimation, gui::components::Avatar,
+        score::ScoreUpdateEvent,
+    },
     helper_functions::*,
 };
 use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
@@ -63,7 +66,7 @@ pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(DogResource {
         json_data: names,
         dogs,
-    })
+    });
 }
 
 pub fn despawn_enemies(
@@ -320,6 +323,7 @@ pub fn spawn_enemy_on_game_progress(
     mut already_spawned_data: Local<(HashSet<String>, u8)>,
     mut picked_event: EventReader<ScoreUpdateEvent>,
     mut arriving_event: EventWriter<EnemyIsArrivingEvent>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let event = picked_event
         .iter()
@@ -354,19 +358,6 @@ pub fn spawn_enemy_on_game_progress(
 
         let entity = commands
             .spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(DOG_SIZE * scale_modifier),
-                        ..default()
-                    },
-                    transform: Transform::from_xyz(
-                        rand_point.x,
-                        rand_point.y,
-                        10.,
-                    ),
-                    texture,
-                    ..default()
-                },
                 RigidBody::Dynamic,
                 Velocity {
                     linvel: direction,
@@ -428,20 +419,85 @@ pub fn spawn_enemy_on_game_progress(
                     });
             })
             .id();
-        if name == "Doggy Potter" {
-            let wand = commands
-                .spawn(SpriteBundle {
-                    transform: Transform {
-                        translation: Vec3::new(-38.3, -42.8, -0.5),
-                        rotation: Quat::from_rotation_z(-4.2),
-                        scale: Vec3::new(0.2, 0.2, 0.),
+
+        fn insert_ordinary_sprite(
+            commands: &mut Commands,
+            entity: Entity,
+            scale_modifier: f32,
+            rand_point: Vec2,
+            texture: Handle<Image>,
+        ) {
+            commands.entity(entity).insert(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(DOG_SIZE * scale_modifier),
+                    ..default()
+                },
+                transform: Transform::from_xyz(rand_point.x, rand_point.y, 10.),
+                texture,
+                ..default()
+            });
+        }
+
+        match dog_type {
+            DogType::Harry => {
+                let wand = commands
+                    .spawn(SpriteBundle {
+                        transform: Transform {
+                            translation: Vec3::new(-38.3, -42.8, -0.5),
+                            rotation: Quat::from_rotation_z(-4.2),
+                            scale: Vec3::new(0.2, 0.2, 0.),
+                            ..default()
+                        },
+                        texture: asset_server.load("sprites/Magic wand.png"),
+                        ..default()
+                    })
+                    .id();
+                commands.entity(entity).push_children(&[wand]);
+                insert_ordinary_sprite(
+                    &mut commands,
+                    entity,
+                    scale_modifier,
+                    rand_point,
+                    texture,
+                );
+            }
+            DogType::BigBoy => {
+                // Load SpriteSheet
+                let texture_atlas =
+                    texture_atlases.add(TextureAtlas::from_grid(
+                        asset_server.load("sprites/Big Boy Spritesheet.png"),
+                        Vec2::new(313., 309.),
+                        4,
+                        3,
+                        None,
+                        None,
+                    ));
+                let timer = Timer::from_seconds(0.3, TimerMode::Repeating);
+                commands.entity(entity).insert(BoyAnimation(timer, 11));
+                commands.entity(entity).insert(SpriteSheetBundle {
+                    sprite: TextureAtlasSprite {
+                        custom_size: Some(DOG_SIZE * scale_modifier),
+                        index: 0,
                         ..default()
                     },
-                    texture: asset_server.load("sprites/Magic wand.png"),
+                    texture_atlas,
+                    transform: Transform::from_xyz(
+                        rand_point.x,
+                        rand_point.y,
+                        10.,
+                    ),
                     ..default()
-                })
-                .id();
-            commands.entity(entity).push_children(&[wand]);
+                });
+            }
+            _ => {
+                insert_ordinary_sprite(
+                    &mut commands,
+                    entity,
+                    scale_modifier,
+                    rand_point,
+                    texture,
+                );
+            }
         }
         arriving_event.send(EnemyIsArrivingEvent(name));
     }
@@ -522,6 +578,24 @@ pub fn update_message_box(
                 Vec2::NEG_X,
                 None,
             );
+        }
+    }
+}
+
+pub fn animate_big_boy(
+    mut big_boy_query: Query<
+        (&mut TextureAtlasSprite, &mut BoyAnimation),
+        With<Enemy>,
+    >,
+    time: Res<Time>,
+) {
+    for (mut atlas, mut animation) in big_boy_query.iter_mut() {
+        if animation.0.tick(time.delta()).finished() {
+            atlas.index = if atlas.index == animation.1 as usize {
+                0
+            } else {
+                atlas.index + 1
+            };
         }
     }
 }
