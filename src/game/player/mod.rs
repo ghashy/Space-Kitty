@@ -68,8 +68,11 @@ impl Plugin for PlayerPlugin {
                     .in_set(OnUpdate(PlayerState::Invulnerable)),
             )
             // Exit State Systems
-            .add_system(
-                despawn_player_on_exit_game_state
+            .add_systems(
+                (
+                    despawn_player_on_exit_game_state,
+                    despawn_collision_particles,
+                )
                     .in_schedule(OnExit(AppState::Game)),
             );
     }

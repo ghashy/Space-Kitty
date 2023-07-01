@@ -337,6 +337,15 @@ pub fn poll_and_despawn_collision_particles(
     }
 }
 
+pub fn despawn_collision_particles(
+    mut commands: Commands,
+    particles_query: Query<Entity, With<DropFishParticle>>,
+) {
+    for particle in particles_query.iter() {
+        commands.entity(particle).despawn();
+    }
+}
+
 pub fn handle_player_collision(
     state: Res<State<PlayerState>>,
     mut commands: Commands,
