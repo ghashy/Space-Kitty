@@ -41,7 +41,7 @@ pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut dogs: Vec<OneDog> = Vec::new();
     let mut avatars: Vec<Handle<Image>> = Vec::new();
 
-    for i in 1..12 {
+    for i in 1..11 {
         let id = format!("{}", i);
         dogs.push(OneDog {
             texture_identifier: id.clone(),
@@ -56,6 +56,12 @@ pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
         texture_identifier: id.clone(),
         texture: asset_server.load(format!("sprites/Dogs/{}.png", id)),
         avatar: asset_server.load("sprites/Avatars/Frame Harry.png"),
+    });
+    let id = String::from("FaceBigBoy");
+    dogs.push(OneDog {
+        texture_identifier: id.clone(),
+        texture: asset_server.load(format!("sprites/Dogs/{}.png", id)),
+        avatar: asset_server.load("sprites/Avatars/Frame BigBoy.png"),
     });
 
     let mut rng: StdRng =
@@ -648,7 +654,7 @@ fn generate_dog(
     }
 
     // Handle Big Kid case
-    if &id == "8" {
+    if &id == "FaceBigBoy" {
         default_scale = 1.0;
         default_dog_type = DogType::BigBoy;
     }
