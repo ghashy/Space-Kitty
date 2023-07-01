@@ -379,11 +379,10 @@ pub fn handle_game_over(
     mut commands: Commands,
     mut game_over_event_reader: EventReader<GameOver>,
 ) {
-    for event in game_over_event_reader.iter() {
+    if let Some(event) = game_over_event_reader.iter().next() {
         println!("FinalScore: {}", event.final_score);
         commands.insert_resource(NextState(Some(AppState::GameOver)));
         commands.insert_resource(NextState(Some(SimulationState::Paused)));
-        break;
     }
 }
 

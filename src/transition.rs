@@ -41,7 +41,7 @@ pub fn spawn_overlap_on_transition(
     mut event_reader: EventReader<DarkenScreenEvent>,
     app_state: Res<State<AppState>>,
 ) {
-    for _ in event_reader.iter() {
+    if let Some(event) = event_reader.iter().next() {
         if app_state.0 == AppState::MainMenu {
             let sequence = Tween::new(
                 EaseFunction::CubicIn,
@@ -77,7 +77,6 @@ pub fn spawn_overlap_on_transition(
 
             commands.spawn((node, Animator::new(sequence), DarkScreenOverlap));
         }
-        break;
     }
 }
 
