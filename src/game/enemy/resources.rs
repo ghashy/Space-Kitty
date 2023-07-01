@@ -6,9 +6,14 @@ use super::assets::DogData;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
+pub struct OneDog {
+    pub texture_identifier: String,
+    pub texture: Handle<Image>,
+    pub avatar: Handle<Image>,
+}
+
 #[derive(Resource, Default)]
 pub struct DogResource {
     pub json_data: Handle<DogData>,
-    pub images: Vec<(String, Handle<Image>)>,
-    pub avatars: Vec<Handle<Image>>,
+    pub dogs: Vec<OneDog>,
 }

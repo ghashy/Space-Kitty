@@ -1,19 +1,18 @@
 use std::time::Duration;
 
 use bevy::{
-    ecs::event, prelude::*, sprite::Anchor, text::Text2dBounds, utils::HashSet,
+    prelude::*, sprite::Anchor, text::Text2dBounds, utils::HashSet,
     window::PrimaryWindow,
 };
 use bevy_rapier2d::prelude::*;
-use bevy_tweening::{
-    lens::TransformScaleLens, Animator, EaseFunction, Tween, TweenCompleted,
-};
+use bevy_tweening::{lens::TransformScaleLens, Animator, EaseFunction, Tween};
 use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{
     components::{DogType, Enemy, MessageBox, PatchOfLight},
+    resources::OneDog,
     *,
 };
 use crate::{
@@ -36,32 +35,34 @@ enum PhraseType {
 
 pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     let names: Handle<DogData> = asset_server.load("json_data/dogs_data.json");
-    let mut images: Vec<(String, Handle<Image>)> = Vec::new();
+    let mut dogs: Vec<OneDog> = Vec::new();
     let mut avatars: Vec<Handle<Image>> = Vec::new();
 
     for i in 1..12 {
-        let idx = format!("{}", i);
-        images.push((
-            idx.clone(),
-            asset_server.load(format!("sprites/Dogs/Face{}.png", idx)),
-        ));
-        avatars.push(
-            asset_server.load(format!("sprites/Avatars/Frame Dog {}.png", idx)),
-        );
+        let id = format!("{}", i);
+        dogs.push(OneDog {
+            texture_identifier: id.clone(),
+            texture: asset_server.load(format!("sprites/Dogs/Face{}.png", id)),
+            avatar: asset_server
+                .load(format!("sprites/Avatars/Frame Dog {}.png", id)),
+        });
     }
-    let name = String::from("FaceHarry");
-    images.push((
-        name.clone(),
-        asset_server.load(format!("sprites/Dogs/{}.png", name)),
-    ));
-    avatars.push(asset_server.load("sprites/Avatars/Frame Harry.png"));
 
-    images.shuffle(&mut rand::thread_rng());
+    let id = String::from("FaceHarry");
+    dogs.push(OneDog {
+        texture_identifier: id.clone(),
+        texture: asset_server.load(format!("sprites/Dogs/{}.png", id)),
+        avatar: asset_server.load("sprites/Avatars/Frame Harry.png"),
+    });
+
+    let mut rng: StdRng =
+        rand::SeedableRng::from_seed(rand::thread_rng().gen());
+    dogs.shuffle(&mut rng);
+    avatars.shuffle(&mut rng);
 
     commands.insert_resource(DogResource {
         json_data: names,
-        images,
-        avatars,
+        dogs,
     })
 }
 
@@ -114,7 +115,7 @@ pub fn enemy_chatting(
     for (entity, mut enemy) in enemy_query.iter_mut() {
         if enemy.phrase_timer.tick(time.delta()).finished() {
             // Events need to not be consumed
-            for event in events.iter() {
+            if let Some(event) = events.iter().next() {
                 if event.0 == entity {
                     message_box_request.send(MessageBoxRequest(
                         entity,
@@ -125,7 +126,6 @@ pub fn enemy_chatting(
                         ),
                     ));
                     enemy.phrase_timer = generate_phrase_timer();
-                    break;
                 }
             }
         }
@@ -532,20 +532,23 @@ fn generate_dog(
     already_spawned_data: &mut Local<(HashSet<String>, u8)>,
 ) -> (String, Handle<Image>, f32, DogType, Avatar) {
     // Rand
-    let mut rand = rand::thread_rng();
-    let last_name_possibility = rand.gen::<bool>();
-    let nickname_possibility = rand.gen::<bool>() && last_name_possibility;
+    let mut rng = rand::thread_rng();
+    let last_name_possibility = rng.gen::<bool>();
+    let nickname_possibility = rng.gen::<bool>() && last_name_possibility;
 
     // Get handles
     let dogs_data = assets.get(&dogs_resource.json_data).unwrap();
-    let filename = dogs_resource.images[already_spawned_data.1 as usize]
-        .0
+    let filename = dogs_resource.dogs[already_spawned_data.1 as usize]
+        .texture_identifier
         .clone();
-    let image = dogs_resource.images[already_spawned_data.1 as usize]
-        .1
+    let image = dogs_resource.dogs[already_spawned_data.1 as usize]
+        .texture
         .clone();
-    let avatar =
-        Avatar(dogs_resource.avatars[already_spawned_data.1 as usize].clone());
+    let avatar = Avatar(
+        dogs_resource.dogs[already_spawned_data.1 as usize]
+            .avatar
+            .clone(),
+    );
 
     {
         if already_spawned_data.1 < 11 {
@@ -553,7 +556,7 @@ fn generate_dog(
         } else {
             already_spawned_data.1 = 0;
             // Shuffle sprites on next round of spawning
-            dogs_resource.images.shuffle(&mut rand);
+            dogs_resource.dogs.shuffle(&mut rng);
         }
     }
     let mut default_scale = 0.5;
@@ -581,11 +584,11 @@ fn generate_dog(
     loop {
         name.push_str(
             &dogs_data.first_names
-                [rand.gen_range(0..dogs_data.first_names.len())],
+                [rng.gen_range(0..dogs_data.first_names.len())],
         );
         if last_name_possibility {
             name = dogs_data.last_names
-                [rand.gen_range(0..dogs_data.last_names.len())]
+                [rng.gen_range(0..dogs_data.last_names.len())]
             .to_string()
                 + " "
                 + &name;
@@ -594,7 +597,7 @@ fn generate_dog(
             name = name
                 + " aka "
                 + &dogs_data.nicknames
-                    [rand.gen_range(0..dogs_data.nicknames.len())]
+                    [rng.gen_range(0..dogs_data.nicknames.len())]
                 .to_string();
         }
         if !already_spawned_data.0.contains(&name) {

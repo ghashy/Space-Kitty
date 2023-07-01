@@ -273,12 +273,7 @@ pub fn spawn_particles_on_collision_with_enemy(
     mut hit_events: EventReader<PlayerHit>,
     asset_server: Res<AssetServer>,
 ) {
-    for event in hit_events.iter() {
-        println!(
-            "Hit position: {}, normal: {}",
-            event.position, event.hit_normal
-        );
-
+    if let Some(event) = hit_events.iter().next() {
         let mut rng = rand::thread_rng();
 
         for _ in 0..event.drop_count {
@@ -310,8 +305,6 @@ pub fn spawn_particles_on_collision_with_enemy(
                 },
             ));
         }
-
-        break;
     }
 }
 
