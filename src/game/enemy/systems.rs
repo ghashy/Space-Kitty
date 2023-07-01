@@ -538,7 +538,7 @@ fn generate_dog(
 
     // Get handles
     let dogs_data = assets.get(&dogs_resource.json_data).unwrap();
-    let filename = dogs_resource.dogs[already_spawned_data.1 as usize]
+    let id = dogs_resource.dogs[already_spawned_data.1 as usize]
         .texture_identifier
         .clone();
     let image = dogs_resource.dogs[already_spawned_data.1 as usize]
@@ -563,7 +563,7 @@ fn generate_dog(
     let mut default_dog_type = DogType::Ordinary;
 
     // Handle Doggy Potter case
-    if &filename == "FaceHarry" {
+    if &id == "FaceHarry" {
         return (
             String::from("Doggy Potter"),
             image,
@@ -574,7 +574,7 @@ fn generate_dog(
     }
 
     // Handle Big Kid case
-    if &filename == "Face8" {
+    if &id == "8" {
         default_scale = 1.0;
         default_dog_type = DogType::BigBoy;
     }
