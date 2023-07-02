@@ -12,13 +12,13 @@ use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::components::*;
-use crate::events::*;
 use crate::game::SimulationState;
 use crate::resources::CometTimer;
 use crate::AppState;
 use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
 use crate::{audio::resources::SamplePack, COMET_SPEED};
+use crate::{components::*, transition::TransitionPlugin};
+use crate::{events::*, transition::TransitionRoute};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -344,12 +344,41 @@ pub fn finalize_transition_to_game(
     }
 }
 
+pub fn finalize_transition_to_gameover(
+    mut commands: Commands,
+    mut event_reader: EventReader<TweenCompleted>,
+) {
+    for event in event_reader.iter() {
+        if event.user_data == 301 {
+            commands.insert_resource(NextState(Some(AppState::GameOver)));
+            commands.insert_resource(NextState(Some(SimulationState::Paused)));
+        }
+    }
+}
+
 pub fn handle_pressing_g_key(
     keyboard_input: Res<Input<KeyCode>>,
     mut event_writer: EventWriter<DarkenScreenEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::G) {
-        event_writer.send(DarkenScreenEvent);
+        event_writer.send(DarkenScreenEvent(TransitionRoute::MenuToGame));
+    }
+}
+
+pub fn debug_pressing_o_key(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut highscores: ResMut<crate::game::score::resources::HighScores>,
+    mut event_writer: EventWriter<GameOver>,
+    asset_server: Res<AssetServer>,
+) {
+    if keyboard_input.just_pressed(KeyCode::O) {
+        for i in 0..10 {
+            highscores.scores.insert(
+                Name::new("Kitty".to_string() + &i.to_string()),
+                (asset_server.load("sprites/Cat's face.png"), i),
+            );
+        }
+        event_writer.send(GameOver);
     }
 }
 
@@ -378,11 +407,10 @@ pub fn exit_game(
 pub fn handle_game_over(
     mut commands: Commands,
     mut game_over_event_reader: EventReader<GameOver>,
+    mut event_writer: EventWriter<DarkenScreenEvent>,
 ) {
-    if let Some(event) = game_over_event_reader.iter().next() {
-        println!("FinalScore: {}", event.final_score);
-        commands.insert_resource(NextState(Some(AppState::GameOver)));
-        commands.insert_resource(NextState(Some(SimulationState::Paused)));
+    if let Some(_) = game_over_event_reader.iter().next() {
+        event_writer.send(DarkenScreenEvent(TransitionRoute::GameToGameover));
     }
 }
 

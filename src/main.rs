@@ -30,6 +30,7 @@ use audio::AudioPlugin;
 use components::*;
 use debug::DebugPlugin;
 use game::GamePlugin;
+use gameover::GameoverPlugin;
 use main_menu::MainMenuPlugin;
 use resources::CometTimer;
 use systems::*;
@@ -41,6 +42,7 @@ use transition::TransitionPlugin;
 pub mod asset_loader;
 pub mod audio;
 pub mod game;
+pub mod gameover;
 pub mod main_menu;
 
 // Top-level modules
@@ -109,6 +111,7 @@ fn main() {
         // +1.1 percent on cpu
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
         .add_plugin(GamePlugin)
+        .add_plugin(GameoverPlugin)
         .add_plugin(TweeningPlugin)
         .add_plugin(MainMenuPlugin)
         .add_plugin(DebugPlugin)
@@ -135,7 +138,11 @@ fn main() {
         )
         .add_system(handle_pressing_g_key.in_set(OnUpdate(AppState::MainMenu)))
         .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::Game)))
-        .add_system(handle_game_over)
+        .add_system(debug_pressing_o_key.in_set(OnUpdate(AppState::Game)))
+        .add_system(handle_game_over.in_set(OnUpdate(AppState::Game)))
+        .add_system(
+            finalize_transition_to_gameover.in_set(OnUpdate(AppState::Game)),
+        )
         .add_system(exit_game)
         .run();
 }
@@ -151,6 +158,8 @@ pub enum AppState {
 
 // TweenEvent Codes:
 // 0..250 - background stars events.
-// 300 - MainMenu animation phase1 is finished.
-// 301 - MainMenu animation phase2 is finished, moving to next state: Game.
+// 300 - Dark transition phase1: screen is black, transition from menu to game.
+// 301 - Dark transition phase1: screen is black, transition from game go
+// gameover.
+// 310 - Dark transition phase2: screen is transparent.
 // 400..450 - gui lives id animation.

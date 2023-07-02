@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use crate::components::DarkenScreenEvent;
 use crate::main_menu::animation::*;
 use crate::main_menu::components::*;
+use crate::transition::TransitionRoute;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -22,7 +23,8 @@ pub fn interact_with_play_button(
         match *interaction {
             Interaction::Clicked => {
                 animate_button_click(&mut image, play_button);
-                event_writer.send(DarkenScreenEvent);
+                event_writer
+                    .send(DarkenScreenEvent(TransitionRoute::MenuToGame));
             }
             Interaction::Hovered => {
                 animate_button_hover(&mut image, play_button);

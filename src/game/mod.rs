@@ -19,7 +19,7 @@ pub mod enemy;
 mod fish;
 mod gui;
 pub mod player;
-mod score;
+pub mod score;
 
 // Top-level modules
 mod systems;

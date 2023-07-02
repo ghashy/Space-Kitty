@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use bevy::{prelude::*, reflect::Map, utils::HashMap};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -62,6 +64,17 @@ impl Default for HighScores {
         HighScores {
             scores: HashMap::new(),
         }
+    }
+}
+
+impl HighScores {
+    pub fn sorted(&self) -> std::vec::IntoIter<(u32, Name, Handle<Image>)> {
+        let vec: Vec<(u32, Name, Handle<Image>)> = self
+            .scores
+            .iter()
+            .map(|(name, (image, score))| (*score, name.clone(), image.clone()))
+            .collect();
+        vec.into_iter()
     }
 }
 

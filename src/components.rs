@@ -1,5 +1,9 @@
 use bevy::prelude::*;
 
+// ───── Current Crate Imports ────────────────────────────────────────────── //
+
+use crate::transition::TransitionRoute;
+
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 #[derive(Component)]
@@ -33,4 +37,4 @@ impl Comet {
 pub struct Comets;
 
 // Event
-pub struct DarkenScreenEvent;
+pub struct DarkenScreenEvent(pub TransitionRoute);

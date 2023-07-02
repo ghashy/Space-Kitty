@@ -360,7 +360,7 @@ pub fn handle_player_collision(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
-    _game_over_event_writer: EventWriter<GameOver>,
+    mut game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
     mut score_events: EventWriter<ScoreUpdateEvent>,
     mut local_audio_subtrack: Local<Option<TrackHandle>>,
@@ -425,10 +425,7 @@ pub fn handle_player_collision(
 
                         despawn_player(&mut commands, player_entity);
 
-                        // TODO: handle gameover event, add function to score to get highest score
-                        // game_over_event_writer.send(GameOver {
-                        //     final_score: score.value,
-                        // })
+                        game_over_event_writer.send(GameOver);
                     }
                     // Remove 25% from kitty's score
                     let drop_count = match score.drop_score(player_entity, 0.25)

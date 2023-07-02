@@ -3,10 +3,7 @@ use bevy_tweening::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::{
-    components::{DarkScreenOverlap, DarkenScreenEvent},
-    AppState,
-};
+use crate::components::{DarkScreenOverlap, DarkenScreenEvent};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -14,13 +11,26 @@ pub struct TransitionPlugin;
 
 impl Plugin for TransitionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(component_animator_system::<BackgroundColor>)
-            .add_system(
-                spawn_overlap_on_transition
-                    .in_set(OnUpdate(AppState::MainMenu)),
-            )
+        app
+            // States
+            .add_state::<TransitionState>()
+            .add_system(component_animator_system::<BackgroundColor>)
+            .add_system(spawn_overlap_on_transition)
             .add_system(despawn_overlap_after_transition);
     }
+}
+
+#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+pub enum TransitionState {
+    #[default]
+    NoTransition,
+    Transition,
+}
+
+#[derive(Clone, Copy)]
+pub enum TransitionRoute {
+    MenuToGame = 300,
+    GameToGameover = 301,
 }
 
 pub struct UiColorLens {
@@ -39,10 +49,11 @@ impl Lens<BackgroundColor> for UiColorLens {
 pub fn spawn_overlap_on_transition(
     mut commands: Commands,
     mut event_reader: EventReader<DarkenScreenEvent>,
-    app_state: Res<State<AppState>>,
+    app_state: Res<State<TransitionState>>,
+    mut next_state: ResMut<NextState<TransitionState>>,
 ) {
     if let Some(event) = event_reader.iter().next() {
-        if app_state.0 == AppState::MainMenu {
+        if app_state.0 == TransitionState::NoTransition {
             let sequence = Tween::new(
                 EaseFunction::CubicIn,
                 std::time::Duration::from_millis(500),
@@ -51,7 +62,7 @@ pub fn spawn_overlap_on_transition(
                     end: Color::rgba(0., 0., 0., 1.),
                 },
             )
-            .with_completed_event(300)
+            .with_completed_event(event.0 as u64)
             .then(
                 Tween::new(
                     EaseFunction::CubicIn,
@@ -61,7 +72,7 @@ pub fn spawn_overlap_on_transition(
                         end: Color::rgba(0., 0., 0., 0.),
                     },
                 )
-                .with_completed_event(301),
+                .with_completed_event(310),
             );
 
             let node = NodeBundle {
@@ -76,6 +87,7 @@ pub fn spawn_overlap_on_transition(
             };
 
             commands.spawn((node, Animator::new(sequence), DarkScreenOverlap));
+            next_state.set(TransitionState::Transition);
         }
     }
 }
@@ -84,12 +96,14 @@ fn despawn_overlap_after_transition(
     mut commands: Commands,
     screen_overlap_query: Query<Entity, With<DarkScreenOverlap>>,
     mut tween_event: EventReader<TweenCompleted>,
+    mut next_state: ResMut<NextState<TransitionState>>,
 ) {
     for event in tween_event.iter() {
         // Is phase2 finished? user data shoud be eq 1
-        if event.user_data == 1 {
+        if event.user_data == 310 {
             if let Ok(overlap) = screen_overlap_query.get_single() {
                 commands.entity(overlap).despawn_recursive();
+                next_state.set(TransitionState::NoTransition);
             }
         }
     }

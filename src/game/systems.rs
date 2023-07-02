@@ -128,32 +128,34 @@ pub fn despawn_borders(
     }
 }
 
+// DISABLED
 pub fn play_main_theme(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
     mut sound_handle: ResMut<SoundHandleResource>,
 ) {
-    let mut handle = kira_manager
-        .play(
-            audio_assets
-                .get(&sample_pack.title_theme)
-                .unwrap()
-                .get()
-                .with_settings(StaticSoundSettings::new().volume(0.5)),
-        )
-        .unwrap();
-    handle.set_loop_region(..).unwrap();
-    sound_handle.title_theme = Some(handle);
+    // let mut handle = kira_manager
+    //     .play(
+    //         audio_assets
+    //             .get(&sample_pack.title_theme)
+    //             .unwrap()
+    //             .get()
+    //             .with_settings(StaticSoundSettings::new().volume(0.5)),
+    //     )
+    //     .unwrap();
+    // handle.set_loop_region(..).unwrap();
+    // sound_handle.title_theme = Some(handle);
 }
 
+// DISABLED
 pub fn stop_main_theme(mut sound_handle: ResMut<SoundHandleResource>) {
-    if let Some(ref mut handle) = sound_handle.title_theme {
-        handle
-            .stop(kira::tween::Tween {
-                duration: Duration::from_millis(200),
-                ..default()
-            })
-            .unwrap();
-    }
+    // if let Some(ref mut handle) = sound_handle.title_theme {
+    //     handle
+    //         .stop(kira::tween::Tween {
+    //             duration: Duration::from_millis(200),
+    //             ..default()
+    //         })
+    //         .unwrap();
+    // }
 }

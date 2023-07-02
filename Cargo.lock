@@ -2975,6 +2975,7 @@ dependencies = [
  "bevy_hanabi",
  "bevy_rapier2d",
  "bevy_tweening",
+ "interpolation",
  "kira",
  "rand",
  "serde",
