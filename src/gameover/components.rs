@@ -17,6 +17,9 @@ pub struct ExitButton {
 }
 
 #[derive(Component)]
+pub struct GameoverComponent;
+
+#[derive(Component)]
 pub struct ScrollView {
     pub position: f32,
 }

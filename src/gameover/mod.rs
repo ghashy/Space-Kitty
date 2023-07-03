@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::systems::layout::{scroll_list, spawn_gameover_layout};
+use self::systems::layout::{
+    despawn_gameover_layout, scroll_list, spawn_gameover_layout,
+};
 use crate::AppState;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
@@ -21,8 +23,14 @@ pub struct GameoverPlugin;
 impl Plugin for GameoverPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(
+            // Enter State Systems
             spawn_gameover_layout.in_schedule(OnEnter(AppState::GameOver)),
         )
-        .add_systems((scroll_list,).in_set(OnUpdate(AppState::GameOver)));
+        // Systems
+        .add_systems((scroll_list,).in_set(OnUpdate(AppState::GameOver)))
+        // Exit State Systems
+        .add_system(
+            despawn_gameover_layout.in_schedule(OnExit(AppState::GameOver)),
+        );
     }
 }

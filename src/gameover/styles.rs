@@ -75,6 +75,7 @@ pub const BOARD_FILL: Style = Style {
 };
 
 pub const SCROLL_PARENT: Style = Style {
+    flex_direction: FlexDirection::Column,
     margin: UiRect {
         top: Val::Px(10.),
         ..UiRect::DEFAULT
@@ -87,6 +88,7 @@ pub const SCROLL_PARENT: Style = Style {
 pub const SCROLL_VIEW: Style = Style {
     flex_direction: FlexDirection::Column,
     size: Size::width(Val::Px(439.9)),
+    max_size: Size::UNDEFINED,
     ..Style::DEFAULT
 };
 

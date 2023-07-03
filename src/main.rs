@@ -138,7 +138,9 @@ fn main() {
         )
         .add_system(handle_pressing_g_key.in_set(OnUpdate(AppState::MainMenu)))
         .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::Game)))
+        // Debug ScrollView
         .add_system(debug_pressing_o_key.in_set(OnUpdate(AppState::Game)))
+        .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::GameOver)))
         .add_system(handle_game_over.in_set(OnUpdate(AppState::Game)))
         .add_system(
             finalize_transition_to_gameover.in_set(OnUpdate(AppState::Game)),

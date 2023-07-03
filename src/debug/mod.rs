@@ -47,9 +47,9 @@ impl Plugin for DebugPlugin {
             .register_type::<Text2dBounds>()
             // .add_plugin(SystemInformationDiagnosticsPlugin::default())
             // Startup Systems
-            .add_startup_system(setup);
-        // Systems
-        // .add_system(update_info_window.in_base_set(CoreSet::Update))
+            .add_startup_system(setup)
+            // Systems
+            .add_system(update_info_window.in_base_set(CoreSet::Update));
         // .add_system(update_values_window.in_base_set(CoreSet::Update));
     }
 }

@@ -11,7 +11,7 @@ use bevy::{
 use crate::{
     game::score::resources::HighScores,
     gameover::{
-        components::ScrollView,
+        components::{GameoverComponent, ScrollView},
         styles::{
             BAG, BOARD_FILL, BOARD_FRAME, CAT_FACE, DOG_FACE, EMITTING_FILL,
             EMITTING_FRAME, MAIN_CONTAINER, ROW, SCROLL_PARENT, SCROLL_VIEW,
@@ -26,14 +26,15 @@ use crate::{
 pub fn spawn_gameover_layout(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
     highscore: Res<HighScores>,
 ) {
     commands
-        .spawn(NodeBundle {
+        .spawn((NodeBundle {
             style: MAIN_CONTAINER,
             ..default()
-        })
+        }, 
+        GameoverComponent
+        ))
         .with_children(|parent| {
             parent
                 .spawn(ImageBundle {
@@ -137,8 +138,13 @@ pub fn spawn_gameover_layout(
         });
 }
 
-pub fn despawn_gameover_layout(mut commands: Commands) {
-    // winwinwin
+pub fn despawn_gameover_layout(
+    mut commands: Commands,
+    gameover_component: Query<Entity, With<GameoverComponent>>,
+) {
+    commands
+        .entity(gameover_component.single())
+        .despawn_recursive();
 }
 
 fn spawn_row(
@@ -224,35 +230,27 @@ fn spawn_row(
         });
 }
 
+// Shitty implementation
 pub fn scroll_list(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<(&mut ScrollView, &mut Style, &Parent, &Node)>,
     query_node: Query<&Node>,
-    time: Res<Time>,
 ) {
-    for mouse_wheel_event in mouse_wheel_events.iter() {
-        for (mut scrolling_list, mut style, parent, node) in &mut query_list {
-            let items_height = node.size().y;
-            let contaier_height =
-                query_node.get(parent.get()).unwrap().size().y;
+    use bevy::input::mouse::MouseScrollUnit;
 
-            let max_scroll = (items_height - contaier_height).max(0.);
+    for (mut scrolling_list, mut style, parent, node) in &mut query_list {
+        let items_height = node.size().y;
+        let contaier_height = query_node.get(parent.get()).unwrap().size().y;
 
+        let max_scroll = (items_height - contaier_height).max(0.);
+        for mouse_wheel_event in mouse_wheel_events.iter() {
             let dy = match mouse_wheel_event.unit {
-                bevy::input::mouse::MouseScrollUnit::Line => {
-                    mouse_wheel_event.y * 20.
-                }
-                bevy::input::mouse::MouseScrollUnit::Pixel => {
-                    mouse_wheel_event.y
-                }
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
             };
-
-            scrolling_list.position += dy * time.delta_seconds() * 10.;
-            scrolling_list.position = interpolation::lerp(
-                &scrolling_list.position,
-                &scrolling_list.position.clamp(-max_scroll, 0.),
-                &time.delta_seconds(),
-            );
+            scrolling_list.position += dy;
+            scrolling_list.position =
+                scrolling_list.position.clamp(-max_scroll, 0.);
             style.position.top = Val::Px(scrolling_list.position);
         }
     }
