@@ -45,8 +45,9 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Restrict max amount of spawned crackers at the same time
 - [x] Update avatar images
 - [x] Add Big dog animation
-- [ ] Fix aduio clipping on Master
+- [x] Fix aduio clipping on Master
 - [ ] Add health regerenation (a glass of milk)
+- [ ] Add controls sheet at the start of the game
 
 #### Buff system (future features):
 
