@@ -18,6 +18,7 @@ use crate::game::components::Wall;
 use crate::game::enemy::components::*;
 use crate::game::fish::FISH_SIZE;
 use crate::game::gui::components::Avatar;
+use crate::game::regeneration::RegeneratePlayerEvent;
 use crate::game::score::resources::Score;
 use crate::game::score::ScoreUpdateEvent;
 use crate::helper_functions::*;
@@ -541,6 +542,17 @@ pub fn blink_player(
                     .color
                     .set_a((timer.0.elapsed_secs() * 8.).sin().abs());
             }
+        }
+    }
+}
+
+pub fn regenerate_player(
+    mut player_query: Query<&mut Player>,
+    mut regen_events: EventReader<RegeneratePlayerEvent>,
+) {
+    if let Some(event) = regen_events.iter().next() {
+        if let Ok(mut player) = player_query.get_single_mut() {
+            player.health = event.new_health;
         }
     }
 }

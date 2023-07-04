@@ -2,14 +2,13 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use self::{gui::GameUiPlugin, regeneration::RegenerationPlugin};
 use crate::{events::GameOver, AppState};
 use enemy::EnemyPlugin;
 use fish::FishPlugin;
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use systems::*;
-
-use self::gui::GameUiPlugin;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
@@ -19,6 +18,7 @@ pub mod enemy;
 mod fish;
 mod gui;
 pub mod player;
+mod regeneration;
 pub mod score;
 
 // Top-level modules
@@ -50,6 +50,7 @@ impl Plugin for GamePlugin {
             .add_plugin(FishPlugin)
             .add_plugin(ScorePlugin)
             .add_plugin(GameUiPlugin)
+            .add_plugin(RegenerationPlugin)
             // Systems
             .add_system(
                 toggle_simulation_on_input_event

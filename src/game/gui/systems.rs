@@ -8,9 +8,10 @@ use bevy_tweening::{Animator, EaseFunction, Tween, TweenCompleted};
 // ───── Current Crate Import ─────────────────────────────────────────────── //
 
 use super::animation::animate_heart_out;
-use super::{components::*, styles::*, LIVES_ID_OFFSET};
+use super::{components::*, styles::*, HIT_EVENTS_OFFSET, REGEN_EVENTS_OFFSET};
 use crate::game::enemy::EnemyIsArrivingEvent;
 use crate::game::player::LIVES_COUNT;
+use crate::game::regeneration::RegeneratePlayerEvent;
 use crate::game::score::resources::Chart;
 use crate::game::score::{ScoreEventType, ScoreUpdateEvent};
 use crate::{events::PlayerHit, game::player::components::Player};
@@ -61,7 +62,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                         })
                         .with_children(|parent| {
                             for mut id in 1..=LIVES_COUNT {
-                                id += LIVES_ID_OFFSET;
+                                id += HIT_EVENTS_OFFSET;
                                 parent.spawn((
                                     ImageBundle {
                                         style: STARSHIP_LIFE,
@@ -355,7 +356,7 @@ pub fn listen_hit_events(
 ) {
     if let Some(_) = player_hit_events.iter().next() {
         if let Ok(player) = player_query.get_single() {
-            let id = player.health as u64 + LIVES_ID_OFFSET + 1;
+            let id = player.health as u64 + HIT_EVENTS_OFFSET + 1;
             let entity = heart_images
                 .iter_mut()
                 .filter(|(_, _, heart_image)| heart_image.0 == id)
@@ -364,7 +365,7 @@ pub fn listen_hit_events(
                 .0;
             animate_heart_out(&mut commands, entity, id);
         } else {
-            let id = LIVES_ID_OFFSET + 1;
+            let id = HIT_EVENTS_OFFSET + 1;
             let entity = heart_images
                 .iter_mut()
                 .filter(|(_, _, heart_image)| heart_image.0 == id)
@@ -376,13 +377,54 @@ pub fn listen_hit_events(
     }
 
     for event in animation_events.iter() {
-        if (400..500).contains(&event.user_data) {
+        if (HIT_EVENTS_OFFSET..REGEN_EVENTS_OFFSET).contains(&event.user_data) {
             let mut our_image = heart_images
                 .iter_mut()
                 .filter(|(_, _, heart_image)| heart_image.0 == event.user_data)
                 .next()
                 .unwrap();
             our_image.1.texture = (our_image.2).2.clone_weak();
+            return;
+        }
+    }
+}
+
+// FIXME
+// Some very bad decisions here, but I can't figure out how
+// to organize work with tweening and events for now.
+pub fn listen_regeneration_events(
+    mut commands: Commands,
+    mut regen_events: EventReader<RegeneratePlayerEvent>,
+    mut animation_events: EventReader<TweenCompleted>,
+    player_query: Query<&Player>,
+    mut heart_images: Query<(Entity, &mut UiImage, &HeartImage)>,
+) {
+    if let Some(event) = regen_events.iter().next() {
+        if let Ok(_) = player_query.get_single() {
+            // Some bad desicion, use `HIT_EVENTS_OFFSET` here
+            let id1 = event.new_health as u64 + HIT_EVENTS_OFFSET;
+            let entity = heart_images
+                .iter_mut()
+                .filter(|(_, _, heart_image)| heart_image.0 == id1)
+                .next()
+                .unwrap()
+                .0;
+
+            let id2 = REGEN_EVENTS_OFFSET + event.new_health as u64;
+            animate_heart_out(&mut commands, entity, id2);
+        }
+    }
+
+    for event in animation_events.iter() {
+        if (REGEN_EVENTS_OFFSET..500).contains(&event.user_data) {
+            let mut our_image = heart_images
+                .iter_mut()
+                .filter(|(_, _, heart_image)| {
+                    heart_image.0 == event.user_data - 50
+                })
+                .next()
+                .unwrap();
+            our_image.1.texture = (our_image.2).1.clone_weak();
             return;
         }
     }

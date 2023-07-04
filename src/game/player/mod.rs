@@ -8,6 +8,7 @@ use crate::{events::PlayerHit, AppState};
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
+// Top-level modules
 pub mod components;
 pub mod systems;
 

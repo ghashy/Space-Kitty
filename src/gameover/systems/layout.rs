@@ -187,7 +187,7 @@ fn spawn_row(
             });
             // Handle Kitty's image case
             if name.to_string() == "Kitty" {
-                image = asset_server.load("sprites/Cat's face.png");
+                image = asset_server.load("sprites/Cat's face blue.png");
                 entity_style = CAT_FACE;
             }
             // Entity's image

@@ -164,4 +164,5 @@ pub enum AppState {
 // 301 - Dark transition phase1: screen is black, transition from game go
 // gameover.
 // 310 - Dark transition phase2: screen is transparent.
-// 400..450 - gui lives id animation.
+// 400..450 - gui lives id animation, hit events.
+// 450..500 - gui lives id animation, regeneration events.
