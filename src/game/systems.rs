@@ -131,7 +131,34 @@ pub fn despawn_borders(
     }
 }
 
-pub fn play_main_theme(
+pub fn system_play_main_theme(
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
+    mut sound_handle: ResMut<SoundHandleResource>,
+) {
+    play_main_theme(kira_manager, audio_assets, sample_pack, sound_handle);
+}
+
+pub fn system_restart_clock(
+    kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
+    sound_handle: ResMut<SoundHandleResource>,
+) {
+    if let Some(ref handle) = sound_handle.main_theme {
+        if handle.state() == kira::sound::PlaybackState::Stopped {
+            play_main_theme(
+                kira_manager,
+                audio_assets,
+                sample_pack,
+                sound_handle,
+            );
+        }
+    }
+}
+
+fn play_main_theme(
     mut kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
@@ -151,8 +178,8 @@ pub fn play_main_theme(
                 .start_time(clock.time())
                 .output_destination(kira_manager.get_master()),
         );
-    let mut handle = kira_manager.play(sound_data).unwrap();
-    handle.set_loop_region(..).unwrap();
+    let handle = kira_manager.play(sound_data).unwrap();
+    // handle.set_loop_region(..).unwrap();
     clock.start().unwrap();
     sound_handle.main_theme = Some(handle);
     sound_handle.main_theme_clock = Some(clock);
@@ -166,7 +193,6 @@ pub fn system_check_main_theme_clock(
     if let Some(ref clock) = sound_handle.main_theme_clock {
         let tick = clock.time().ticks;
         if (144..=176).contains(&tick) && *local_counter != tick {
-            println!("Tick: {}", tick);
             *local_counter = tick;
             doggy_theme_events.send(DoggyTheme);
         }

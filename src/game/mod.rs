@@ -37,7 +37,11 @@ impl Plugin for GamePlugin {
             .add_state::<SimulationState>()
             // Enter State Systems
             .add_systems(
-                (resume_simulation, spawn_world_borders, play_main_theme)
+                (
+                    resume_simulation,
+                    spawn_world_borders,
+                    system_play_main_theme,
+                )
                     .in_schedule(OnEnter(AppState::Game)),
             )
             // Plugins
@@ -51,8 +55,9 @@ impl Plugin for GamePlugin {
                 toggle_simulation_on_input_event
                     .run_if(in_state(AppState::Game)),
             )
-            .add_system(
-                system_check_main_theme_clock.in_set(OnUpdate(AppState::Game)),
+            .add_systems(
+                (system_check_main_theme_clock, system_restart_clock)
+                    .in_set(OnUpdate(AppState::Game)),
             )
             // Exit State Systems
             .add_systems(
