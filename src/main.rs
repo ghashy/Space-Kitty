@@ -79,10 +79,10 @@ fn main() {
                         resolution: WindowResolution::new(
                             1280. / 1.1,
                             720. / 1.1,
-                        ),
-                        // .with_scale_factor_override(2.),
-                        // mode: WindowMode::Fullscreen,
-                        // title: String::from("Space Kitty"),
+                        )
+                        .with_scale_factor_override(2.),
+                        mode: WindowMode::BorderlessFullscreen,
+                        title: String::from("Space Kitty"),
                         ..default()
                     }),
                     ..default()
