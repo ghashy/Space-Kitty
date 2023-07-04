@@ -145,7 +145,8 @@ pub fn check_collision(
                                             kira_manager.get_master(),
                                         ),
                                 );
-                            kira_manager.play(sound_data).unwrap();
+                            kira_manager.play(sound_data).unwrap().set_volume(0.3, kira::tween::Tween::default())
+                            .unwrap();;
 
                             commands.entity(fish_entity).despawn();
                             picked_event.send(FishWasPickedEvent(entity));

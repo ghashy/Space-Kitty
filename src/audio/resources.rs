@@ -144,12 +144,12 @@ impl Default for KiraManager {
             .unwrap();
         let master_track = manager
             .add_sub_track(TrackBuilder::new().with_effect(
-                // CompressorBuilder::new()
-                //     .ratio(10.)
-                //     .threshold(-2.)
-                //     .attack_duration(Duration::from_millis(1))
-                //     .release_duration(Duration::from_millis(100)),
-                kira::track::effect::reverb::ReverbBuilder::new(),
+                CompressorBuilder::new()
+                    .ratio(10.)
+                    .threshold(-2.)
+                    .attack_duration(Duration::from_millis(1))
+                    .release_duration(Duration::from_millis(100)),
+                // kira::track::effect::reverb::ReverbBuilder::new(),
             ))
             .unwrap();
         KiraManager {

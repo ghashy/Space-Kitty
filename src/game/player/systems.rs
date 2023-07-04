@@ -488,7 +488,7 @@ pub fn handle_player_collision(
                         .with_settings(
                             StaticSoundSettings::new()
                                 .volume(0.35)
-                                .output_destination(sub),
+                                .output_destination(kira_manager.get_master()),
                         );
 
                     kira_manager.play(sound_data).unwrap();
