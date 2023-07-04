@@ -56,6 +56,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 (
                     handle_player_collision,
+                    regenerate_player,
                     spawn_particles_on_collision_with_enemy,
                     poll_and_despawn_collision_particles,
                 )

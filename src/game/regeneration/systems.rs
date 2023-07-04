@@ -114,3 +114,9 @@ pub fn check_collision(
         }
     }
 }
+
+pub fn despawn_milk(mut commands: Commands, milk_query: Query<(&Transform, Entity), With<FlyingMilk>>) {
+    if let Some((transform, milk)) = milk_query.get_single() {
+        if 
+    }
+}
