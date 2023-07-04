@@ -6,6 +6,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::TransformScaleLens, Animator, EaseFunction, Tween};
+use kira::sound::static_sound::StaticSoundSettings;
 use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -210,11 +211,14 @@ pub fn update_enemy_direction(
     }
     // Play audio
     if direction_changed {
-        let sound_data =
-            audio_assets.get(&sample_pack.wall_collision).unwrap().get();
-        sound_data
-            .settings
-            .output_destination(kira_manager.get_master());
+        let sound_data = audio_assets
+            .get(&sample_pack.wall_collision)
+            .unwrap()
+            .get()
+            .with_settings(
+                StaticSoundSettings::new()
+                    .output_destination(kira_manager.get_master()),
+            );
         kira_manager.play(sound_data).unwrap();
     }
 }
@@ -315,10 +319,11 @@ pub fn spawn_message_box(
         let sound_data = audio_assets
             .get(get_random_bark(&sample_pack))
             .unwrap()
-            .get();
-        sound_data
-            .settings
-            .output_destination(kira_manager.get_master());
+            .get()
+            .with_settings(
+                StaticSoundSettings::new()
+                    .output_destination(kira_manager.get_master()),
+            );
         kira_manager.play(sound_data).unwrap();
     }
 }

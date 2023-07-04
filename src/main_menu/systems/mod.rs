@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use kira::sound::static_sound::StaticSoundSettings;
 
 use crate::audio::{
     assets::AudioSource,
@@ -20,10 +21,14 @@ pub fn play_title_theme(
     sample_pack: Res<SamplePack>,
     mut sound_handle: ResMut<SoundHandleResource>,
 ) {
-    let sound_data = audio_assets.get(&sample_pack.title_theme).unwrap().get();
-    sound_data
-        .settings
-        .output_destination(kira_manager.get_master());
+    let sound_data = audio_assets
+        .get(&sample_pack.title_theme)
+        .unwrap()
+        .get()
+        .with_settings(
+            StaticSoundSettings::new()
+                .output_destination(kira_manager.get_master()),
+        );
     let mut handle = kira_manager.play(sound_data).unwrap();
     handle.set_loop_region(..).unwrap();
     sound_handle.title_theme = Some(handle);

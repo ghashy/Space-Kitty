@@ -1,6 +1,7 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::{lens::*, *};
+use kira::sound::static_sound::StaticSoundSettings;
 use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -104,11 +105,16 @@ pub fn check_collision(
                             let handle =
                                 get_random_pick_fish_sample(&sample_pack);
                             // Play audio
-                            let sound_data =
-                                audio_assets.get(handle).unwrap().get();
-                            sound_data
-                                .settings
-                                .output_destination(kira_manager.get_master());
+                            let sound_data = audio_assets
+                                .get(handle)
+                                .unwrap()
+                                .get()
+                                .with_settings(
+                                    StaticSoundSettings::new()
+                                        .output_destination(
+                                            kira_manager.get_master(),
+                                        ),
+                                );
                             kira_manager
                                 .play(sound_data)
                                 .unwrap()
@@ -132,10 +138,13 @@ pub fn check_collision(
                             let sound_data = audio_assets
                                 .get(&sample_pack.pick_fish1)
                                 .unwrap()
-                                .get();
-                            sound_data
-                                .settings
-                                .output_destination(kira_manager.get_master());
+                                .get()
+                                .with_settings(
+                                    StaticSoundSettings::new()
+                                        .output_destination(
+                                            kira_manager.get_master(),
+                                        ),
+                                );
                             kira_manager.play(sound_data).unwrap();
 
                             commands.entity(fish_entity).despawn();

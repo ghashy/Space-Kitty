@@ -148,11 +148,9 @@ pub fn play_main_theme(
         .with_settings(
             StaticSoundSettings::new()
                 .volume(0.7)
-                .start_time(clock.time()),
+                .start_time(clock.time())
+                .output_destination(kira_manager.get_master()),
         );
-    sound_data
-        .settings
-        .output_destination(kira_manager.get_master());
     let mut handle = kira_manager.play(sound_data).unwrap();
     handle.set_loop_region(..).unwrap();
     clock.start().unwrap();

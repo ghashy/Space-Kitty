@@ -213,7 +213,11 @@ pub fn player_movement(
                     .get(&sample_pack.engine)
                     .unwrap()
                     .get()
-                    .with_settings(StaticSoundSettings::new().volume(0.01));
+                    .with_settings(
+                        StaticSoundSettings::new()
+                            .volume(0.01)
+                            .output_destination(kira_manager.get_master()),
+                    );
                 sample
                     .settings
                     .output_destination(kira_manager.get_master());
