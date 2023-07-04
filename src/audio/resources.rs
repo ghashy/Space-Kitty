@@ -124,12 +124,15 @@ pub struct KiraManager {
 
 impl Default for KiraManager {
     fn default() -> Self {
-        KiraManager {
-            manager: AudioManager::<DefaultBackend>::new(
-                AudioManagerSettings::default(),
-            )
-            .unwrap(),
-        }
+        let manager = AudioManager::<DefaultBackend>::new(
+            AudioManagerSettings::default(),
+        )
+        .unwrap();
+        manager
+            .main_track()
+            .set_volume(0.8, kira::tween::Tween::default())
+            .unwrap();
+        KiraManager { manager }
     }
 }
 
