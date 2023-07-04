@@ -105,8 +105,12 @@ pub fn setup_audio_assets(
         main_theme: asset_server.load("audio/Space Kitty - Main theme.ogg"),
         title_theme: asset_server
             .load("audio/Space Kitty - Title screen theme.ogg"),
+        gameover_theme: asset_server
+            .load("audio/Space Kitty  - Game over theme.ogg"),
         alarm: asset_server.load("audio/SFX/Space Kitty - Alarm (no life).wav"),
-        engine: asset_server.load("audio/SFX/Space Kitty  - Jet engine.wav"),
+        engine: asset_server.load("audio/SFX/Space Kitty - Jet engine.wav"),
+        milk: asset_server.load("audio/SFX/Space Kitty - A glass of milk.wav"),
+        button: asset_server.load("audio/SFX/Space Kitty - Button pressed.wav"),
     });
 }
 

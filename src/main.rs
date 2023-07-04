@@ -18,7 +18,6 @@ use bevy::{
         RenderPlugin,
     },
     window::{WindowMode, WindowResolution},
-    winit::WinitSettings,
 };
 use bevy_hanabi::HanabiPlugin;
 use bevy_rapier2d::prelude::*;

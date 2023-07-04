@@ -1,5 +1,6 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
+use kira::sound::static_sound::StaticSoundSettings;
 use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
@@ -7,6 +8,8 @@ use rand::Rng;
 use super::components::FlyingMilk;
 use super::resources::FlyingMilkResource;
 use super::{RegeneratePlayerEvent, MAX_SPAWN_TIME, MILK_SPEED};
+use crate::audio::assets::AudioSource;
+use crate::audio::resources::{KiraManager, SamplePack};
 use crate::game::player::components::Player;
 use crate::helper_functions::VectorUtilities;
 
@@ -102,6 +105,9 @@ pub fn check_collision(
     player_query: Query<(Entity, &Player)>,
     mut event_writer: EventWriter<RegeneratePlayerEvent>,
     mut milk_res: ResMut<FlyingMilkResource>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
 ) {
     if let Ok(milk) = milk_query.get_single() {
         if let Ok((entity, player)) = player_query.get_single() {
@@ -114,6 +120,17 @@ pub fn check_collision(
                 event_writer.send(RegeneratePlayerEvent {
                     new_health: player.health + 1,
                 });
+                // Play milk sound
+                let sound_data = audio_assets
+                    .get(&sample_pack.milk)
+                    .unwrap()
+                    .get()
+                    .with_settings(
+                        StaticSoundSettings::new()
+                            .volume(0.9)
+                            .output_destination(kira_manager.get_master()),
+                    );
+                kira_manager.play(sound_data).unwrap();
             }
         }
     }

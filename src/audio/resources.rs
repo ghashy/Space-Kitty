@@ -20,6 +20,7 @@ use super::assets::AudioSource;
 pub struct SoundHandleResource {
     pub title_theme: Option<StaticSoundHandle>,
     pub main_theme: Option<StaticSoundHandle>,
+    pub gameover_theme: Option<StaticSoundHandle>,
     pub main_theme_clock: Option<ClockHandle>,
 }
 
@@ -69,8 +70,11 @@ pub struct SamplePack {
     pub wall_collision: Handle<AudioSource>,
     pub title_theme: Handle<AudioSource>,
     pub main_theme: Handle<AudioSource>,
+    pub gameover_theme: Handle<AudioSource>,
     pub alarm: Handle<AudioSource>,
     pub engine: Handle<AudioSource>,
+    pub milk: Handle<AudioSource>,
+    pub button: Handle<AudioSource>,
 }
 
 pub struct SamplePackIterator<'a> {
@@ -143,14 +147,16 @@ impl Default for KiraManager {
             .set_volume(0.8, kira::tween::Tween::default())
             .unwrap();
         let master_track = manager
-            .add_sub_track(TrackBuilder::new().with_effect(
-                CompressorBuilder::new()
-                    .ratio(10.)
-                    .threshold(-2.)
-                    .attack_duration(Duration::from_millis(1))
-                    .release_duration(Duration::from_millis(100)),
-                // kira::track::effect::reverb::ReverbBuilder::new(),
-            ))
+            .add_sub_track(
+                TrackBuilder::new().with_effect(
+                    CompressorBuilder::new()
+                        .ratio(10.)
+                        .threshold(-2.)
+                        .attack_duration(Duration::from_millis(1))
+                        .release_duration(Duration::from_millis(100)),
+                    // kira::track::effect::reverb::ReverbBuilder::new(),
+                ),
+            )
             .unwrap();
         KiraManager {
             manager,

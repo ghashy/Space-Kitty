@@ -371,7 +371,6 @@ pub fn handle_player_collision(
     mut game_over_event_writer: EventWriter<GameOver>,
     mut event_writer: EventWriter<PlayerHit>,
     mut score_events: EventWriter<ScoreUpdateEvent>,
-    mut local_audio_subtrack: Local<Option<TrackHandle>>,
     mut score: ResMut<Score>,
 ) {
     for event in collision_events.iter() {
@@ -472,15 +471,6 @@ pub fn handle_player_collision(
                         drop_count,
                     });
                 } else if walls.iter().any(|e| collided_with == e) {
-                    if (*local_audio_subtrack).is_none() {
-                        *local_audio_subtrack = Some(
-                            kira_manager
-                                .add_sub_track(TrackBuilder::new())
-                                .unwrap(),
-                        );
-                    }
-                    let sub = (*local_audio_subtrack).as_ref().unwrap();
-
                     // Play meow sound
                     let sound_data = audio_assets
                         .get(&sample_pack.meow5)
@@ -488,7 +478,7 @@ pub fn handle_player_collision(
                         .get()
                         .with_settings(
                             StaticSoundSettings::new()
-                                .volume(0.35)
+                                .volume(0.23)
                                 .output_destination(kira_manager.get_master()),
                         );
 

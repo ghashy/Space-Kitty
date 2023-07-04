@@ -1,8 +1,12 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use kira::sound::static_sound::StaticSoundSettings;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use crate::audio::assets::AudioSource;
+use crate::audio::resources::KiraManager;
+use crate::audio::resources::SamplePack;
 use crate::components::DarkenScreenEvent;
 use crate::main_menu::animation::*;
 use crate::main_menu::components::*;
@@ -16,12 +20,28 @@ pub fn interact_with_play_button(
         Changed<Interaction>,
     >,
     mut event_writer: EventWriter<DarkenScreenEvent>,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
 ) {
     if let Ok((interaction, mut image, play_button)) =
         button_query.get_single_mut()
     {
         match *interaction {
             Interaction::Clicked => {
+                // Play button sound
+                let sound_data = audio_assets
+                    .get(&sample_pack.button)
+                    .unwrap()
+                    .get()
+                    .with_settings(
+                        StaticSoundSettings::new()
+                            .volume(0.5)
+                            .output_destination(kira_manager.get_master()),
+                    );
+                kira_manager.play(sound_data).unwrap();
+
+                // Animate
                 animate_button_click(&mut image, play_button);
                 event_writer
                     .send(DarkenScreenEvent(TransitionRoute::MenuToGame));
