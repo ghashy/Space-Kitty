@@ -4,8 +4,11 @@ use kira::manager::{
     backend::DefaultBackend, AudioManager, AudioManagerSettings,
 };
 use kira::sound::static_sound::StaticSoundHandle;
+use kira::track::effect::compressor::CompressorBuilder;
+use kira::track::{TrackBuilder, TrackHandle};
 use std::ops::Deref;
 use std::ops::DerefMut;
+use std::time::Duration;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -120,11 +123,18 @@ impl<'a> Iterator for SamplePackIterator<'a> {
 // Non send resource
 pub struct KiraManager {
     manager: AudioManager,
+    master_track: TrackHandle,
+}
+
+impl KiraManager {
+    pub fn get_master(&self) -> &TrackHandle {
+        &self.master_track
+    }
 }
 
 impl Default for KiraManager {
     fn default() -> Self {
-        let manager = AudioManager::<DefaultBackend>::new(
+        let mut manager = AudioManager::<DefaultBackend>::new(
             AudioManagerSettings::default(),
         )
         .unwrap();
@@ -132,7 +142,21 @@ impl Default for KiraManager {
             .main_track()
             .set_volume(0.8, kira::tween::Tween::default())
             .unwrap();
-        KiraManager { manager }
+        let master_track = manager
+            .add_sub_track(
+                TrackBuilder::new().with_effect(
+                    CompressorBuilder::new()
+                        .ratio(10.)
+                        .threshold(-2.)
+                        .attack_duration(Duration::from_millis(1))
+                        .release_duration(Duration::from_millis(100)),
+                ),
+            )
+            .unwrap();
+        KiraManager {
+            manager,
+            master_track,
+        }
     }
 }
 

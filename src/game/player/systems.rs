@@ -214,6 +214,9 @@ pub fn player_movement(
                     .unwrap()
                     .get()
                     .with_settings(StaticSoundSettings::new().volume(0.01));
+                sample
+                    .settings
+                    .output_destination(kira_manager.get_master());
                 let mut handle = kira_manager.play(sample).unwrap();
                 // For playing from rand position
                 handle.seek_to(rand_pos).unwrap();
@@ -398,7 +401,11 @@ pub fn handle_player_collision(
                             .unwrap()
                             .get()
                             .with_settings(
-                                StaticSoundSettings::new().volume(0.5),
+                                StaticSoundSettings::new()
+                                    .volume(0.5)
+                                    .output_destination(
+                                        kira_manager.get_master(),
+                                    ),
                             );
                         kira_manager.play(sound_data).unwrap();
 
@@ -408,7 +415,11 @@ pub fn handle_player_collision(
                             .unwrap()
                             .get()
                             .with_settings(
-                                StaticSoundSettings::new().volume(0.8),
+                                StaticSoundSettings::new()
+                                    .volume(0.8)
+                                    .output_destination(
+                                        kira_manager.get_master(),
+                                    ),
                             );
                         kira_manager.play(sound_data).unwrap();
 

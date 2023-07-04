@@ -210,9 +210,12 @@ pub fn update_enemy_direction(
     }
     // Play audio
     if direction_changed {
-        kira_manager
-            .play(audio_assets.get(&sample_pack.wall_collision).unwrap().get())
-            .unwrap();
+        let sound_data =
+            audio_assets.get(&sample_pack.wall_collision).unwrap().get();
+        sound_data
+            .settings
+            .output_destination(kira_manager.get_master());
+        kira_manager.play(sound_data).unwrap();
     }
 }
 
@@ -309,14 +312,14 @@ pub fn spawn_message_box(
             commands.entity(*ch).push_children(&[message_box]);
         }
         // Hello bark sound
-        kira_manager
-            .play(
-                audio_assets
-                    .get(get_random_bark(&sample_pack))
-                    .unwrap()
-                    .get(),
-            )
-            .unwrap();
+        let sound_data = audio_assets
+            .get(get_random_bark(&sample_pack))
+            .unwrap()
+            .get();
+        sound_data
+            .settings
+            .output_destination(kira_manager.get_master());
+        kira_manager.play(sound_data).unwrap();
     }
 }
 

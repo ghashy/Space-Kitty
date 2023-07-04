@@ -104,8 +104,13 @@ pub fn check_collision(
                             let handle =
                                 get_random_pick_fish_sample(&sample_pack);
                             // Play audio
+                            let sound_data =
+                                audio_assets.get(handle).unwrap().get();
+                            sound_data
+                                .settings
+                                .output_destination(kira_manager.get_master());
                             kira_manager
-                                .play(audio_assets.get(handle).unwrap().get())
+                                .play(sound_data)
                                 .unwrap()
                                 .set_volume(0.3, kira::tween::Tween::default())
                                 .unwrap();
@@ -124,14 +129,14 @@ pub fn check_collision(
                                 .entity(fish_pack.get())
                                 .remove_children(&[fish_entity]);
                             // Play audio
-                            kira_manager
-                                .play(
-                                    audio_assets
-                                        .get(&sample_pack.pick_fish1)
-                                        .unwrap()
-                                        .get(),
-                                )
-                                .unwrap();
+                            let sound_data = audio_assets
+                                .get(&sample_pack.pick_fish1)
+                                .unwrap()
+                                .get();
+                            sound_data
+                                .settings
+                                .output_destination(kira_manager.get_master());
+                            kira_manager.play(sound_data).unwrap();
 
                             commands.entity(fish_entity).despawn();
                             picked_event.send(FishWasPickedEvent(entity));

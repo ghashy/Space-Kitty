@@ -141,19 +141,19 @@ pub fn play_main_theme(
     let clock = kira_manager
         .add_clock(ClockSpeed::TicksPerMinute(TEMPO))
         .unwrap();
-    let mut handle = kira_manager
-        .play(
-            audio_assets
-                .get(&sample_pack.main_theme)
-                .unwrap()
-                .get()
-                .with_settings(
-                    StaticSoundSettings::new()
-                        .volume(0.7)
-                        .start_time(clock.time()),
-                ),
-        )
-        .unwrap();
+    let sound_data = audio_assets
+        .get(&sample_pack.main_theme)
+        .unwrap()
+        .get()
+        .with_settings(
+            StaticSoundSettings::new()
+                .volume(0.7)
+                .start_time(clock.time()),
+        );
+    sound_data
+        .settings
+        .output_destination(kira_manager.get_master());
+    let mut handle = kira_manager.play(sound_data).unwrap();
     handle.set_loop_region(..).unwrap();
     clock.start().unwrap();
     sound_handle.main_theme = Some(handle);
