@@ -51,6 +51,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Despawn notes
 - [ ] Sort high scores
 - [ ] Try to fix lags when dogs spawn
+- [ ] Despawn milk when exit from game state
 
 #### Buff system (future features):
 
