@@ -46,6 +46,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Update avatar images
 - [x] Add Big dog animation
 - [ ] Fix aduio clipping on Master
+- [ ] Add health regerenation (a glass of milk)
 
 #### Buff system (future features):
 
