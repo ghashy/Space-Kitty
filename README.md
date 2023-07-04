@@ -53,6 +53,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Despawn milk when exit from game state
 - [ ] Add sounds: picking milk, gameover screen music, pressing buttons
 - [ ] Improve sprites loading in the entire project
+- [ ] Fix allignement on the gamover screen
 
 #### Buff system (future features):
 

@@ -91,7 +91,7 @@ pub fn update_score(
                 let loot_count = if name.to_string() == "Kitty" {
                     1
                 } else {
-                    rand::thread_rng().gen_range(1..7)
+                    rand::thread_rng().gen_range(1..10)
                 };
 
                 let new_score = score.add_score_to(&entity, loot_count);
