@@ -16,12 +16,12 @@ pub struct Score {
 }
 
 impl Score {
-    pub fn add_one_score_to(&mut self, who: &Entity) -> u32 {
+    pub fn add_score_to(&mut self, who: &Entity, how_much: u32) -> u32 {
         let old_score = match self.data.get(who) {
             Some(score) => *score,
             None => 0,
         };
-        let new_score = old_score + 1;
+        let new_score = old_score + how_much;
         self.data.insert(*who, new_score);
         new_score
     }

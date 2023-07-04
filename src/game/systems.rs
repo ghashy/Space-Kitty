@@ -144,7 +144,7 @@ pub fn play_main_theme(
     let mut handle = kira_manager
         .play(
             audio_assets
-                .get(&sample_pack.title_theme)
+                .get(&sample_pack.main_theme)
                 .unwrap()
                 .get()
                 .with_settings(
@@ -156,7 +156,7 @@ pub fn play_main_theme(
         .unwrap();
     handle.set_loop_region(..).unwrap();
     clock.start().unwrap();
-    sound_handle.title_theme = Some(handle);
+    sound_handle.main_theme = Some(handle);
     sound_handle.main_theme_clock = Some(clock);
 }
 
@@ -176,12 +176,16 @@ pub fn system_check_main_theme_clock(
 }
 
 pub fn stop_main_theme(mut sound_handle: ResMut<SoundHandleResource>) {
-    if let Some(ref mut handle) = sound_handle.title_theme {
+    if let Some(ref mut handle) = sound_handle.main_theme {
         handle
             .stop(kira::tween::Tween {
                 duration: Duration::from_millis(200),
                 ..default()
             })
             .unwrap();
+
+        if let Some(ref clock) = sound_handle.main_theme_clock {
+            clock.stop().unwrap();
+        }
     }
 }

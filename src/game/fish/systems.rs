@@ -149,37 +149,44 @@ pub fn spawn_fish_over_time(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     stars_pack_query: Query<Entity, With<FishPack>>,
+    enemy_query: Query<Entity, With<Enemy>>,
     asset_server: Res<AssetServer>,
     star_spawn_timer: Res<FishSpawnTimer>,
 ) {
     if star_spawn_timer.timer.finished() {
         let window = window_query.get_single().unwrap();
         let mut rand = thread_rng();
-        let rand_x = rand.gen::<f32>() * window.width();
-        let rand_y = rand.gen::<f32>() * window.height();
-
         let stars_pack = stars_pack_query.single();
-        let child = commands
-            .spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(FISH_SIZE),
+
+        let is_there_any_enemies = enemy_query.iter().next().is_some();
+        if is_there_any_enemies {
+            let rand_x = rand.gen::<f32>() * window.width();
+            let rand_y = rand.gen::<f32>() * window.height();
+
+            let child = commands
+                .spawn((
+                    SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(FISH_SIZE),
+                            ..default()
+                        },
+                        transform: Transform::from_xyz(rand_x, rand_y, 1.)
+                            .with_rotation(Quat::from_rotation_z(
+                                rand.gen_range(0.0..std::f32::consts::PI * 2.),
+                            )),
+                        texture: asset_server.load("sprites/Fish.png"),
                         ..default()
                     },
-                    transform: Transform::from_xyz(rand_x, rand_y, 1.)
-                        .with_rotation(Quat::from_rotation_z(
-                            rand.gen_range(0.0..std::f32::consts::PI * 2.),
-                        )),
-                    texture: asset_server.load("sprites/Fish.png"),
-                    ..default()
-                },
-                Collider::ball(FISH_SIZE.x / 2.),
-                Sensor::default(),
-                Fish {},
-                Animator::new(get_fish_tween(Vec3::new(rand_x, rand_y, 1.))),
-            ))
-            .id();
-        commands.entity(stars_pack).add_child(child);
+                    Collider::ball(FISH_SIZE.x / 2.),
+                    Sensor::default(),
+                    Fish {},
+                    Animator::new(get_fish_tween(Vec3::new(
+                        rand_x, rand_y, 1.,
+                    ))),
+                ))
+                .id();
+            commands.entity(stars_pack).add_child(child);
+        }
     }
 }
 

@@ -102,8 +102,8 @@ pub fn setup_audio_assets(
             .load("audio/SFX/Meows/Space Kitty - Meow Roar.wav"),
         wall_collision: asset_server
             .load("audio/SFX/Space Kitty - Wall collision.wav"),
-        title_theme: asset_server.load("audio/Space Kitty - Main theme.ogg"),
-        main_theme: asset_server
+        main_theme: asset_server.load("audio/Space Kitty - Main theme.ogg"),
+        title_theme: asset_server
             .load("audio/Space Kitty - Title screen theme.ogg"),
         alarm: asset_server.load("audio/SFX/Space Kitty - Alarm (no life).wav"),
         engine: asset_server.load("audio/SFX/Space Kitty  - Jet engine.wav"),

@@ -52,7 +52,7 @@ impl Plugin for GamePlugin {
                     .run_if(in_state(AppState::Game)),
             )
             .add_system(
-                system_check_main_theme_clock.in_base_set(CoreSet::Update),
+                system_check_main_theme_clock.in_set(OnUpdate(AppState::Game)),
             )
             // Exit State Systems
             .add_systems(

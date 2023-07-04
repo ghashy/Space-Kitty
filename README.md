@@ -41,8 +41,8 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Rework collision system
 - [x] Resizing screen fix
 - [x] Doggy theme particles
-- [ ] Add more fish when adding more dogs
-- [ ] Restrict max amount of spawned crackers at the same time
+- [x] Dogs loots more fish
+- [x] Restrict max amount of spawned crackers at the same time
 - [x] Update avatar images
 - [x] Add Big dog animation
 - [ ] Fix aduio clipping on Master

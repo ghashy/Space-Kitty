@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -87,7 +88,13 @@ pub fn update_score(
     for event in picked_event.iter() {
         for (name, entity) in entity_query.iter() {
             if entity == event.0 {
-                let new_score = score.add_one_score_to(&entity);
+                let loot_count = if name.to_string() == "Kitty" {
+                    1
+                } else {
+                    rand::thread_rng().gen_range(1..10)
+                };
+
+                let new_score = score.add_score_to(&entity, loot_count);
 
                 if new_score % 7 == 0 || new_score == 1 {
                     score_update_event.send(ScoreUpdateEvent::new(

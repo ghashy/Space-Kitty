@@ -44,7 +44,6 @@ impl Plugin for EnemyPlugin {
                     system_add_collider_to_enemy,
                     spawn_message_box,
                     emit_notes,
-                    debug_notes,
                     poll_and_despawn_collision_particles,
                 )
                     .in_set(OnUpdate(AppState::Game))
