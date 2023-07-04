@@ -29,6 +29,7 @@ impl Plugin for EnemyPlugin {
             // Events
             .add_event::<EnemyIsArrivingEvent>()
             .add_event::<MessageBoxRequest>()
+            .add_event::<DoggyTheme>()
             // Enter State Systems
             .add_system(load_resources.in_schedule(OnEnter(AppState::Game)))
             // Systems
@@ -42,6 +43,9 @@ impl Plugin for EnemyPlugin {
                     update_message_box,
                     system_add_collider_to_enemy,
                     spawn_message_box,
+                    emit_notes,
+                    debug_notes,
+                    poll_and_despawn_collision_particles,
                 )
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),
@@ -56,3 +60,5 @@ impl Plugin for EnemyPlugin {
 pub struct EnemyIsArrivingEvent(pub String);
 
 pub struct MessageBoxRequest(Entity, String);
+
+pub struct DoggyTheme;

@@ -11,15 +11,15 @@ use rand::prelude::*;
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use super::{
-    components::{DogType, Enemy, MessageBox, PatchOfLight},
+    components::{DogType, Enemy, MessageBox, NoteParticle, PatchOfLight},
     resources::OneDog,
     *,
 };
 use crate::{
     audio::assets::AudioSource,
     game::{
-        enemy::components::BoyAnimation, gui::components::Avatar,
-        score::ScoreUpdateEvent,
+        enemy::components::BoyAnimation, fish::FISH_SIZE,
+        gui::components::Avatar, score::ScoreUpdateEvent,
     },
     helper_functions::*,
 };
@@ -509,6 +509,77 @@ pub fn spawn_enemy_on_game_progress(
     }
 }
 
+pub fn emit_notes(
+    mut commands: Commands,
+    dogs_query: Query<&GlobalTransform, With<Enemy>>,
+    asset_server: Res<AssetServer>,
+    mut doggy_theme_events: EventReader<DoggyTheme>,
+) {
+    for _ in doggy_theme_events.iter() {
+        for dog_transform in dogs_query.iter() {
+            let mut rng = rand::thread_rng();
+
+            for i in 0..3 {
+                let angle = std::f32::consts::PI * 2.0 / 3.0 * i as f32;
+                let direction = Vec2::ONE.rotated(angle);
+                let velocity = 100.;
+                let timer = Timer::from_seconds(1.5, TimerMode::Once);
+                let texture = get_random_note_texture(&asset_server);
+
+                commands.spawn((
+                    SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(279., 270.) / 5.9),
+                            //
+                            ..default()
+                        },
+                        transform: Transform::from_translation(
+                            dog_transform.translation(),
+                        )
+                        .with_rotation(Quat::from_rotation_z(rng.gen())),
+                        texture,
+                        ..default()
+                    },
+                    NoteParticle {
+                        direction,
+                        velocity,
+                        timer,
+                    },
+                ));
+            }
+        }
+    }
+}
+
+pub fn poll_and_despawn_collision_particles(
+    mut commands: Commands,
+    mut particles_query: Query<(
+        Entity,
+        &mut Sprite,
+        &mut Transform,
+        &mut NoteParticle,
+    )>,
+    time: Res<Time>,
+) {
+    for (entity, mut sprite, mut transform, mut particle) in
+        particles_query.iter_mut()
+    {
+        if particle.timer.tick(time.delta()).finished() {
+            commands.entity(entity).despawn();
+        } else {
+            let x =
+                particle.direction.x * time.delta_seconds() * particle.velocity;
+            let y =
+                particle.direction.y * time.delta_seconds() * particle.velocity;
+
+            transform.translation.x += x;
+            transform.translation.y += y;
+            sprite.color.set_a(particle.timer.percent_left());
+            particle.velocity = particle.velocity - time.delta_seconds() * 87.;
+        }
+    }
+}
+
 pub fn rotate_patch_of_light(
     mut patch_query: Query<(Entity, &mut Transform), With<PatchOfLight>>,
     parents_query: Query<&Parent>,
@@ -750,4 +821,19 @@ fn generate_phrase(
 fn generate_phrase_timer() -> Timer {
     let rand = rand::thread_rng().gen_range(3.0..10.0);
     Timer::from_seconds(rand, TimerMode::Once)
+}
+
+fn get_random_note_texture(asset_server: &Res<AssetServer>) -> Handle<Image> {
+    let idx = rand::thread_rng().gen_range(0..7);
+
+    match idx {
+        0 => asset_server.load("sprites/Notes/Dotted half note.png"),
+        1 => asset_server.load("sprites/Notes/Eighth note.png"),
+        2 => asset_server.load("sprites/Notes/Eighth notes down.png"),
+        3 => asset_server.load("sprites/Notes/Eighth notes up.png"),
+        4 => asset_server.load("sprites/Notes/Half note.png"),
+        5 => asset_server.load("sprites/Notes/Quarter note down.png"),
+        6 => asset_server.load("sprites/Notes/Quarter note up.png"),
+        _ => asset_server.load("sprites/Notes/Sixteenth notes.png"),
+    }
 }

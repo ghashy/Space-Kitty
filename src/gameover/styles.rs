@@ -110,5 +110,12 @@ pub const CAT_FACE: Style = Style {
 
 pub const BAG: Style = Style {
     size: Size::new(Val::Px(251. / 2.7), Val::Px(240. / 2.7)),
+    justify_content: JustifyContent::Center,
+    align_items: AlignItems::Center,
+    padding: UiRect {
+        top: Val::Px(28.4),
+        right: Val::Px(31.4),
+        ..UiRect::DEFAULT
+    },
     ..Style::DEFAULT
 };

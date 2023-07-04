@@ -5,7 +5,10 @@ use bevy::{
     window::{PrimaryWindow, WindowResized},
 };
 use bevy_rapier2d::prelude::*;
-use kira::sound::static_sound::StaticSoundSettings;
+use kira::{
+    clock::{ClockSpeed, ClockTime},
+    sound::static_sound::StaticSoundSettings,
+};
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -17,7 +20,7 @@ use crate::{
     helper_functions::get_camera_borders,
 };
 
-use super::{components::Wall, SimulationState};
+use super::{components::Wall, enemy::DoggyTheme, SimulationState};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -134,17 +137,42 @@ pub fn play_main_theme(
     sample_pack: Res<SamplePack>,
     mut sound_handle: ResMut<SoundHandleResource>,
 ) {
+    const TEMPO: f64 = 115.;
+    let clock = kira_manager
+        .add_clock(ClockSpeed::TicksPerMinute(TEMPO))
+        .unwrap();
     let mut handle = kira_manager
         .play(
             audio_assets
                 .get(&sample_pack.title_theme)
                 .unwrap()
                 .get()
-                .with_settings(StaticSoundSettings::new().volume(0.5)),
+                .with_settings(
+                    StaticSoundSettings::new()
+                        .volume(0.7)
+                        .start_time(clock.time()),
+                ),
         )
         .unwrap();
     handle.set_loop_region(..).unwrap();
+    clock.start().unwrap();
     sound_handle.title_theme = Some(handle);
+    sound_handle.main_theme_clock = Some(clock);
+}
+
+pub fn system_check_main_theme_clock(
+    sound_handle: Res<SoundHandleResource>,
+    mut local_counter: Local<u64>,
+    mut doggy_theme_events: EventWriter<DoggyTheme>,
+) {
+    if let Some(ref clock) = sound_handle.main_theme_clock {
+        let tick = clock.time().ticks;
+        if (144..=176).contains(&tick) && *local_counter != tick {
+            println!("Tick: {}", tick);
+            *local_counter = tick;
+            doggy_theme_events.send(DoggyTheme);
+        }
+    }
 }
 
 pub fn stop_main_theme(mut sound_handle: ResMut<SoundHandleResource>) {

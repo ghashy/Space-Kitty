@@ -26,3 +26,10 @@ pub struct MessageBox(pub Timer, pub Option<Timer>);
 
 #[derive(Component)]
 pub struct BoyAnimation(pub Timer, pub u8);
+
+#[derive(Component)]
+pub struct NoteParticle {
+    pub direction: Vec2,
+    pub velocity: f32,
+    pub timer: Timer,
+}

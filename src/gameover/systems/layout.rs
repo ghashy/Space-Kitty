@@ -220,17 +220,34 @@ fn spawn_row(
                 ..default()
             });
             // A bag
-            parent.spawn(ImageBundle {
-                image: UiImage::new(
-                    asset_server.load("sprites/Gameover/A bag.png"),
-                ),
-                style: BAG,
-                ..default()
-            });
+            parent
+                .spawn(ImageBundle {
+                    image: UiImage::new(
+                        asset_server.load("sprites/Gameover/A bag.png"),
+                    ),
+                    style: BAG,
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text::from_section(
+                            score.to_string(),
+                            TextStyle {
+                                font: asset_server
+                                    .load("fonts/FiraSans-Bold.ttf"),
+                                color: Color::hex("23CED1").unwrap(),
+                                font_size: 22.,
+                                ..default()
+                            },
+                        ),
+                        style: Style { ..default() },
+                        ..default()
+                    });
+                });
         });
 }
 
-// Shitty implementation
+// Temporary implementation
 pub fn scroll_list(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<(&mut ScrollView, &mut Style, &Parent, &Node)>,

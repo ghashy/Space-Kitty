@@ -51,6 +51,9 @@ impl Plugin for GamePlugin {
                 toggle_simulation_on_input_event
                     .run_if(in_state(AppState::Game)),
             )
+            .add_system(
+                system_check_main_theme_clock.in_base_set(CoreSet::Update),
+            )
             // Exit State Systems
             .add_systems(
                 (pause_simulation, despawn_borders, stop_main_theme)

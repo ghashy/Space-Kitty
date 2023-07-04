@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use kira::clock::ClockHandle;
 use kira::manager::{
     backend::DefaultBackend, AudioManager, AudioManagerSettings,
 };
@@ -16,6 +17,7 @@ use super::assets::AudioSource;
 pub struct SoundHandleResource {
     pub title_theme: Option<StaticSoundHandle>,
     pub main_theme: Option<StaticSoundHandle>,
+    pub main_theme_clock: Option<ClockHandle>,
 }
 
 #[derive(Resource)]
