@@ -52,6 +52,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Sort high scores
 - [x] Despawn milk when exit from game state
 - [ ] Add sounds: picking milk, gameover screen music, pressing buttons
+- [ ] Improve sprites loading in the entire project
 
 #### Buff system (future features):
 
