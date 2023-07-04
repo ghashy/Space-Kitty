@@ -46,8 +46,11 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Update avatar images
 - [x] Add Big dog animation
 - [x] Fix aduio clipping on Master
-- [ ] Add health regerenation (a glass of milk)
+- [x] Add health regerenation (a glass of milk)
 - [ ] Add controls sheet at the start of the game
+- [ ] Despawn notes
+- [ ] Sort high scores
+- [ ] Try to fix lags when dogs spawn
 
 #### Buff system (future features):
 
