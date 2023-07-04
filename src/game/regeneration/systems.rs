@@ -69,6 +69,7 @@ pub fn spawn_milk_cup(
                     FlyingMilk {
                         direction,
                         rotation,
+                        covered_distance: 0.,
                     },
                 ));
             }
@@ -79,12 +80,13 @@ pub fn spawn_milk_cup(
 }
 
 pub fn cup_of_milk_movement(
-    mut milk_query: Query<(&mut Transform, &FlyingMilk)>,
+    mut milk_query: Query<(&mut Transform, &mut FlyingMilk)>,
     time: Res<Time>,
 ) {
-    for (mut transform, milk) in milk_query.iter_mut() {
+    for (mut transform, mut milk) in milk_query.iter_mut() {
         let x = milk.direction.x * time.delta_seconds() * MILK_SPEED;
         let y = milk.direction.y * time.delta_seconds() * MILK_SPEED;
+        milk.covered_distance += Vec2::new(x, y).length();
 
         transform.translation.x += x;
         transform.translation.y += y;
@@ -99,6 +101,7 @@ pub fn check_collision(
     milk_query: Query<Entity, With<FlyingMilk>>,
     player_query: Query<(Entity, &Player)>,
     mut event_writer: EventWriter<RegeneratePlayerEvent>,
+    mut milk_res: ResMut<FlyingMilkResource>,
 ) {
     if let Ok(milk) = milk_query.get_single() {
         if let Ok((entity, player)) = player_query.get_single() {
@@ -107,6 +110,7 @@ pub fn check_collision(
                 .is_some_and(|v| v)
             {
                 commands.entity(milk).despawn();
+                milk_res.timer = None;
                 event_writer.send(RegeneratePlayerEvent {
                     new_health: player.health + 1,
                 });
@@ -115,8 +119,17 @@ pub fn check_collision(
     }
 }
 
-pub fn despawn_milk(mut commands: Commands, milk_query: Query<(&Transform, Entity), With<FlyingMilk>>) {
-    if let Some((transform, milk)) = milk_query.get_single() {
-        if 
+pub fn despawn_milk(
+    mut commands: Commands,
+    milk_query: Query<(Entity, &FlyingMilk)>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    mut milk_res: ResMut<FlyingMilkResource>,
+) {
+    if let Ok((entity, milk)) = milk_query.get_single() {
+        let max_distance = window_query.single().width() * 2.;
+        if milk.covered_distance > max_distance {
+            commands.entity(entity).despawn();
+            milk_res.timer = None;
+        }
     }
 }

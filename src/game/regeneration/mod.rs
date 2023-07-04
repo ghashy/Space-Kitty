@@ -5,7 +5,9 @@ use bevy::prelude::*;
 use crate::AppState;
 
 use self::resources::FlyingMilkResource;
-use self::systems::{check_collision, cup_of_milk_movement, spawn_milk_cup};
+use self::systems::{
+    check_collision, cup_of_milk_movement, despawn_milk, spawn_milk_cup,
+};
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
@@ -32,7 +34,12 @@ impl Plugin for RegenerationPlugin {
             .add_event::<RegeneratePlayerEvent>()
             // Systems
             .add_systems(
-                (spawn_milk_cup, cup_of_milk_movement, check_collision)
+                (
+                    spawn_milk_cup,
+                    cup_of_milk_movement,
+                    check_collision,
+                    despawn_milk,
+                )
                     .in_set(OnUpdate(AppState::Game)),
             );
     }
