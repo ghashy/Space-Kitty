@@ -119,7 +119,7 @@ pub fn check_collision(
     }
 }
 
-pub fn despawn_milk(
+pub fn despawn_milk_out_of_screen(
     mut commands: Commands,
     milk_query: Query<(Entity, &FlyingMilk)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -131,5 +131,16 @@ pub fn despawn_milk(
             commands.entity(entity).despawn();
             milk_res.timer = None;
         }
+    }
+}
+
+pub fn despawn_milk_on_exit_state(
+    mut commands: Commands,
+    milk_query: Query<Entity, With<FlyingMilk>>,
+    mut milk_res: ResMut<FlyingMilkResource>,
+) {
+    for entity in milk_query.iter() {
+        commands.entity(entity).despawn();
+        milk_res.timer = None;
     }
 }

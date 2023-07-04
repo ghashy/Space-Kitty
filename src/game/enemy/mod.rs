@@ -44,14 +44,17 @@ impl Plugin for EnemyPlugin {
                     system_add_collider_to_enemy,
                     spawn_message_box,
                     emit_notes,
-                    poll_and_despawn_collision_particles,
+                    poll_and_despawn_notes,
                 )
                     .in_set(OnUpdate(AppState::Game))
                     .in_set(OnUpdate(SimulationState::Running)),
             )
             .add_system(animate_big_boy.in_set(OnUpdate(AppState::Game)))
             // Exit State Systems
-            .add_system(despawn_enemies.in_schedule(OnExit(AppState::Game)));
+            .add_systems(
+                (despawn_enemies, despawn_notes_on_exit)
+                    .in_schedule(OnExit(AppState::Game)),
+            );
     }
 }
 

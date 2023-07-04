@@ -68,13 +68,17 @@ impl Default for HighScores {
 }
 
 impl HighScores {
-    pub fn sorted(&self) -> std::vec::IntoIter<(u32, Name, Handle<Image>)> {
-        let vec: Vec<(u32, Name, Handle<Image>)> = self
+    pub fn sorted(
+        &self,
+    ) -> std::iter::Rev<std::vec::IntoIter<(u32, Name, Handle<Image>)>> {
+        let mut vec: Vec<(u32, Name, Handle<Image>)> = self
             .scores
             .iter()
             .map(|(name, (image, score))| (*score, name.clone(), image.clone()))
             .collect();
-        vec.into_iter()
+        // vec.sort_by(|&(score1, _, _), &(score2, _, _)| score2.cmp(&score1));
+        vec.sort_by_key(|&(score, _, _)| score);
+        vec.into_iter().rev()
     }
 }
 

@@ -559,7 +559,7 @@ pub fn emit_notes(
     }
 }
 
-pub fn poll_and_despawn_collision_particles(
+pub fn poll_and_despawn_notes(
     mut commands: Commands,
     mut particles_query: Query<(
         Entity,
@@ -585,6 +585,15 @@ pub fn poll_and_despawn_collision_particles(
             sprite.color.set_a(particle.timer.percent_left());
             particle.velocity = particle.velocity - time.delta_seconds() * 87.;
         }
+    }
+}
+
+pub fn despawn_notes_on_exit(
+    mut commands: Commands,
+    notes_query: Query<Entity, With<NoteParticle>>,
+) {
+    for entity in notes_query.iter() {
+        commands.entity(entity).despawn();
     }
 }
 

@@ -444,7 +444,7 @@ pub fn handle_player_collision(
                         game_over_event_writer.send(GameOver);
                     }
                     // Remove 25% from kitty's score
-                    let drop_count = match score.drop_score(player_entity, 0.25)
+                    let drop_count = match score.drop_score(player_entity, 0.1)
                     {
                         Ok(score) => {
                             score_events.send(ScoreUpdateEvent {

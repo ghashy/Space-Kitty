@@ -48,10 +48,9 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Fix aduio clipping on Master
 - [x] Add health regerenation (a glass of milk)
 - [ ] Add controls sheet at the start of the game
-- [ ] Despawn notes
-- [ ] Sort high scores
-- [ ] Try to fix lags when dogs spawn
-- [ ] Despawn milk when exit from game state
+- [x] Despawn notes on exit game state
+- [x] Sort high scores
+- [x] Despawn milk when exit from game state
 
 #### Buff system (future features):
 

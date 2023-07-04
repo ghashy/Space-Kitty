@@ -6,7 +6,8 @@ use crate::AppState;
 
 use self::resources::FlyingMilkResource;
 use self::systems::{
-    check_collision, cup_of_milk_movement, despawn_milk, spawn_milk_cup,
+    check_collision, cup_of_milk_movement, despawn_milk_on_exit_state,
+    despawn_milk_out_of_screen, spawn_milk_cup,
 };
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
@@ -38,9 +39,13 @@ impl Plugin for RegenerationPlugin {
                     spawn_milk_cup,
                     cup_of_milk_movement,
                     check_collision,
-                    despawn_milk,
+                    despawn_milk_out_of_screen,
                 )
                     .in_set(OnUpdate(AppState::Game)),
+            )
+            // Exit State Systems
+            .add_system(
+                despawn_milk_on_exit_state.in_schedule(OnExit(AppState::Game)),
             );
     }
 }
