@@ -12,12 +12,12 @@ use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
+use crate::components::*;
 use crate::game::SimulationState;
 use crate::resources::CometTimer;
 use crate::AppState;
 use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
 use crate::{audio::resources::SamplePack, COMET_SPEED};
-use crate::{components::*, transition::TransitionPlugin};
 use crate::{events::*, transition::TransitionRoute};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //

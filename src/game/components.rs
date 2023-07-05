@@ -12,3 +12,6 @@ pub enum Wall {
 
 #[derive(Component)]
 pub struct BackgroundTexture;
+
+#[derive(Component)]
+pub struct ControlsSheet;

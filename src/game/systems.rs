@@ -1,14 +1,8 @@
 use std::time::Duration;
 
-use bevy::{
-    prelude::*,
-    window::{PrimaryWindow, WindowResized},
-};
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
-use kira::{
-    clock::{ClockSpeed, ClockTime},
-    sound::static_sound::StaticSoundSettings,
-};
+use kira::{clock::ClockSpeed, sound::static_sound::StaticSoundSettings};
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -18,9 +12,15 @@ use crate::{
         resources::{KiraManager, SamplePack, SoundHandleResource},
     },
     helper_functions::get_camera_borders,
+    AppState,
 };
 
-use super::{components::Wall, enemy::DoggyTheme, SimulationState};
+use super::{
+    components::{ControlsSheet, Wall},
+    enemy::DoggyTheme,
+    resources::GameData,
+    SimulationState,
+};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -131,11 +131,71 @@ pub fn despawn_borders(
     }
 }
 
+pub fn spawn_controls_sheet(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    camera_query: Query<&Transform, With<Camera2d>>,
+    game_res: Res<GameData>,
+) {
+    if game_res.sheet_was_shown {
+        return;
+    }
+
+    let mut position = camera_query.single().translation;
+    position.y -= camera_query.single().translation.y / 2.;
+    commands.spawn((
+        SpriteBundle {
+            transform: Transform::from_translation(position),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(1532., 208.) * 0.5),
+                ..default()
+            },
+            texture: asset_server.load("sprites/Prompt.png"),
+            ..default()
+        },
+        ControlsSheet,
+    ));
+}
+
+pub fn detect_input(
+    input: Res<Input<KeyCode>>,
+    mut game_res: ResMut<GameData>,
+) {
+    // If we got any input, sheet now was shown
+    if let Some(_) = input.get_just_pressed().next() {
+        game_res.sheet_was_shown = true;
+    }
+}
+
+pub fn despawn_controls_sheet(
+    mut commands: Commands,
+    mut controls_sheet_query: Query<(Entity, &mut Sprite), With<ControlsSheet>>,
+    game_res: Res<GameData>,
+    time: Res<Time>,
+    next_state: Res<NextState<AppState>>,
+) {
+    if let Ok((entity, mut sprite)) = controls_sheet_query.get_single_mut() {
+        // Despawn sheet if it was shown
+        if game_res.sheet_was_shown {
+            let alpha = sprite.color.a() - time.delta_seconds();
+            if alpha < 0. {
+                commands.entity(entity).despawn();
+                println!("Despawned");
+                return;
+            }
+            sprite.color.set_a(alpha);
+            // Despawn sheet on exit from game state
+        } else if next_state.0.is_some_and(|state| state != AppState::Game) {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
 pub fn system_play_main_theme(
-    mut kira_manager: NonSendMut<KiraManager>,
+    kira_manager: NonSendMut<KiraManager>,
     audio_assets: Res<Assets<AudioSource>>,
     sample_pack: Res<SamplePack>,
-    mut sound_handle: ResMut<SoundHandleResource>,
+    sound_handle: ResMut<SoundHandleResource>,
 ) {
     play_main_theme(kira_manager, audio_assets, sample_pack, sound_handle);
 }

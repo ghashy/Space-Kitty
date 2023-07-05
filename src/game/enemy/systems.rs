@@ -11,23 +11,19 @@ use rand::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use super::{
-    components::{DogType, Enemy, MessageBox, NoteParticle, PatchOfLight},
-    resources::OneDog,
-    *,
+use super::components::{
+    DogType, Enemy, MessageBox, NoteParticle, PatchOfLight,
 };
-use crate::{
-    audio::assets::AudioSource,
-    game::{
-        enemy::components::BoyAnimation, fish::FISH_SIZE,
-        gui::components::Avatar, score::ScoreUpdateEvent,
-    },
-    helper_functions::*,
-};
+use super::resources::OneDog;
+use super::*;
+use crate::audio::assets::AudioSource;
+use crate::audio::resources::SamplePack;
+use crate::game::enemy::components::BoyAnimation;
+use crate::game::fish::components::FishWasPickedEvent;
+use crate::game::gui::components::Avatar;
+use crate::game::score::ScoreUpdateEvent;
+use crate::helper_functions::*;
 use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
-use crate::{
-    audio::resources::SamplePack, game::fish::components::FishWasPickedEvent,
-};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
