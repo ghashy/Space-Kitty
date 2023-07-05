@@ -22,6 +22,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Design game presentation image
 - [x] Design animation for Big Buddy
 - [x] Design Message box
+- [ ] Add last collision sound for Kitty
 
 ### Coding:
 
@@ -54,7 +55,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Add sounds: picking milk, gameover screen music, pressing buttons
 - [x] Improve sprites loading in the entire project
 - [x] Fix alignement on the gamover screen
-- [ ] Big Dog doesn't show up on the high scores
+- [x] Big Dog doesn't show up on the high scores
 - [ ] Reset high scores after each game
 - [ ] Add spacesuits for the dogs on the game over screen
 
