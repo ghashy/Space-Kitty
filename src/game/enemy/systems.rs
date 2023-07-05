@@ -23,6 +23,7 @@ use crate::game::fish::components::FishWasPickedEvent;
 use crate::game::gui::components::Avatar;
 use crate::game::score::ScoreUpdateEvent;
 use crate::helper_functions::*;
+use crate::resources::TextureStorage;
 use crate::{audio::resources::KiraManager, game::player::DOG_SIZE};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -516,7 +517,7 @@ pub fn spawn_enemy_on_game_progress(
 pub fn emit_notes(
     mut commands: Commands,
     dogs_query: Query<&GlobalTransform, With<Enemy>>,
-    asset_server: Res<AssetServer>,
+    texture_storage: Res<TextureStorage>,
     mut doggy_theme_events: EventReader<DoggyTheme>,
 ) {
     for _ in doggy_theme_events.iter() {
@@ -528,7 +529,7 @@ pub fn emit_notes(
                 let direction = Vec2::ONE.rotated(angle);
                 let velocity = 100.;
                 let timer = Timer::from_seconds(1.5, TimerMode::Once);
-                let texture = get_random_note_texture(&asset_server);
+                let texture = get_random_note_texture(&texture_storage);
 
                 commands.spawn((
                     SpriteBundle {
@@ -836,17 +837,19 @@ fn generate_phrase_timer() -> Timer {
     Timer::from_seconds(rand, TimerMode::Once)
 }
 
-fn get_random_note_texture(asset_server: &Res<AssetServer>) -> Handle<Image> {
+fn get_random_note_texture(
+    texture_storage: &Res<TextureStorage>,
+) -> Handle<Image> {
     let idx = rand::thread_rng().gen_range(0..7);
 
     match idx {
-        0 => asset_server.load("sprites/Notes/Dotted half note.png"),
-        1 => asset_server.load("sprites/Notes/Eighth note.png"),
-        2 => asset_server.load("sprites/Notes/Eighth notes down.png"),
-        3 => asset_server.load("sprites/Notes/Eighth notes up.png"),
-        4 => asset_server.load("sprites/Notes/Half note.png"),
-        5 => asset_server.load("sprites/Notes/Quarter note down.png"),
-        6 => asset_server.load("sprites/Notes/Quarter note up.png"),
-        _ => asset_server.load("sprites/Notes/Sixteenth notes.png"),
+        0 => texture_storage.note1.clone_weak(),
+        1 => texture_storage.note2.clone_weak(),
+        2 => texture_storage.note3.clone_weak(),
+        3 => texture_storage.note4.clone_weak(),
+        4 => texture_storage.note5.clone_weak(),
+        5 => texture_storage.note6.clone_weak(),
+        6 => texture_storage.note7.clone_weak(),
+        _ => texture_storage.note8.clone_weak(),
     }
 }

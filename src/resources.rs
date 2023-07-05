@@ -20,6 +20,14 @@ pub struct TextureStorage {
     pub(super) komet_red: Handle<Image>,
     pub(super) glowing_star: Handle<Image>,
     pub smoke: Handle<Image>,
+    pub note1: Handle<Image>,
+    pub note2: Handle<Image>,
+    pub note3: Handle<Image>,
+    pub note4: Handle<Image>,
+    pub note5: Handle<Image>,
+    pub note6: Handle<Image>,
+    pub note7: Handle<Image>,
+    pub note8: Handle<Image>,
 }
 
 impl FromWorld for TextureStorage {
@@ -31,6 +39,14 @@ impl FromWorld for TextureStorage {
             komet_red: asset_server.load("sprites/Komet Red.png"),
             smoke: asset_server.load("sprites/Smoke.png"),
             glowing_star: asset_server.load("sprites/Star glowing.png"),
+            note1: asset_server.load("sprites/Notes/Dotted half note.png"),
+            note2: asset_server.load("sprites/Notes/Eighth note.png"),
+            note3: asset_server.load("sprites/Notes/Eighth notes down.png"),
+            note4: asset_server.load("sprites/Notes/Eighth notes up.png"),
+            note5: asset_server.load("sprites/Notes/Half note.png"),
+            note6: asset_server.load("sprites/Notes/Quarter note down.png"),
+            note7: asset_server.load("sprites/Notes/Quarter note up.png"),
+            note8: asset_server.load("sprites/Notes/Sixteenth notes.png"),
         }
     }
 }
