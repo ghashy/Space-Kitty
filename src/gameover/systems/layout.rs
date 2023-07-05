@@ -5,7 +5,6 @@ use bevy::{
     },
     input::mouse::MouseWheel,
     prelude::*,
-    window::PrimaryWindow,
 };
 
 use crate::{
@@ -155,8 +154,6 @@ fn spawn_row(
     score: u32,
     asset_server: &Res<AssetServer>,
 ) {
-    // Trim name from end if it contains `AKA`
-    // if name.contains("aka").
     let mut entity_style = DOG_FACE;
     // Row
     parent
@@ -181,6 +178,7 @@ fn spawn_row(
                 ),
                 style: Style {
                     margin: UiRect::horizontal(Val::Px(10.)),
+                    size: Size::width(Val::Px(35.)),
                     ..Style::DEFAULT
                 },
                 ..default()

@@ -180,7 +180,6 @@ pub fn despawn_controls_sheet(
             let alpha = sprite.color.a() - time.delta_seconds();
             if alpha < 0. {
                 commands.entity(entity).despawn();
-                println!("Despawned");
                 return;
             }
             sprite.color.set_a(alpha);

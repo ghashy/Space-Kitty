@@ -379,7 +379,7 @@ pub fn debug_pressing_o_key(
         for i in 0..10 {
             highscores.scores.insert(
                 Name::new("Kitty".to_string() + &i.to_string()),
-                (asset_server.load("sprites/Cat's face.png"), i),
+                (asset_server.load("sprites/Cat's face blue.png"), i),
             );
         }
         event_writer.send(GameOver);

@@ -8,8 +8,10 @@ use super::{
     ScoreUpdateEvent,
 };
 use crate::game::{
-    enemy::components::Enemy, fish::components::FishWasPickedEvent,
-    gui::components::Avatar, player::components::Player,
+    enemy::{components::Enemy, resources::DogResource},
+    fish::components::FishWasPickedEvent,
+    gui::components::Avatar,
+    player::components::Player,
 };
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -57,18 +59,42 @@ pub fn update_chart_data(
 }
 
 pub fn update_highscores(
-    entities_query: Query<
+    entities_query_sprites: Query<
         (Entity, &Handle<Image>, &Name),
         Or<(With<Player>, With<Enemy>)>,
     >,
+    entities_query_atlases: Query<
+        (Entity, &Handle<TextureAtlas>, &Name),
+        With<Enemy>,
+    >,
     scores: Option<Res<Score>>,
     mut highscores: ResMut<HighScores>,
+    dogs_resource: Option<Res<DogResource>>,
 ) {
     if let Some(scores) = scores {
         if scores.is_changed() {
             for (&entity, &score) in scores.data.iter() {
-                for (e, image, name) in entities_query.iter() {
-                    if e == entity {
+                let iterator = entities_query_sprites.iter().chain(
+                    entities_query_atlases.iter().map(|(e, _, name)| {
+                        (
+                            e,
+                            &dogs_resource
+                                .as_ref()
+                                .unwrap()
+                                .dogs
+                                .iter()
+                                .find(|&dog| {
+                                    dog.texture_identifier == "FaceBigBoy"
+                                })
+                                .unwrap()
+                                .texture,
+                            name,
+                        )
+                    }),
+                );
+
+                for (e, image, name) in iterator {
+                         if e == entity {
                         highscores
                             .scores
                             .insert(name.clone(), (image.clone(), score));
