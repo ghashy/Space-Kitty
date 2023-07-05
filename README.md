@@ -56,7 +56,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Improve sprites loading in the entire project
 - [x] Fix alignement on the gamover screen
 - [x] Big Dog doesn't show up on the high scores
-- [ ] Reset high scores after each game
+- [x] Reset high scores after each game
 - [ ] Add spacesuits for the dogs on the game over screen
 - [ ] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
 

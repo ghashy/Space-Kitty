@@ -24,6 +24,10 @@ pub fn remove_score(mut commands: Commands) {
     commands.remove_resource::<Score>();
 }
 
+pub fn remove_highscore(mut highscores: ResMut<HighScores>) {
+    highscores.scores.clear();
+}
+
 pub fn update_chart_data(
     entities_query: Query<
         (Entity, &Avatar, &Name),
@@ -94,7 +98,7 @@ pub fn update_highscores(
                 );
 
                 for (e, image, name) in iterator {
-                         if e == entity {
+                    if e == entity {
                         highscores
                             .scores
                             .insert(name.clone(), (image.clone(), score));

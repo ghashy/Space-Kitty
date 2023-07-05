@@ -38,7 +38,7 @@ pub fn stop_gameover_theme(mut sound_handle: ResMut<SoundHandleResource>) {
     if let Some(ref mut handle) = sound_handle.gameover_theme {
         handle
             .stop(kira::tween::Tween {
-                duration: Duration::from_millis(200),
+                duration: Duration::from_millis(500),
                 ..default()
             })
             .unwrap();

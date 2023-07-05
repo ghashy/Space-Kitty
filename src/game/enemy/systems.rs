@@ -214,6 +214,7 @@ pub fn update_enemy_direction(
             .get()
             .with_settings(
                 StaticSoundSettings::new()
+                    .volume(0.5)
                     .output_destination(kira_manager.get_master()),
             );
         kira_manager.play(sound_data).unwrap();

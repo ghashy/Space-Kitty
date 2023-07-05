@@ -36,7 +36,10 @@ impl Plugin for ScorePlugin {
                     .in_base_set(CoreSet::First),
             )
             // Exit State Systems
-            .add_system(remove_score.in_schedule(OnExit(AppState::Game)));
+            .add_system(remove_score.in_schedule(OnExit(AppState::Game)))
+            .add_system(
+                remove_highscore.in_schedule(OnExit(AppState::GameOver)),
+            );
     }
 }
 
