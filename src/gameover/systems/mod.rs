@@ -27,6 +27,7 @@ pub fn play_gameover_theme(
         .get()
         .with_settings(
             StaticSoundSettings::new()
+                .volume(1.2)
                 .output_destination(kira_manager.get_master()),
         );
     let mut handle = kira_manager.play(sound_data).unwrap();

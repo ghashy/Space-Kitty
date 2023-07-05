@@ -154,7 +154,6 @@ fn spawn_row(
     score: u32,
     asset_server: &Res<AssetServer>,
 ) {
-    let mut entity_style = DOG_FACE;
     // Row
     parent
         .spawn((
@@ -183,18 +182,85 @@ fn spawn_row(
                 },
                 ..default()
             });
+            // Entity's image
             // Handle Kitty's image case
             if name.to_string() == "Kitty" {
                 image = asset_server.load("sprites/Cat's face blue.png");
-                entity_style = CAT_FACE;
+                parent.spawn(ImageBundle {
+                    image: UiImage::new(image),
+                    background_color: BackgroundColor(Color::rgb(0., 0.93, 1.)),
+                    style: CAT_FACE,
+                    ..default()
+                });
+            } else {
+                // Handle dogs
+                parent
+                    .spawn(ImageBundle {
+                        image: UiImage::new(image),
+                        background_color: BackgroundColor(Color::rgb(
+                            0., 0.93, 1.,
+                        )),
+                        style: Style {
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..DOG_FACE
+                        },
+                        ..default()
+                    })
+                    // Spacesuit
+                    .with_children(|parent| {
+                        parent
+                            .spawn(ImageBundle {
+                                image: UiImage::new(
+                                    asset_server
+                                        .load("sprites/Dog's spacesuit.png"),
+                                ),
+                                background_color: BackgroundColor(Color::rgb(
+                                    0., 0.93, 1.,
+                                )),
+                                style: Style {
+                                    position: UiRect::new(
+                                        Val::Px(-20.6),
+                                        Val::Undefined,
+                                        Val::Px(-15.7),
+                                        Val::Undefined,
+                                    ),
+                                    size: Size::new(
+                                        Val::Px(96.1),
+                                        Val::Px(95.8),
+                                    ),
+                                    ..Style::DEFAULT
+                                },
+                                ..default()
+                            })
+                            .with_children(|parent| {
+                                parent.spawn(ImageBundle {
+                                    image: UiImage::new(
+                                        asset_server.load(
+                                            "sprites/Light reflection.png",
+                                        ),
+                                    ),
+                                    background_color: BackgroundColor(
+                                        Color::rgb(0., 0.93, 1.),
+                                    ),
+                                    style: Style {
+                                        position: UiRect::new(
+                                            Val::Px(5.9),
+                                            Val::Undefined,
+                                            Val::Px(7.5),
+                                            Val::Undefined,
+                                        ),
+                                        size: Size::new(
+                                            Val::Px(44.3),
+                                            Val::Px(50.2),
+                                        ),
+                                        ..Style::DEFAULT
+                                    },
+                                    ..default()
+                                });
+                            });
+                    });
             }
-            // Entity's image
-            parent.spawn(ImageBundle {
-                image: UiImage::new(image),
-                background_color: BackgroundColor(Color::rgb(0., 0.93, 1.)),
-                style: entity_style,
-                ..default()
-            });
             // Entity's name
             parent.spawn(TextBundle {
                 text: Text::from_section(
