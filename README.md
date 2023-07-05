@@ -36,7 +36,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Message when new dog arriving
 - [x] Crackers particles when kitty colliding with dog
 - [x] Drop 25% of Kitty's crackers on colliding with dog.
-- [ ] Implement gameover screen
+- [x] Implement gameover screen
 - [ ] Document code
 - [x] Decrease Magic Wand's scale
 - [x] Rework collision system
@@ -59,6 +59,8 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Reset high scores after each game
 - [x] Add spacesuits for the dogs on the game over screen
 - [x] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
+- [ ] Add antenna, emitting particles on milk detection
+- [ ] Add splash screen
 
 #### Buff system (future features):
 

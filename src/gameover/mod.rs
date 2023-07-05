@@ -2,11 +2,17 @@ use bevy::prelude::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use self::systems::{
-    layout::{despawn_gameover_layout, scroll_list, spawn_gameover_layout},
-    play_gameover_theme, stop_gameover_theme,
+use self::systems::layout::{
+    despawn_gameover_layout, scroll_list, spawn_gameover_layout,
 };
-use crate::AppState;
+use self::systems::{play_gameover_theme, stop_gameover_theme};
+use crate::systems::finalize_transition_to_game;
+use crate::{
+    main_menu::systems::interactions::{
+        interact_with_play_button, interact_with_quit_button,
+    },
+    AppState,
+};
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
@@ -31,6 +37,14 @@ impl Plugin for GameoverPlugin {
             )
             // Systems
             .add_systems((scroll_list,).in_set(OnUpdate(AppState::GameOver)))
+            .add_systems(
+                (
+                    interact_with_play_button,
+                    interact_with_quit_button,
+                    finalize_transition_to_game,
+                )
+                    .in_set(OnUpdate(AppState::GameOver)),
+            )
             // Exit State Systems
             .add_systems(
                 (despawn_gameover_layout, stop_gameover_theme)

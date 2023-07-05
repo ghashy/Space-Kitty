@@ -51,7 +51,7 @@ mod debug;
 pub mod events;
 pub mod helper_functions;
 mod resources;
-mod systems;
+pub mod systems;
 mod transition;
 
 // ───── Constants ────────────────────────────────────────────────────────── //

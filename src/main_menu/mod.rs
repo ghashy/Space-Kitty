@@ -10,9 +10,9 @@ use crate::AppState;
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
 mod animation;
-mod components;
+pub mod components;
 mod styles;
-mod systems;
+pub mod systems;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 

@@ -409,7 +409,6 @@ pub fn exit_game(
 }
 
 pub fn handle_game_over(
-    mut commands: Commands,
     mut game_over_event_reader: EventReader<GameOver>,
     mut event_writer: EventWriter<DarkenScreenEvent>,
 ) {

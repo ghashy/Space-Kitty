@@ -13,10 +13,12 @@ use crate::{
         components::{GameoverComponent, ScrollView},
         styles::{
             BAG, BOARD_FILL, BOARD_FRAME, CAT_FACE, DOG_FACE, EMITTING_FILL,
-            EMITTING_FRAME, MAIN_CONTAINER, ROW, SCROLL_PARENT, SCROLL_VIEW,
+            EMITTING_FRAME, LEFT_BUTTON, LEFT_CONTAINER, MAIN_CONTAINER,
+            RIGHT_BUTTON, RIGHT_CONTAINER, ROW, SCROLL_PARENT, SCROLL_VIEW,
             SPACESHIP,
         },
     },
+    main_menu::components::{PlayButton, QuitButton},
 };
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -34,7 +36,28 @@ pub fn spawn_gameover_layout(
         }, 
         GameoverComponent
         ))
+        // Central part with spaceship
         .with_children(|parent| {
+            // Left container with button
+            parent.spawn(NodeBundle {
+                // background_color: BackgroundColor(Color::AZURE),
+                style: LEFT_CONTAINER,
+                ..default()
+            }).with_children(|parent| {
+                // Left button
+                parent.spawn((ButtonBundle {
+                    image: UiImage::new(asset_server.load("sprites/Gameover/Buttons/Quit default.png")),
+                    // background_color: BackgroundColor(Color::GOLD),
+                    style: LEFT_BUTTON,
+                    ..default()
+                },
+                QuitButton {
+                    default_handle: asset_server.load("sprites/Gameover/Buttons/Quit default.png"),
+                    hover_handle: asset_server.load("sprites/Gameover/Buttons/Quit hovered.png"),
+                    click_handle: asset_server.load("sprites/Gameover/Buttons/Quit clicked.png"),
+                },
+                ));
+            });
             parent
                 .spawn(ImageBundle {
                     style: SPACESHIP,
@@ -133,6 +156,24 @@ pub fn spawn_gameover_layout(
                                         });
                                 });
                         });
+                });
+            // Right container with button
+            parent.spawn(NodeBundle {
+                style: RIGHT_CONTAINER,
+                ..default()
+            }).with_children(|parent| {
+                    // Right button
+                    parent.spawn((ButtonBundle {
+                        image: UiImage::new(asset_server.load("sprites/Gameover/Buttons/Retry default.png")),
+                        style: RIGHT_BUTTON,
+                        ..default()
+                    },
+                    PlayButton {
+                        default_handle: asset_server.load("sprites/Gameover/Buttons/Retry default.png"),
+                        hover_handle: asset_server.load("sprites/Gameover/Buttons/Retry hovered.png"),
+                        click_handle: asset_server.load("sprites/Gameover/Buttons/Retry clicked.png"),
+                    },
+                    ));
                 });
         });
 }

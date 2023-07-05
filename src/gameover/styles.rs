@@ -4,9 +4,34 @@ use bevy::prelude::*;
 
 pub const MAIN_CONTAINER: Style = Style {
     size: Size::new(Val::Percent(100.), Val::Percent(100.)),
-    justify_content: JustifyContent::Center,
+    justify_content: JustifyContent::SpaceBetween,
     flex_direction: FlexDirection::Row,
     align_items: AlignItems::End,
+    ..Style::DEFAULT
+};
+
+pub const LEFT_CONTAINER: Style = Style {
+    //
+    ..Style::DEFAULT
+};
+
+pub const RIGHT_CONTAINER: Style = Style {
+    margin: UiRect::new(
+        Val::Undefined,
+        Val::Undefined,
+        Val::Undefined,
+        Val::Percent(4.1),
+    ),
+    ..Style::DEFAULT
+};
+
+pub const LEFT_BUTTON: Style = Style {
+    size: Size::new(Val::Px(381. / 2.5), Val::Px(771. / 2.5)),
+    ..Style::DEFAULT
+};
+
+pub const RIGHT_BUTTON: Style = Style {
+    size: Size::new(Val::Px(363. / 2.5), Val::Px(624. / 2.5)),
     ..Style::DEFAULT
 };
 
@@ -80,7 +105,7 @@ pub const SCROLL_PARENT: Style = Style {
         top: Val::Px(10.),
         ..UiRect::DEFAULT
     },
-    max_size: Size::height(Val::Px(312.6)),
+    max_size: Size::height(Val::Px(306.)),
     overflow: Overflow::Hidden,
     ..Style::DEFAULT
 };
