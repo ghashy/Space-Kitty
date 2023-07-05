@@ -54,6 +54,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Add sounds: picking milk, gameover screen music, pressing buttons
 - [ ] Improve sprites loading in the entire project
 - [ ] Fix allignement on the gamover screen
+- [ ] Big Dog doesn't show up on the high scores
 
 #### Buff system (future features):
 
