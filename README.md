@@ -58,7 +58,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Big Dog doesn't show up on the high scores
 - [x] Reset high scores after each game
 - [x] Add spacesuits for the dogs on the game over screen
-- [ ] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
+- [x] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
 
 #### Buff system (future features):
 

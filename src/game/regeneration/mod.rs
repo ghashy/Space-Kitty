@@ -33,6 +33,7 @@ impl Plugin for RegenerationPlugin {
             .init_resource::<FlyingMilkResource>()
             // Events
             .add_event::<RegeneratePlayerEvent>()
+            .add_event::<MilkEscapedEvent>()
             // Systems
             .add_systems(
                 (
@@ -55,3 +56,5 @@ impl Plugin for RegenerationPlugin {
 pub struct RegeneratePlayerEvent {
     pub new_health: u8,
 }
+
+pub struct MilkEscapedEvent;

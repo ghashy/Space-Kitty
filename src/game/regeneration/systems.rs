@@ -7,7 +7,9 @@ use rand::Rng;
 
 use super::components::FlyingMilk;
 use super::resources::FlyingMilkResource;
-use super::{RegeneratePlayerEvent, MAX_SPAWN_TIME, MILK_SPEED};
+use super::{
+    MilkEscapedEvent, RegeneratePlayerEvent, MAX_SPAWN_TIME, MILK_SPEED,
+};
 use crate::audio::assets::AudioSource;
 use crate::audio::resources::{KiraManager, SamplePack};
 use crate::game::player::components::Player;
@@ -141,11 +143,13 @@ pub fn despawn_milk_out_of_screen(
     milk_query: Query<(Entity, &FlyingMilk)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut milk_res: ResMut<FlyingMilkResource>,
+    mut event_writer: EventWriter<MilkEscapedEvent>,
 ) {
     if let Ok((entity, milk)) = milk_query.get_single() {
         let max_distance = window_query.single().width() * 2.;
         if milk.covered_distance > max_distance {
             commands.entity(entity).despawn();
+            event_writer.send(MilkEscapedEvent);
             milk_res.timer = None;
         }
     }

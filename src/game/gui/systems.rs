@@ -11,7 +11,7 @@ use super::animation::animate_heart_out;
 use super::{components::*, styles::*, HIT_EVENTS_OFFSET, REGEN_EVENTS_OFFSET};
 use crate::game::enemy::EnemyIsArrivingEvent;
 use crate::game::player::LIVES_COUNT;
-use crate::game::regeneration::RegeneratePlayerEvent;
+use crate::game::regeneration::{MilkEscapedEvent, RegeneratePlayerEvent};
 use crate::game::score::resources::Chart;
 use crate::game::score::{ScoreEventType, ScoreUpdateEvent};
 use crate::{events::PlayerHit, game::player::components::Player};
@@ -238,6 +238,8 @@ pub fn update_messages(
     asset_server: Res<AssetServer>,
     mut score_update_event: EventReader<ScoreUpdateEvent>,
     mut arriving_events: EventReader<EnemyIsArrivingEvent>,
+    mut escaped_milk_events: EventReader<MilkEscapedEvent>,
+    mut regen_events: EventReader<RegeneratePlayerEvent>,
 ) {
     for event in score_update_event.iter() {
         let suffix = match event.event_type.get_score() % 10 {
@@ -315,6 +317,42 @@ pub fn update_messages(
                     },
                 ),
             ]),
+            Message(Timer::new(
+                std::time::Duration::from_secs(3),
+                TimerMode::Once,
+            )),
+        );
+        let id = commands.spawn(label).id();
+        commands.entity(list.single()).push_children(&[id]);
+    }
+    for _ in escaped_milk_events.iter() {
+        let label = (
+            TextBundle::from_sections([TextSection::new(
+                "The milk escaped!",
+                TextStyle {
+                    font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                    font_size: 25.,
+                    color: Color::RED,
+                },
+            )]),
+            Message(Timer::new(
+                std::time::Duration::from_secs(3),
+                TimerMode::Once,
+            )),
+        );
+        let id = commands.spawn(label).id();
+        commands.entity(list.single()).push_children(&[id]);
+    }
+    for _ in regen_events.iter() {
+        let label = (
+            TextBundle::from_sections([TextSection::new(
+                "The milk'd been drinked!",
+                TextStyle {
+                    font: asset_server.load("fonts/Abaddon Bold.ttf"),
+                    font_size: 25.,
+                    color: Color::GREEN,
+                },
+            )]),
             Message(Timer::new(
                 std::time::Duration::from_secs(3),
                 TimerMode::Once,
