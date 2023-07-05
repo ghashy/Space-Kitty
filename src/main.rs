@@ -31,7 +31,7 @@ use debug::DebugPlugin;
 use game::GamePlugin;
 use gameover::GameoverPlugin;
 use main_menu::MainMenuPlugin;
-use resources::CometTimer;
+use resources::{CometTimer, TextureStorage};
 use systems::*;
 use transition::TransitionPlugin;
 
@@ -91,6 +91,7 @@ fn main() {
         .init_asset_loader::<JsonAssetLoader>()
         // Resources
         .init_resource::<CometTimer>()
+        .init_resource::<TextureStorage>()
         // Startup Systems
         .add_startup_system(setup)
         .add_startup_system(spawn_camera)

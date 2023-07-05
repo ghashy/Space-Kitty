@@ -3,7 +3,6 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_hanabi::*;
 use bevy_rapier2d::prelude::*;
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
-use kira::track::{TrackBuilder, TrackHandle};
 use rand::Rng;
 use std::time::Duration;
 
@@ -22,6 +21,7 @@ use crate::game::regeneration::RegeneratePlayerEvent;
 use crate::game::score::resources::Score;
 use crate::game::score::ScoreUpdateEvent;
 use crate::helper_functions::*;
+use crate::resources::TextureStorage;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -29,6 +29,7 @@ pub fn spawn_player(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
+    texture_storage: Res<TextureStorage>,
     mut effects: ResMut<Assets<EffectAsset>>,
 ) {
     // Assume that there can be only one entity of PrimaryWindow at the time
@@ -65,7 +66,7 @@ pub fn spawn_player(
             ..default()
         })
         .render(ParticleTextureModifier {
-            texture: asset_server.load("sprites/Smoke.png"),
+            texture: texture_storage.smoke.clone_weak(),
         })
         .render(SizeOverLifetimeModifier {
             gradient: Gradient::constant(Vec2::splat(25.0)),

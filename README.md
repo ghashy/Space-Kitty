@@ -47,12 +47,12 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Add Big dog animation
 - [x] Fix aduio clipping on Master
 - [x] Add health regerenation (a glass of milk)
-- [ ] Add controls sheet at the start of the game
+- [x] Add controls sheet at the start of the game
 - [x] Despawn notes on exit game state
 - [x] Sort high scores
 - [x] Despawn milk when exit from game state
 - [x] Add sounds: picking milk, gameover screen music, pressing buttons
-- [ ] Improve sprites loading in the entire project
+- [x] Improve sprites loading in the entire project
 - [ ] Fix alignement on the gamover screen
 - [ ] Big Dog doesn't show up on the high scores
 - [ ] Reset high scores after each game

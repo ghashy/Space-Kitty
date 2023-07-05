@@ -12,12 +12,12 @@ use rand::Rng;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::components::*;
 use crate::game::SimulationState;
 use crate::resources::CometTimer;
 use crate::AppState;
 use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
 use crate::{audio::resources::SamplePack, COMET_SPEED};
+use crate::{components::*, resources::TextureStorage};
 use crate::{events::*, transition::TransitionRoute};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
@@ -203,7 +203,7 @@ pub fn spawn_background_texture(
 
 pub fn spawn_dust(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    texture_storage: Res<TextureStorage>,
     mut effects: ResMut<Assets<EffectAsset>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
@@ -234,7 +234,7 @@ pub fn spawn_dust(
             speed: 100.0.into(),
         })
         .render(ParticleTextureModifier {
-            texture: asset_server.load("sprites/Star glowing.png"),
+            texture: texture_storage.glowing_star.clone_weak(),
         })
         .render(SizeOverLifetimeModifier {
             gradient: Gradient::constant(Vec2::splat(5.0)),
@@ -260,10 +260,10 @@ pub fn spawn_dust(
 pub fn spawn_background_stars(
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    texture_storage: Res<TextureStorage>,
 ) {
     let window = window_query.single();
-    let star_handle = asset_server.load("sprites/Star glowing.png");
+    let star_handle = texture_storage.glowing_star.clone_weak();
 
     let mut children = Vec::new();
 
@@ -421,7 +421,7 @@ pub fn handle_game_over(
 pub fn spawn_periodical_comet(
     mut commands: Commands,
     comets_group_query: Query<Entity, With<Comets>>,
-    assets_server: Res<AssetServer>,
+    texture_storage: Res<TextureStorage>,
     mut timer: ResMut<CometTimer>,
     time: Res<Time>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -431,7 +431,7 @@ pub fn spawn_periodical_comet(
         let mut rand = rand::thread_rng();
         let rand_x = rand.gen_range(0.0..=window.width());
         let y = window.height() + 100.;
-        let (texture, comet) = get_random_comet_texture(&assets_server);
+        let (texture, comet) = get_random_comet_texture(&texture_storage);
         commands
             .entity(comets_group_query.single())
             .with_children(|parent| {
@@ -483,21 +483,21 @@ pub fn move_comets(
 }
 
 fn get_random_comet_texture(
-    asset_server: &Res<AssetServer>,
+    texture_storage: &Res<TextureStorage>,
 ) -> (Handle<Image>, Comet) {
     let idx = rand::thread_rng().gen_range(0..3);
 
     match idx {
         0 => (
-            asset_server.load("sprites/Komet Blue.png"),
+            texture_storage.komet_blue.clone_weak(),
             Comet::new(3., Vec2::new(254., 301.)),
         ),
         1 => (
-            asset_server.load("sprites/Komet Purple.png"),
+            texture_storage.komet_purple.clone_weak(),
             Comet::new(1., Vec2::new(184., 213.)),
         ),
         2 => (
-            asset_server.load("sprites/Komet Red.png"),
+            texture_storage.komet_red.clone_weak(),
             Comet::new(2., Vec2::new(245., 293.)),
         ),
         _ => unreachable!(),
