@@ -4,7 +4,7 @@
 
 ## Description
 
-Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - The Dogs and 
+Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - The Dogs and the
 
 Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
 
