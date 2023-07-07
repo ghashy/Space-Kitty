@@ -15,15 +15,14 @@ bevy = { version = "0.10.1", default-features = false, features = [
     "png"
 ]}
 kira = "0.8.4"
-bevy_egui = "0.20.3"
-bevy-inspector-egui = "0.18.3"
 bevy_rapier2d = { version = "0.21.0", features = ["simd-stable"] }
-bevy_hanabi = "0.6.2"
 bevy_tweening = "0.7.0"
 rand = "0.8.5"
 serde = "1.0.164"
 serde_json = "1.0.99"
-# interpolation = "0.2.0"
+bevy_hanabi = { version = "0.6.2", optional = true }
+bevy_egui = { version = "0.20.3", optional = true }
+bevy-inspector-egui = { version = "0.18.3", optional = true }
 
 [profile.dev]
 opt-level = 3
@@ -32,15 +31,5 @@ opt-level = 3
 opt-level = 3
 
 [features]
-profile = []
+default = ["bevy_egui", "bevy-inspector-egui", "bevy_hanabi"]
 
-[package.metadata.bundle]
-name = "Space Kitty"
-identifier = "com.ghashy.spacekitty"
-icon = ["assets/icons/icon.png"]
-version = "0.0.1"
-resources = ["assets/**/*.*"]
-copyright = "Copyright (c) Ghashy 2023. All rights reserved."
-category = "Games"
-short_description = "Game about Kitty in Space"
-osx_minimum_system_version = "10.15"

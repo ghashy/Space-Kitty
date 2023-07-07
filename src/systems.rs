@@ -5,10 +5,12 @@ use bevy::{
     render::camera::ScalingMode,
     window::PrimaryWindow,
 };
-use bevy_hanabi::*;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::*;
 use rand::Rng;
+
+#[cfg(not(target_arch = "wasm32"))]
+use bevy_hanabi::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -201,6 +203,7 @@ pub fn spawn_background_texture(
     });
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn spawn_dust(
     mut commands: Commands,
     texture_storage: Res<TextureStorage>,

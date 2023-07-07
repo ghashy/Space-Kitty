@@ -61,6 +61,7 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
 - [ ] Add antenna, emitting particles on milk detection
 - [ ] Add splash screen
+- [ ] Try add cpu-based particles
 
 #### Buff system (future features):
 

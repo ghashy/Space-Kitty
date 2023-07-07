@@ -1,10 +1,12 @@
 use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_hanabi::*;
 use bevy_rapier2d::prelude::*;
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
 use rand::Rng;
 use std::time::Duration;
+
+#[cfg(not(target_arch = "wasm32"))]
+use bevy_hanabi::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -25,6 +27,7 @@ use crate::resources::TextureStorage;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn spawn_player(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -143,6 +146,67 @@ pub fn spawn_player(
         });
 }
 
+#[cfg(target_arch = "wasm32")]
+pub fn spawn_player_without_gpu_particles(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+) {
+    // Assume that there can be only one entity of PrimaryWindow at the time
+    let window = window_query.get_single().unwrap();
+
+    commands
+        .spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(SPACESHIP_SIZE)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(
+                    window.width() / 2.,
+                    window.height() / 2.,
+                    10.,
+                ),
+                texture: asset_server.load("sprites/Cat's starship.png"),
+                ..default()
+            },
+            RigidBody::Dynamic,
+            Collider::ball(SPACESHIP_SIZE / 2.),
+            ExternalForce {
+                force: Vec2::ZERO,
+                torque: 0.,
+            },
+            Damping {
+                linear_damping: 0.6,
+                angular_damping: 5.,
+            },
+            ActiveCollisionTypes::all(),
+            ActiveEvents::COLLISION_EVENTS,
+            Restitution::coefficient(1.),
+            Player { health: 3 },
+            Avatar(asset_server.load("sprites/Avatars/Frame Kitty.png")),
+            Name::new("Kitty"),
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(53., 29.) / 1.5),
+                        anchor: Anchor::Custom(Vec2::new(0., 1.6)),
+                        ..default()
+                    },
+                    transform: Transform::from_xyz(0., -1.5, -1.),
+                    texture: asset_server
+                        .load("sprites/Rocket engine.png")
+                        .into(),
+
+                    ..default()
+                },
+                RocketEngineSprite,
+            ));
+        });
+}
+
 pub fn despawn_player_on_exit_game_state(
     mut commands: Commands,
     player_query: Query<Entity, With<Player>>,
@@ -158,6 +222,7 @@ pub fn despawn_player(commands: &mut Commands, player: Entity) {
     commands.entity(player).despawn_recursive();
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
     mut player_query: Query<(&mut ExternalForce, &Transform), With<Player>>,
@@ -261,6 +326,121 @@ pub fn player_movement(
         if let Ok(mut spawner) = spawner_query.get_single_mut() {
             spawner.set_active(direction.length() > 0.0);
         }
+    } else {
+        if *local_is_playing {
+            if let Some(ref mut handle) = *local_engine_handle {
+                if let Err(e) = handle.stop(kira::tween::Tween {
+                    duration: Duration::from_secs(1),
+                    easing: kira::tween::Easing::OutPowf(1.),
+                    ..default()
+                }) {
+                    println!("Error engine sound stopping: {}", e);
+                }
+                *local_is_playing = false;
+            }
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn player_movement_without_gpu_particles(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut player_query: Query<(&mut ExternalForce, &Transform), With<Player>>,
+    time: Res<Time>,
+    mut rocket_transform_query: Query<
+        &mut Transform,
+        (With<RocketEngineSprite>, Without<Player>),
+    >,
+    mut kira_manager: NonSendMut<KiraManager>,
+    audio_assets: Res<Assets<AudioSource>>,
+    sample_pack: Res<SamplePack>,
+    mut local_is_playing: Local<bool>,
+    mut local_engine_handle: Local<Option<StaticSoundHandle>>,
+) {
+    if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
+        let mut direction = Vec2::ZERO;
+
+        let top = KeyCode::W;
+        let down = KeyCode::S;
+        let left = KeyCode::A;
+        let right = KeyCode::D;
+
+        if keyboard_input.pressed(left) {
+            direction += Vec2::new(-1., 0.);
+        }
+        if keyboard_input.pressed(right) {
+            direction += Vec2::new(1., 0.);
+        }
+        if keyboard_input.pressed(top) {
+            direction += Vec2::new(0., 1.);
+        }
+        if keyboard_input.pressed(down) {
+            direction += Vec2::new(0., -1.);
+        }
+
+        // If there are some input
+        if direction.length() > 0.0 {
+            direction = direction.normalize();
+            // Animate engine rotation
+            rotate_transform_with_parent_calibration(
+                &player_transform.rotation,
+                &mut rocket_transform_query.single_mut(),
+                direction * -1.,
+                // Our sprite was drawn in this axis
+                Vec2::NEG_Y,
+                Some(&time),
+            );
+
+            // Play engine audio
+            // Button was just pressed
+            if !*local_is_playing {
+                let rand_pos = rand::thread_rng().gen_range(0.0..3.0);
+                let sample = audio_assets
+                    .get(&sample_pack.engine)
+                    .unwrap()
+                    .get()
+                    .with_settings(
+                        StaticSoundSettings::new()
+                            .volume(0.01)
+                            .output_destination(kira_manager.get_master()),
+                    );
+                sample
+                    .settings
+                    .output_destination(kira_manager.get_master());
+                let mut handle = kira_manager.play(sample).unwrap();
+                // For playing from rand position
+                handle.seek_to(rand_pos).unwrap();
+                handle
+                    .set_volume(
+                        0.21,
+                        kira::tween::Tween {
+                            duration: Duration::from_millis(100),
+                            ..default()
+                        },
+                    )
+                    .unwrap();
+                handle.set_loop_region(..).unwrap();
+                *local_is_playing = true;
+
+                *local_engine_handle = Some(handle);
+            }
+        } else {
+            // Stop only if already playing
+            if *local_is_playing {
+                if let Some(ref mut handle) = *local_engine_handle {
+                    if let Err(e) = handle.stop(kira::tween::Tween {
+                        duration: Duration::from_secs(1),
+                        easing: kira::tween::Easing::OutPowf(1.),
+                        ..default()
+                    }) {
+                        println!("Error engine sound stopping: {}", e);
+                    }
+                    *local_is_playing = false;
+                }
+            }
+        }
+
+        player.force = direction * PLAYER_SPEED * time.delta_seconds();
     } else {
         if *local_is_playing {
             if let Some(ref mut handle) = *local_engine_handle {

@@ -37,6 +37,37 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            app
+                // Enter State Systems
+                .add_system(spawn_player.in_schedule(OnEnter(AppState::Game)))
+                // Systems
+                .add_system(
+                    player_movement
+                        .in_set(PlayerSystemSet::Movement)
+                        .in_set(OnUpdate(SimulationState::Running))
+                        .in_set(OnUpdate(AppState::Game)),
+                );
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            app
+                // Enter State Systems
+                .add_system(
+                    spawn_player_without_gpu_particles
+                        .in_schedule(OnEnter(AppState::Game)),
+                )
+                // Systems
+                .add_system(
+                    player_movement_without_gpu_particles
+                        .in_set(PlayerSystemSet::Movement)
+                        .in_set(OnUpdate(SimulationState::Running))
+                        .in_set(OnUpdate(AppState::Game)),
+                );
+        }
+
         app
             // Events
             .add_event::<PlayerHit>()
@@ -44,15 +75,7 @@ impl Plugin for PlayerPlugin {
             .configure_set(PlayerSystemSet::Movement)
             // States
             .add_state::<PlayerState>()
-            // Enter State Systems
-            .add_system(spawn_player.in_schedule(OnEnter(AppState::Game)))
             // Systems
-            .add_system(
-                player_movement
-                    .in_set(PlayerSystemSet::Movement)
-                    .in_set(OnUpdate(SimulationState::Running))
-                    .in_set(OnUpdate(AppState::Game)),
-            )
             .add_systems(
                 (
                     handle_player_collision,

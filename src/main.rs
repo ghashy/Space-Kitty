@@ -19,21 +19,25 @@ use bevy::{
     },
     window::{WindowMode, WindowResolution},
 };
-use bevy_hanabi::HanabiPlugin;
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
+
+#[cfg(not(target_arch = "wasm32"))]
+use bevy_hanabi::HanabiPlugin;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use audio::AudioPlugin;
 use components::*;
-use debug::DebugPlugin;
 use game::GamePlugin;
 use gameover::GameoverPlugin;
 use main_menu::MainMenuPlugin;
 use resources::{CometTimer, TextureStorage};
 use systems::*;
 use transition::TransitionPlugin;
+
+#[cfg(debug_assertions)]
+use debug::DebugPlugin;
 
 // ───── Submodules ───────────────────────────────────────────────────────── //
 
@@ -47,12 +51,14 @@ pub mod main_menu;
 // Top-level modules
 mod animation;
 mod components;
-mod debug;
 pub mod events;
 pub mod helper_functions;
 mod resources;
 pub mod systems;
 mod transition;
+
+#[cfg(debug_assertions)]
+mod debug;
 
 // ───── Constants ────────────────────────────────────────────────────────── //
 
@@ -64,29 +70,39 @@ const COMET_SPEED: f32 = 500.;
 fn main() {
     // Settings for bevy_hanabi
     let mut wgpu_settings = WgpuSettings::default();
-    wgpu_settings
-        .features
-        .set(WgpuFeatures::VERTEX_WRITABLE_STORAGE, true);
 
-    App::new()
-        // DefaultPlugins
-        .add_plugins(
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        wgpu_settings
+            .features
+            .set(WgpuFeatures::VERTEX_WRITABLE_STORAGE, true);
+    }
+
+    let mut app = App::new();
+    // DefaultPlugins
+    if !cfg!(target_arch = "wasm32") {
+        app.add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         resolution: WindowResolution::new(
                             1280. / 1.1,
                             720. / 1.1,
-                        ),
-                        // .with_scale_factor_override(2.),
-                        // mode: WindowMode::BorderlessFullscreen,
+                        )
+                        .with_scale_factor_override(2.),
+                        mode: WindowMode::BorderlessFullscreen,
                         title: String::from("Space Kitty"),
                         ..default()
                     }),
                     ..default()
                 })
                 .set(RenderPlugin { wgpu_settings }),
-        )
+        );
+    } else {
+        app.add_plugins(DefaultPlugins);
+    }
+
+    app
         // Asset loaders
         .init_asset_loader::<JsonAssetLoader>()
         // Resources
@@ -97,7 +113,6 @@ fn main() {
         .add_startup_system(spawn_camera)
         .add_startup_system(spawn_background_stars)
         .add_startup_system(spawn_background_texture)
-        .add_startup_system(spawn_dust)
         .add_startup_system(setup_audio_assets)
         // States
         .add_state::<AppState>()
@@ -105,7 +120,6 @@ fn main() {
         .add_event::<DarkenScreenEvent>()
         // Plugins
         // + 2 percents on cpu
-        .add_plugin(HanabiPlugin)
         .add_plugin(AudioPlugin)
         // +1.1 percent on cpu
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
@@ -113,7 +127,6 @@ fn main() {
         .add_plugin(GameoverPlugin)
         .add_plugin(TweeningPlugin)
         .add_plugin(MainMenuPlugin)
-        .add_plugin(DebugPlugin)
         .add_plugin(TransitionPlugin)
         // Audio loading system
         .add_system(
@@ -144,8 +157,15 @@ fn main() {
         .add_system(
             finalize_transition_to_gameover.in_set(OnUpdate(AppState::Game)),
         )
-        .add_system(exit_game)
-        .run();
+        .add_system(exit_game);
+
+    #[cfg(debug_assertions)]
+    app.add_plugin(DebugPlugin);
+
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_plugin(HanabiPlugin).add_startup_system(spawn_dust);
+
+    app.run();
 }
 
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]

@@ -1,3 +1,4 @@
+#[cfg(debug_assertions)]
 use bevy::diagnostic::{
     Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
 };
@@ -34,7 +35,6 @@ struct UpdateFpsTimer {
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(debug_assertions)]
         app
             // Events
             .add_event::<AddValueToDebugEvent>()
