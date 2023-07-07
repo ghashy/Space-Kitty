@@ -1,11 +1,12 @@
 # Space-Kitty
 
-This is a game about a Kitty, which floats in Space in search of fish-crackers, made with [Bevy game engine](https://github.com/bevyengine/bevy).
-The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
+<img width="1920" alt="Space Kitty Presentation" src="https://github.com/ghashy/Space-Kitty/assets/128966780/b06f223c-996c-4d91-8275-8b30d18124a9">
 
-## Screenshot:
+## Description
 
-![Screenshot 2023-06-12 at 23 50 21](https://github.com/ghashy/Space-Kitty/assets/109857267/db89aa10-a0ef-459a-9c5e-61163d1541d1)
+Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - The Dogs and 
+
+Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
 
 ## To-do:
 
@@ -13,16 +14,15 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 
 - [x] Fish-boss
 - [x] Audio design
-- [ ] Rotating antenna
-- [x] Design border, 10 dog’s skins, new cat’s skin
+- [x] Design border, 12 dog’s skins, new cat’s skin
 - [x] Add fish score icon
 - [x] Design new game icon
 - [x] Design health of the ship
 - [x] Design Game Over screen
-- [ ] Design game presentation image
+- [x] Design game presentation image
 - [x] Design animation for Big Buddy
 - [x] Design Message box
-- [ ] Add last collision sound for Kitty
+- [x] Add last collision sound for Kitty
 
 ### Coding:
 
@@ -59,7 +59,6 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [x] Reset high scores after each game
 - [x] Add spacesuits for the dogs on the game over screen
 - [x] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
-- [ ] Add antenna, emitting particles on milk detection
 - [ ] Add splash screen
 - [ ] Try add cpu-based particles
 
@@ -71,3 +70,6 @@ The general idea was borrowed from [Learn Bevy Engine 0.10 series](https://www.y
 - [ ] Water gun
 - [ ] Dog locator
 - [ ] Implement logic "Smart dog"
+- [ ] Rotating antenna
+- [ ] Add antenna, emitting particles on milk detection
+- [ ] Fish boss
