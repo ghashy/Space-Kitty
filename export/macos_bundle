@@ -1,0 +1,53 @@
+#!/usr/bin/env zsh
+
+# Define our app's name
+APP_NAME="SpaceKitty"
+RUST_CRATE_NAME="space_kitty"
+
+# Check if executables are exist
+if [[ ! -f "../target/x86_64-apple-darwin/release/${RUST_CRATE_NAME}" ]] ; then
+    echo "x86 release binary of ${RUST_CRATE_NAME} does not exist, exit."
+    exit
+fi
+
+if [[ ! -f "../target/release/${RUST_CRATE_NAME}" ]] ; then
+    echo "aarch64 release binary of ${RUST_CRATE_NAME} does not exist, exit."
+    exit
+fi
+
+# Create the folder structure
+mkdir -p "./macos/${APP_NAME}.app/Contents/MacOS"
+mkdir -p "./macos/${APP_NAME}.app/Contents/Resources"
+
+# Link our executables
+lipo "../target/x86_64-apple-darwin/release/${RUST_CRATE_NAME}" \
+     "../target/release/${RUST_CRATE_NAME}" \
+     -create -output "./macos/${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
+
+# Create icons pack
+mkdir -p "./macos/res/${APP_NAME}.iconset"
+icon="../assets/icons/1024.png"
+sips -z 16 16     $icon --out "./macos/res/${APP_NAME}.iconset/icon_16x16.png"
+sips -z 32 32     $icon --out "./macos/res/${APP_NAME}.iconset/icon_16x16@2x.png"
+sips -z 32 32     $icon --out "./macos/res/${APP_NAME}.iconset/icon_32x32.png"
+sips -z 64 64     $icon --out "./macos/res/${APP_NAME}.iconset/icon_32x32@2x.png"
+sips -z 128 128   $icon --out "./macos/res/${APP_NAME}.iconset/icon_128x128.png"
+sips -z 256 256   $icon --out "./macos/res/${APP_NAME}.iconset/icon_128x128@2x.png"
+sips -z 256 256   $icon --out "./macos/res/${APP_NAME}.iconset/icon_256x256.png"
+sips -z 512 512   $icon --out "./macos/res/${APP_NAME}.iconset/icon_256x256@2x.png"
+sips -z 512 512   $icon --out "./macos/res/${APP_NAME}.iconset/icon_512x512.png"
+cp $icon "./macos/res/${APP_NAME}.iconset/icon_512x512@2x.png"
+iconutil -c icns "./macos/res/${APP_NAME}.iconset"
+
+# Move icons to the bundle
+mv "./macos/res/${APP_NAME}.icns" "./macos/${APP_NAME}.app/Contents/Resources"
+
+# Copy `assets` folder
+cp -a "../assets" "./macos/${APP_NAME}.app/Contents/MacOS/"
+
+# Copy `Info.plist` file
+cp "./macos/res/Info.plist" "./macos/${APP_NAME}.app/Contents/Info.plist"
+
+# Pack bundle into `.dmg` file
+hdiutil create -fs HFS+ -volname "${APP_NAME}" -srcfolder "./macos/${APP_NAME}.app" "./macos/${RUST_CRATE_NAME}_release_mac.dmg" 
+

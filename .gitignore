@@ -1,5 +1,6 @@
 /target
-/export
-# /assets
+/export/macos
+/export/wasm/*
+!export/wasm/index.html
 */.DS_Store
 .DS_Store

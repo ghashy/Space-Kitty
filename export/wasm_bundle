@@ -1,0 +1,4 @@
+#!/usr/bin/env zsh
+
+cargo build --release --target wasm32-unknown-unknown --no-default-features
+wasm-bindgen --out-dir ./wasm ../target/wasm32-unknown-unknown/release/space_kitty.wasm --target web
