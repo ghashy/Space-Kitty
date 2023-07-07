@@ -4,7 +4,9 @@
 
 ## Description
 
-Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - The Dogs and the
+Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - the **Dogs** and the **Kitty**. One can never say when the contest had begun, but it's clear that to this day there is a game for the title of the Great Cracker Collector. Every time the cracker is taken the lucky one emits a signal to the base about his achievement. The **Kitty** - highly responsible and intelligent creature - always sends the exact amount of collected treasures, while the **Dogs** rely on their feelings. Some of them truly believe that they got multiple crackers at a time, some just can't count, and about honesty of the others one can only gues...
+
+### Specifications
 
 Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
 
