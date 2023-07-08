@@ -241,21 +241,26 @@ pub fn player_movement(
     if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
         let mut direction = Vec2::ZERO;
 
-        let top = KeyCode::W;
+        let up = KeyCode::W;
         let down = KeyCode::S;
         let left = KeyCode::A;
         let right = KeyCode::D;
 
-        if keyboard_input.pressed(left) {
+        let up_opt = KeyCode::Up;
+        let down_opt = KeyCode::Down;
+        let left_opt = KeyCode::Left;
+        let right_opt = KeyCode::Right;
+
+        if keyboard_input.pressed(left) || keyboard_input.pressed(left_opt) {
             direction += Vec2::new(-1., 0.);
         }
-        if keyboard_input.pressed(right) {
+        if keyboard_input.pressed(right) || keyboard_input.pressed(right_opt) {
             direction += Vec2::new(1., 0.);
         }
-        if keyboard_input.pressed(top) {
+        if keyboard_input.pressed(up) || keyboard_input.pressed(up_opt) {
             direction += Vec2::new(0., 1.);
         }
-        if keyboard_input.pressed(down) {
+        if keyboard_input.pressed(down) || keyboard_input.pressed(down_opt) {
             direction += Vec2::new(0., -1.);
         }
 
@@ -356,25 +361,32 @@ pub fn player_movement_without_gpu_particles(
     sample_pack: Res<SamplePack>,
     mut local_is_playing: Local<bool>,
     mut local_engine_handle: Local<Option<StaticSoundHandle>>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
 ) {
     if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
         let mut direction = Vec2::ZERO;
 
-        let top = KeyCode::W;
+        let up = KeyCode::W;
         let down = KeyCode::S;
         let left = KeyCode::A;
         let right = KeyCode::D;
 
-        if keyboard_input.pressed(left) {
+        let up_opt = KeyCode::Up;
+        let down_opt = KeyCode::Down;
+        let left_opt = KeyCode::Left;
+        let right_opt = KeyCode::Right;
+
+        if keyboard_input.pressed(left) || keyboard_input.pressed(left_opt) {
             direction += Vec2::new(-1., 0.);
         }
-        if keyboard_input.pressed(right) {
+        if keyboard_input.pressed(right) || keyboard_input.pressed(right_opt) {
             direction += Vec2::new(1., 0.);
         }
-        if keyboard_input.pressed(top) {
+        if keyboard_input.pressed(up) || keyboard_input.pressed(up_opt) {
             direction += Vec2::new(0., 1.);
         }
-        if keyboard_input.pressed(down) {
+        if keyboard_input.pressed(down) || keyboard_input.pressed(down_opt) {
             direction += Vec2::new(0., -1.);
         }
 
@@ -441,6 +453,40 @@ pub fn player_movement_without_gpu_particles(
         }
 
         player.force = direction * PLAYER_SPEED * time.delta_seconds();
+
+        // Engine particles
+        if direction.length() > 0.0 {
+            let mut rng = rand::thread_rng();
+
+            let direction = direction
+                .rotated(std::f32::consts::PI)
+                .rotated(rng.gen_range(-0.3..0.3));
+            let velocity = rng.gen_range(100.0..200.0);
+            let timer = Timer::from_seconds(1.9, TimerMode::Once);
+            let position = (player_transform.translation.truncate()
+                + direction * 30.
+                + Vec2::new(rng.gen(), rng.gen()).normalize() * 20.)
+                .extend(player_transform.translation.z - 2.);
+
+            commands.spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(FISH_SIZE),
+                        color: Color::rgba(0.2, 0.16, 0.29, 0.),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(position)
+                        .with_rotation(Quat::from_rotation_z(rng.gen())),
+                    texture: asset_server.load("sprites/Smoke.png"),
+                    ..default()
+                },
+                SmokeParticle {
+                    direction,
+                    velocity,
+                    timer,
+                },
+            ));
+        }
     } else {
         if *local_is_playing {
             if let Some(ref mut handle) = *local_engine_handle {
@@ -521,6 +567,44 @@ pub fn poll_and_despawn_collision_particles(
             transform.translation.x += x;
             transform.translation.y += y;
             sprite.color.set_a(particle.timer.percent_left());
+            particle.velocity = particle.velocity - time.delta_seconds() * 87.;
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn poll_and_despawn_smoke_particles(
+    mut commands: Commands,
+    mut particles_query: Query<(
+        Entity,
+        &mut Sprite,
+        &mut Transform,
+        &mut SmokeParticle,
+    )>,
+    time: Res<Time>,
+) {
+    for (entity, mut sprite, mut transform, mut particle) in
+        particles_query.iter_mut()
+    {
+        if particle.timer.tick(time.delta()).finished() {
+            commands.entity(entity).despawn();
+        } else {
+            let x =
+                particle.direction.x * time.delta_seconds() * particle.velocity;
+            let y =
+                particle.direction.y * time.delta_seconds() * particle.velocity;
+
+            transform.translation.x += x;
+            transform.translation.y += y;
+            let diff = 1.0 - particle.timer.percent_left();
+            let alpha = if diff < 0.5 {
+                diff
+            } else {
+                particle.timer.percent_left()
+            };
+            sprite.color.set_a(alpha);
+            sprite.color.set_r(particle.timer.percent_left() * 0.5);
+            sprite.color.set_g(particle.timer.percent_left() * 0.1);
             particle.velocity = particle.velocity - time.delta_seconds() * 87.;
         }
     }

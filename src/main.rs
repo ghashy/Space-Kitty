@@ -22,6 +22,9 @@ use bevy::{
 use bevy_rapier2d::prelude::*;
 use bevy_tweening::TweeningPlugin;
 
+#[cfg(target_arch = "wasm32")]
+use bevy_tweening::TweenCompleted;
+
 #[cfg(not(target_arch = "wasm32"))]
 use bevy_hanabi::HanabiPlugin;
 
@@ -157,33 +160,142 @@ fn main() {
         .add_system(
             finalize_transition_to_game.in_set(OnUpdate(AppState::MainMenu)),
         )
-        .add_system(handle_pressing_g_key.in_set(OnUpdate(AppState::MainMenu)))
-        .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::Game)))
+        // .add_system(handle_pressing_g_key.in_set(OnUpdate(AppState::MainMenu)))
+        // .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::Game)))
         // Debug ScrollView
-        .add_system(debug_pressing_o_key.in_set(OnUpdate(AppState::Game)))
-        .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::GameOver)))
+        // .add_system(debug_pressing_o_key.in_set(OnUpdate(AppState::Game)))
+        // .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::GameOver)))
         .add_system(handle_game_over.in_set(OnUpdate(AppState::Game)))
         .add_system(
             finalize_transition_to_gameover.in_set(OnUpdate(AppState::Game)),
-        )
-        .add_system(exit_game);
+        );
 
     #[cfg(debug_assertions)]
     app.add_plugin(DebugPlugin);
 
     #[cfg(not(target_arch = "wasm32"))]
-    app.add_plugin(HanabiPlugin).add_startup_system(spawn_dust);
+    {
+        app.add_plugin(HanabiPlugin)
+            .add_startup_system(spawn_dust)
+            .add_system(exit_game);
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        app.init_resource::<self::resources::DustTimer>()
+            .add_system(show_splash.in_schedule(OnEnter(AppState::Splash)))
+            .add_system(handle_input.in_set(OnUpdate(AppState::Splash)))
+            .add_system(despawn_splash.in_schedule(OnExit(AppState::Splash)))
+            .add_system(
+                finalize_transition_from_splash
+                    .in_set(OnUpdate(AppState::Splash)),
+            )
+            .add_system(spawn_dust_wasm)
+            .add_system(poll_and_despawn_dust_particles);
+    }
 
     app.run();
 }
 
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum AppState {
+    #[cfg(not(target_arch = "wasm32"))]
     #[default]
     AudioLoading,
+    #[cfg(not(target_arch = "wasm32"))]
     MainMenu,
+    #[cfg(not(target_arch = "wasm32"))]
     Game,
+    #[cfg(not(target_arch = "wasm32"))]
     GameOver,
+
+    #[cfg(target_arch = "wasm32")]
+    AudioLoading,
+    #[cfg(target_arch = "wasm32")]
+    MainMenu,
+    #[cfg(target_arch = "wasm32")]
+    Game,
+    #[cfg(target_arch = "wasm32")]
+    GameOver,
+    #[cfg(target_arch = "wasm32")]
+    #[default]
+    Splash,
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn show_splash(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                ..default()
+            },
+            Splash,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn(ImageBundle {
+                    background_color: BackgroundColor(Color::BLACK),
+                    style: Style {
+                        size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text::from_section(
+                            "Click anywhere",
+                            TextStyle {
+                                font: asset_server
+                                    .load("fonts/Abaddon Bold.ttf"),
+                                font_size: 50.,
+                                color: Color::WHITE,
+                            },
+                        ),
+                        ..default()
+                    });
+                });
+        });
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn handle_input(
+    click: Res<Input<MouseButton>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut darkenscreen_events: EventWriter<DarkenScreenEvent>,
+) {
+    if click.pressed(MouseButton::Left) {
+        darkenscreen_events
+            .send(DarkenScreenEvent(transition::TransitionRoute::SplashToMenu))
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn finalize_transition_from_splash(
+    mut next_state: ResMut<NextState<AppState>>,
+    mut tween_events: EventReader<TweenCompleted>,
+) {
+    for event in tween_events.iter() {
+        next_state.set(AppState::AudioLoading);
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn despawn_splash(
+    mut commands: Commands,
+    splash: Query<Entity, With<Splash>>,
+) {
+    if let Ok(splash) = splash.get_single() {
+        commands.entity(splash).despawn_recursive();
+    }
 }
 
 // TweenEvent Codes:
@@ -191,6 +303,8 @@ pub enum AppState {
 // 300 - Dark transition phase1: screen is black, transition from menu to game.
 // 301 - Dark transition phase1: screen is black, transition from game go
 // gameover.
+// 302 - Dark transition phase1: screen is black, transition from splash go
+// game.
 // 310 - Dark transition phase2: screen is transparent.
 // 400..450 - gui lives id animation, hit events.
 // 450..500 - gui lives id animation, regeneration events.

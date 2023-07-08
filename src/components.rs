@@ -24,6 +24,16 @@ pub struct Comet {
     pub resolution: Vec2,
 }
 
+#[derive(Component)]
+pub struct DustParticle {
+    pub direction: Vec2,
+    pub velocity: f32,
+    pub timer: Timer,
+}
+
+#[derive(Component)]
+pub struct Splash;
+
 impl Comet {
     pub fn new(speed_modifier: f32, resolution: Vec2) -> Comet {
         Comet {

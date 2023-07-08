@@ -45,18 +45,21 @@ pub fn spawn_gameover_layout(
                 ..default()
             }).with_children(|parent| {
                 // Left button
-                parent.spawn((ButtonBundle {
-                    image: UiImage::new(asset_server.load("sprites/Gameover/Buttons/Quit default.png")),
-                    // background_color: BackgroundColor(Color::GOLD),
-                    style: LEFT_BUTTON,
-                    ..default()
-                },
-                QuitButton {
-                    default_handle: asset_server.load("sprites/Gameover/Buttons/Quit default.png"),
-                    hover_handle: asset_server.load("sprites/Gameover/Buttons/Quit hovered.png"),
-                    click_handle: asset_server.load("sprites/Gameover/Buttons/Quit clicked.png"),
-                },
-                ));
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    parent.spawn((ButtonBundle {
+                        image: UiImage::new(asset_server.load("sprites/Gameover/Buttons/Quit default.png")),
+                        // background_color: BackgroundColor(Color::GOLD),
+                        style: LEFT_BUTTON,
+                        ..default()
+                    },
+                    QuitButton {
+                        default_handle: asset_server.load("sprites/Gameover/Buttons/Quit default.png"),
+                        hover_handle: asset_server.load("sprites/Gameover/Buttons/Quit hovered.png"),
+                        click_handle: asset_server.load("sprites/Gameover/Buttons/Quit clicked.png"),
+                    },
+                    ));
+                }
             });
             parent
                 .spawn(ImageBundle {

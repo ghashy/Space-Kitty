@@ -31,6 +31,9 @@ pub enum TransitionState {
 pub enum TransitionRoute {
     MenuToGame = 300,
     GameToGameover = 301,
+
+    #[cfg(target_arch = "wasm32")]
+    SplashToMenu = 302,
 }
 
 pub struct UiColorLens {

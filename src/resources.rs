@@ -50,3 +50,14 @@ impl FromWorld for TextureStorage {
         }
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+#[derive(Resource)]
+pub struct DustTimer(pub Timer);
+
+#[cfg(target_arch = "wasm32")]
+impl Default for DustTimer {
+    fn default() -> Self {
+        DustTimer(Timer::from_seconds(0.05, TimerMode::Repeating))
+    }
+}
