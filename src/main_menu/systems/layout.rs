@@ -147,6 +147,8 @@ pub fn build_main_menu(
                         })
                         .with_children(|parent| {
                             spawn_play_button(parent, asset_server);
+
+                            #[cfg(not(target_arch = "wasm32"))]
                             spawn_quit_button(parent, asset_server);
                         });
                 });

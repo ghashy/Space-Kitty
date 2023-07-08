@@ -14,13 +14,13 @@ use bevy_hanabi::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
-use crate::game::SimulationState;
 use crate::resources::CometTimer;
 use crate::AppState;
 use crate::{animation::*, RAND_STAR_ANIMATION_TIME_RANGE};
 use crate::{audio::resources::SamplePack, COMET_SPEED};
 use crate::{components::*, resources::TextureStorage};
 use crate::{events::*, transition::TransitionRoute};
+use crate::{game::SimulationState, helper_functions::VectorUtilities};
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
@@ -258,6 +258,91 @@ pub fn spawn_dust(
             ..default()
         })
         .insert(Name::new("StarsInMenu"));
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn spawn_dust_wasm(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+    mut timer: ResMut<super::resources::DustTimer>,
+    time: Res<Time>,
+) {
+    if timer.0.tick(time.delta()).just_finished() {
+        let window = window_query.single();
+        let mut center = Vec2::new(window.width() / 2., window.height() / 2.);
+        center.x -= 25.0;
+        let mut rng = rand::thread_rng();
+
+        let pi = std::f32::consts::PI;
+        let direction = Vec2::ONE.rotated(rng.gen_range(-pi..pi));
+        let velocity = rng.gen_range(0.1..0.2);
+        let timer = Timer::from_seconds(5.5, TimerMode::Once);
+        let position = (center
+            + direction * rng.gen_range(100.0..550.0)
+            + Vec2::new(rng.gen(), rng.gen()).normalize() * 20.)
+            .extend(2.);
+        let direction = (center - position.truncate()).normalize();
+
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(2.0)),
+                    color: Color::rgba(3., 3., 3., 0.),
+                    ..default()
+                },
+                transform: Transform::from_translation(position)
+                    .with_rotation(Quat::from_rotation_z(rng.gen())),
+                texture: asset_server.load("sprites/Star glowing.png"),
+                ..default()
+            },
+            DustParticle {
+                direction,
+                velocity,
+                timer,
+            },
+        ));
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn poll_and_despawn_dust_particles(
+    mut commands: Commands,
+    mut particles_query: Query<(
+        Entity,
+        &mut Sprite,
+        &mut Transform,
+        &mut DustParticle,
+    )>,
+    time: Res<Time>,
+) {
+    for (entity, mut sprite, mut transform, mut particle) in
+        particles_query.iter_mut()
+    {
+        if particle.timer.tick(time.delta()).finished() {
+            commands.entity(entity).despawn();
+        } else {
+            let x = particle.direction.x
+                * time.delta_seconds()
+                * particle.velocity
+                * 0.1;
+            let y = particle.direction.y
+                * time.delta_seconds()
+                * particle.velocity
+                * 0.1;
+
+            transform.translation.x += x;
+            transform.translation.y += y;
+            let diff = 1.0 - particle.timer.percent_left();
+            let alpha = if diff < 0.5 {
+                diff
+            } else {
+                particle.timer.percent_left()
+            };
+            sprite.color.set_a(alpha);
+            particle.velocity = particle.velocity - time.delta_seconds() * 87.;
+        }
+    }
 }
 
 pub fn spawn_background_stars(

@@ -20,3 +20,10 @@ pub struct DropFishParticle {
     pub velocity: f32,
     pub timer: Timer,
 }
+
+#[derive(Component)]
+pub struct SmokeParticle {
+    pub direction: Vec2,
+    pub velocity: f32,
+    pub timer: Timer,
+}

@@ -60,8 +60,11 @@ impl Plugin for PlayerPlugin {
                         .in_schedule(OnEnter(AppState::Game)),
                 )
                 // Systems
-                .add_system(
-                    player_movement_without_gpu_particles
+                .add_systems(
+                    (
+                        player_movement_without_gpu_particles,
+                        poll_and_despawn_smoke_particles,
+                    )
                         .in_set(PlayerSystemSet::Movement)
                         .in_set(OnUpdate(SimulationState::Running))
                         .in_set(OnUpdate(AppState::Game)),
