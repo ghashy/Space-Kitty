@@ -610,6 +610,16 @@ pub fn poll_and_despawn_smoke_particles(
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+pub fn despawn_smoke_particles_on_exit_state(
+    mut commands: Commands,
+    particles_query: Query<Entity, With<SmokeParticle>>,
+) {
+    for entity in particles_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
 pub fn despawn_collision_particles(
     mut commands: Commands,
     particles_query: Query<Entity, With<DropFishParticle>>,

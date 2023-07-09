@@ -68,6 +68,11 @@ impl Plugin for PlayerPlugin {
                         .in_set(PlayerSystemSet::Movement)
                         .in_set(OnUpdate(SimulationState::Running))
                         .in_set(OnUpdate(AppState::Game)),
+                )
+                // Exit State Systems
+                .add_system(
+                    despawn_smoke_particles_on_exit_state
+                        .in_schedule(OnExit(AppState::Game)),
                 );
         }
 
