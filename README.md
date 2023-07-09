@@ -8,11 +8,9 @@
 
 ## Description
 
-<div align = "center">
-  
-Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - the **Dogs** and the **Kitty**. One can never say when the contest had begun, but it's clear that to this day there is a game for the title of the `Great Cracker Collector`. Every time the cracker is taken the lucky one emits a signal to the base about his achievement. The **Kitty** - highly responsible and intelligent creature - always sends the exact amount of collected treasures, while the **Dogs** rely on their feelings. Some of them truly believe that they got multiple crackers at a time, some just can't count, and about honesty of the others one can only guess...
+![git text](https://github.com/ghashy/Space-Kitty/assets/128966780/ff4df318-021c-4c59-99f1-4982fcf5299f)
 
-</div>
+
 
 ### Specifications
 
