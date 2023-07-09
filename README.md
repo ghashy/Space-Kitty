@@ -16,9 +16,9 @@ Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [L
 
 ### Used crates:
 
-* [bevy_hanabi](https://github.com/djeedai/bevy_hanabi) - very convenient to work with particle system.
+* [bevy_hanabi](https://github.com/djeedai/bevy_hanabi) - very convenient to work with particles system.
 * [bevy_tweening](https://github.com/djeedai/bevy_tweening) - big help for small tweens!
-* [kira](https://github.com/tesselode/kira) - the most powerful audio library for creating games.
+* [kira](https://github.com/tesselode/kira) - the most powerful rust audio library for creating games.
 * [rapier2d](https://github.com/dimforge/rapier) - one and only :).
 * [egui](https://github.com/emilk/egui) - can't debug without it!
 
