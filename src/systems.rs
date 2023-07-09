@@ -529,7 +529,7 @@ pub fn spawn_periodical_comet(
                             ..default()
                         },
                         // After background stars, and before planets
-                        transform: Transform::from_xyz(rand_x, y, 10.),
+                        transform: Transform::from_xyz(rand_x, y, 9.),
                         texture,
                         ..default()
                     },
