@@ -8,9 +8,7 @@
 
 ## Description
 
-![git text](https://github.com/ghashy/Space-Kitty/assets/128966780/ff4df318-021c-4c59-99f1-4982fcf5299f)
-
-
+![git text](https://github.com/ghashy/Space-Kitty/assets/128966780/c86e455c-4a38-4f62-a34f-aa79f3f8c766)
 
 ### Specifications
 
