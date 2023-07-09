@@ -1,18 +1,22 @@
+<div align = "center">
+
 # Space-Kitty
+
+</div>
 
 <img width="1920" alt="Space Kitty Presentation" src="https://github.com/ghashy/Space-Kitty/assets/128966780/b06f223c-996c-4d91-8275-8b30d18124a9">
 
 ## Description
 
-Somewhere in the distant space there are lots of tasty crackers floating around. In search of this higly valuable resourse there are two competing parties - the **Dogs** and the **Kitty**. One can never say when the contest had begun, but it's clear that to this day there is a game for the title of the Great Cracker Collector. Every time the cracker is taken the lucky one emits a signal to the base about his achievement. The **Kitty** - highly responsible and intelligent creature - always sends the exact amount of collected treasures, while the **Dogs** rely on their feelings. Some of them truly believe that they got multiple crackers at a time, some just can't count, and about honesty of the others one can only gues...
+![git text](https://github.com/ghashy/Space-Kitty/assets/128966780/c86e455c-4a38-4f62-a34f-aa79f3f8c766)
 
 ### Specifications
 
 Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
 
-## To-do:
+### To-do:
 
-### Design:
+#### Design:
 
 - [x] Fish-boss
 - [x] Audio design
@@ -26,7 +30,7 @@ Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [L
 - [x] Design Message box
 - [x] Add last collision sound for Kitty
 
-### Coding:
+#### Coding:
 
 - [x] Implement audio
 - [x] Implement highscore system
@@ -61,10 +65,10 @@ Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [L
 - [x] Reset high scores after each game
 - [x] Add spacesuits for the dogs on the game over screen
 - [x] Add phrases "The milk'd been drinked!" when collecting the milk and "The milk escaped!" when not collecting the milk
-- [ ] Add splash screen
-- [ ] Try add cpu-based particles
+- [x] Add splash screen
+- [x] Try add cpu-based particles
 
-#### Buff system (future features):
+##### Future features:
 
 - [ ] Speed
 - [ ] Health
