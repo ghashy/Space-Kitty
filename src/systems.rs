@@ -287,8 +287,8 @@ pub fn spawn_dust_wasm(
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(Vec2::splat(2.0)),
-                    color: Color::rgba(3., 3., 3., 0.),
+                    custom_size: Some(Vec2::splat(3.9)),
+                    color: Color::rgba(1., 1., 1., 0.),
                     ..default()
                 },
                 transform: Transform::from_translation(position)
