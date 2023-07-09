@@ -14,6 +14,14 @@
 
 Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
 
+### Used crates:
+
+* [bevy_hanabi](https://github.com/djeedai/bevy_hanabi) - very convenient to work with particle system.
+* [bevy_tweening](https://github.com/djeedai/bevy_tweening) - big help for small tweens!
+* [kira](https://github.com/tesselode/kira) - the most powerful audio library for creating games.
+* [rapier2d](https://github.com/dimforge/rapier) - one and only :).
+* [egui](https://github.com/emilk/egui) - can't debug without it!
+
 ### To-do:
 
 #### Design:
@@ -70,6 +78,7 @@ Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [L
 
 ##### Future features:
 
+- [ ] Update bevy to 0.11.0
 - [ ] Speed
 - [ ] Health
 - [ ] Shield
