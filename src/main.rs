@@ -90,7 +90,7 @@ fn main() {
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     resolution: WindowResolution::new(1280. / 1.1, 720. / 1.1)
-                        .with_scale_factor_override(2.),
+                        .with_scale_factor_override(1.),
                     // mode: WindowMode::BorderlessFullscreen,
                     title: String::from("Space Kitty"),
                     ..default()
