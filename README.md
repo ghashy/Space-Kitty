@@ -10,6 +10,12 @@
 
 ![git text](https://github.com/ghashy/Space-Kitty/assets/128966780/c86e455c-4a38-4f62-a34f-aa79f3f8c766)
 
+![Space Kitty - Trailer](https://github.com/ghashy/Space-Kitty/assets/109857267/17c39889-de77-4e68-aac7-ec74ba57f382)
+
+### Play online
+
+[![itch.io](https://img.shields.io/badge/itch.io-green)](https://ghashy.itch.io/space-kitty)
+
 ### Specifications
 
 Made with [Bevy game engine](https://github.com/bevyengine/bevy). Enspired by [Learn Bevy Engine 0.10 series](https://www.youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd).
