@@ -12,6 +12,9 @@
 
 ![Space Kitty - Trailer](https://github.com/ghashy/Space-Kitty/assets/109857267/17c39889-de77-4e68-aac7-ec74ba57f382)
 
+### Play online
+
+[![itch.io](https://img.shields.io/badge/itch.io-green)](https://ghashy.itch.io/space-kitty)
 
 ### Specifications
 
