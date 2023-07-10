@@ -24,6 +24,9 @@ bevy_hanabi = { version = "0.6.2", optional = true }
 bevy_egui = { version = "0.20.3", optional = true }
 bevy-inspector-egui = { version = "0.18.3", optional = true }
 
+tracing-subscriber = { version = "0.3.17", optional = true }
+tracing-appender = { version = "0.2.2", optional = true }
+
 [profile.dev]
 opt-level = 3
 
@@ -32,4 +35,5 @@ opt-level = 3
 
 [features]
 default = ["bevy_egui", "bevy-inspector-egui", "bevy_hanabi"]
+file_logger = ["tracing-appender", "tracing-subscriber"]
 

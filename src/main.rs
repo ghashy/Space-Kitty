@@ -32,6 +32,7 @@ use bevy_hanabi::HanabiPlugin;
 
 use audio::AudioPlugin;
 use components::*;
+use file_logger_plugin::FileLoggerPlugin;
 use game::GamePlugin;
 use gameover::GameoverPlugin;
 use main_menu::MainMenuPlugin;
@@ -55,6 +56,7 @@ pub mod main_menu;
 mod animation;
 mod components;
 pub mod events;
+mod file_logger_plugin;
 pub mod helper_functions;
 mod resources;
 pub mod systems;
@@ -84,23 +86,26 @@ fn main() {
     let mut app = App::new();
     // DefaultPlugins
     if !cfg!(target_arch = "wasm32") {
-        app.add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        resolution: WindowResolution::new(
-                            1280. / 1.1,
-                            720. / 1.1,
-                        )
+        let group = DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    resolution: WindowResolution::new(1280. / 1.1, 720. / 1.1)
                         .with_scale_factor_override(2.),
-                        mode: WindowMode::BorderlessFullscreen,
-                        title: String::from("Space Kitty"),
-                        ..default()
-                    }),
+                    // mode: WindowMode::BorderlessFullscreen,
+                    title: String::from("Space Kitty"),
                     ..default()
-                })
-                .set(RenderPlugin { wgpu_settings }),
-        );
+                }),
+                ..default()
+            })
+            .set(RenderPlugin { wgpu_settings });
+
+        #[cfg(feature = "file_logger")]
+        let group = group.disable::<bevy::log::LogPlugin>();
+
+        app.add_plugins(group);
+
+        #[cfg(feature = "file_logger")]
+        app.add_plugin(FileLoggerPlugin);
     } else {
         app.add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
