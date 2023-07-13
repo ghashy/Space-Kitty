@@ -2,7 +2,13 @@
 name = "space_kitty"
 version = "0.1.0"
 edition = "2021"
+publish = false
 description = "Crate with game about Kitty in Space"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "space_kitty"
+crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 bevy = { version = "0.10.1", default-features = false, features = [
@@ -37,6 +43,8 @@ opt-level = 3
 opt-level = 3
 
 [features]
+# default = ["bevy_egui", "bevy/dynamic_linking", "bevy-inspector-egui", "bevy_hanabi"]
 default = ["bevy_egui", "bevy-inspector-egui", "bevy_hanabi"]
+# default = ["bevy_hanabi"]
 file_logger = ["tracing-appender", "tracing-subscriber"]
 

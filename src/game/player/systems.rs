@@ -225,6 +225,7 @@ pub fn despawn_player(commands: &mut Commands, player: Entity) {
 #[cfg(not(target_arch = "wasm32"))]
 pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
+    mut touches: EventReader<TouchInput>,
     mut player_query: Query<(&mut ExternalForce, &Transform), With<Player>>,
     mut spawner_query: Query<&mut EffectSpawner, With<RocketEngineParticles>>,
     time: Res<Time>,
@@ -237,6 +238,7 @@ pub fn player_movement(
     sample_pack: Res<SamplePack>,
     mut local_is_playing: Local<bool>,
     mut local_engine_handle: Local<Option<StaticSoundHandle>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
         let mut direction = Vec2::ZERO;
@@ -262,6 +264,12 @@ pub fn player_movement(
         }
         if keyboard_input.pressed(down) || keyboard_input.pressed(down_opt) {
             direction += Vec2::new(0., -1.);
+        }
+        let window = window_query.get_single().unwrap();
+        let center = Vec2::new(window.width() / 2., window.height() / 2.);
+
+        if let Some(touch) = touches.iter().next() {
+            direction = center - touch.position;
         }
 
         // If there are some input
