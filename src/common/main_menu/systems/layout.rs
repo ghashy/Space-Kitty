@@ -51,7 +51,7 @@ pub fn build_planets_layer(
     let planets_layer = commands
         .spawn((
             NodeBundle {
-                style: PLANETS_NODE,
+                style: planets_node(),
                 transform: Transform::from_xyz(0., 0., 3.),
                 ..default()
             },
@@ -60,7 +60,7 @@ pub fn build_planets_layer(
         .with_children(|parent| {
             // Big planet
             parent.spawn(ImageBundle {
-                style: PLANET_BIG,
+                style: planet_big(),
                 image: UiImage::new(
                     asset_server.load("sprites/Planet Big.png"),
                 ),
@@ -71,7 +71,7 @@ pub fn build_planets_layer(
             });
             // Main planet
             parent.spawn(ImageBundle {
-                style: PLANET_MAIN,
+                style: planet_main(),
                 image: UiImage::new(
                     asset_server.load("sprites/Planet Main.png"),
                 ),
@@ -83,7 +83,7 @@ pub fn build_planets_layer(
             // Small planet
             parent
                 .spawn(ImageBundle {
-                    style: PLANET_ATMOSPHERE,
+                    style: planet_atmosphere(),
                     image: UiImage::new(
                         asset_server.load("sprites/Planet atmosphere.png"),
                     ),
@@ -94,7 +94,7 @@ pub fn build_planets_layer(
                 })
                 .with_children(|parent| {
                     parent.spawn(ImageBundle {
-                        style: PLANET_SMALL,
+                        style: planet_small(),
                         image: UiImage::new(
                             asset_server.load("sprites/Planet Small.png"),
                         ),
@@ -116,7 +116,7 @@ pub fn build_main_menu(
     let main_menu_entity = commands
         .spawn((
             NodeBundle {
-                style: MAIN_CONTAINER,
+                style: main_container(),
                 transform: Transform::from_xyz(0., 0., 5.),
                 ..default()
             },
@@ -126,14 +126,14 @@ pub fn build_main_menu(
             // Left half of screen
             parent
                 .spawn(NodeBundle {
-                    style: HALF_SCREEN,
+                    style: half_screen(),
                     ..default()
                 })
                 .with_children(|parent| {
                     // Top part:
                     parent
                         .spawn(NodeBundle {
-                            style: TOP_PART,
+                            style: top_part(),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -142,7 +142,7 @@ pub fn build_main_menu(
                     // Bottom part
                     parent
                         .spawn(NodeBundle {
-                            style: BOTTOM_PART,
+                            style: bottom_part(),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -154,7 +154,7 @@ pub fn build_main_menu(
                 });
             // Right half of screen
             parent.spawn(NodeBundle {
-                style: HALF_SCREEN,
+                style: half_screen(),
                 ..default()
             });
         })
@@ -166,13 +166,13 @@ pub fn build_main_menu(
 fn spawn_title(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     parent
         .spawn(NodeBundle {
-            style: TITLE_STYLE,
+            style: title_style(),
             ..default()
         })
         .with_children(|parent| {
             // Image
             parent.spawn(ImageBundle {
-                style: IMAGE_STYLE,
+                style: image_style(),
                 image: asset_server.load("sprites/Title.png").into(),
                 ..default()
             });
@@ -191,7 +191,7 @@ fn spawn_play_button(
         asset_server.load("sprites/Play_Clicked.png");
     parent.spawn((
         ButtonBundle {
-            style: NORMAL_BUTTON_STYLE,
+            style: normal_button_style(),
             background_color: NORMAL_BUTTON_COLOR.into(),
             image: default_texture.clone().into(),
             ..default()
@@ -216,7 +216,7 @@ fn spawn_quit_button(
         asset_server.load("sprites/Quit_Hovered.png");
     parent.spawn((
         ButtonBundle {
-            style: NORMAL_BUTTON_STYLE,
+            style: normal_button_style(),
             background_color: NORMAL_BUTTON_COLOR.into(),
             image: default_texture.clone().into(),
             ..default()

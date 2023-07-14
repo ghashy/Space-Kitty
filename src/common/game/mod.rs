@@ -42,44 +42,48 @@ impl Plugin for GamePlugin {
             .init_resource::<GameData>()
             // Enter State Systems
             .add_systems(
+                OnEnter(AppState::Game),
                 (
                     resume_simulation,
                     spawn_world_borders,
                     system_play_main_theme,
                     spawn_controls_sheet,
-                )
-                    .in_schedule(OnEnter(AppState::Game)),
+                ),
             )
             // Plugins
-            .add_plugin(EnemyPlugin)
-            .add_plugin(PlayerPlugin)
-            .add_plugin(FishPlugin)
-            .add_plugin(ScorePlugin)
-            .add_plugin(GameUiPlugin)
-            .add_plugin(RegenerationPlugin)
+            .add_plugins(EnemyPlugin)
+            .add_plugins(PlayerPlugin)
+            .add_plugins(FishPlugin)
+            .add_plugins(ScorePlugin)
+            .add_plugins(GameUiPlugin)
+            .add_plugins(RegenerationPlugin)
             // Systems
-            .add_system(despawn_controls_sheet.in_set(OnUpdate(AppState::Game)))
-            .add_system(
+            .add_systems(
+                Update,
+                despawn_controls_sheet.run_if(in_state(AppState::Game)),
+            )
+            .add_systems(
+                Update,
                 toggle_simulation_on_input_event
                     .run_if(in_state(AppState::Game)),
             )
             .add_systems(
+                Update,
                 (
                     system_check_main_theme_clock,
                     system_restart_clock,
                     detect_input,
                 )
-                    .in_set(OnUpdate(AppState::Game)),
-            )
-            .add_system(
-                despawn_controls_sheet
-                    .in_base_set(CoreSet::Last)
                     .run_if(in_state(AppState::Game)),
+            )
+            .add_systems(
+                Last,
+                despawn_controls_sheet.run_if(in_state(AppState::Game)),
             )
             // Exit State Systems
             .add_systems(
-                (pause_simulation, despawn_borders, stop_main_theme)
-                    .in_schedule(OnExit(AppState::Game)),
+                OnExit(AppState::Game),
+                (pause_simulation, despawn_borders, stop_main_theme),
             );
     }
 }

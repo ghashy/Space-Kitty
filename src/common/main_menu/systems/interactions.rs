@@ -28,7 +28,7 @@ pub fn interact_with_play_button(
         button_query.get_single_mut()
     {
         match *interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 // Play button sound
                 let sound_data = audio_assets
                     .get(&sample_pack.button)
@@ -66,7 +66,7 @@ pub fn interact_with_quit_button(
     if let Ok((interaction, mut image, button)) = button_query.get_single_mut()
     {
         match *interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 animate_button_click(&mut image, button);
                 app_exit_event_writer.send(AppExit);
             }

@@ -1,12 +1,10 @@
+use bevy::render::view::window;
 use bevy::sprite::Anchor;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 use kira::sound::static_sound::{StaticSoundHandle, StaticSoundSettings};
 use rand::Rng;
 use std::time::Duration;
-
-#[cfg(not(target_arch = "wasm32"))]
-use bevy_hanabi::*;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -27,126 +25,6 @@ use crate::common::resources::TextureStorage;
 
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn spawn_player(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    asset_server: Res<AssetServer>,
-    texture_storage: Res<TextureStorage>,
-    mut effects: ResMut<Assets<EffectAsset>>,
-) {
-    // Assume that there can be only one entity of PrimaryWindow at the time
-    let window = window_query.get_single().unwrap();
-
-    // Prepare engine particles effect
-    let mut color_gradient = Gradient::new();
-    color_gradient.add_key(0.0, Vec4::new(0., 0.07, 0.06, 0.0));
-    color_gradient.add_key(0.2, Vec4::new(0.06, 0.02, 0.10, 0.5));
-    color_gradient.add_key(1.0, Vec4::new(0., 0., 0., 0.));
-
-    let engine_effect = effects.add(
-        EffectAsset {
-            name: "RocketFlame".to_string(),
-            capacity: 1000,
-            spawner: Spawner::rate(70.0.into()).with_starts_active(false),
-            ..default()
-        }
-        .init(InitLifetimeModifier {
-            lifetime: 3_f32.into(),
-        })
-        .init(InitPositionCircleModifier {
-            radius: 11.,
-            ..default()
-        })
-        .init(InitVelocityCircleModifier {
-            axis: Vec3::Z,
-            speed: 30.0.into(),
-            ..default()
-        })
-        .init(InitVelocityTangentModifier {
-            speed: Value::Uniform((-20., 20.)),
-            axis: Vec3::Z,
-            ..default()
-        })
-        .render(ParticleTextureModifier {
-            texture: texture_storage.smoke.clone_weak(),
-        })
-        .render(SizeOverLifetimeModifier {
-            gradient: Gradient::constant(Vec2::splat(25.0)),
-        })
-        .render(ColorOverLifetimeModifier {
-            gradient: color_gradient,
-        }),
-    );
-
-    commands
-        .spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::splat(SPACESHIP_SIZE)),
-                    ..default()
-                },
-                transform: Transform::from_xyz(
-                    window.width() / 2.,
-                    window.height() / 2.,
-                    10.,
-                ),
-                texture: asset_server.load("sprites/Cat's starship.png"),
-                ..default()
-            },
-            RigidBody::Dynamic,
-            Collider::ball(SPACESHIP_SIZE / 2.),
-            ExternalForce {
-                force: Vec2::ZERO,
-                torque: 0.,
-            },
-            Damping {
-                linear_damping: 0.6,
-                angular_damping: 5.,
-            },
-            ActiveCollisionTypes::all(),
-            ActiveEvents::COLLISION_EVENTS,
-            Restitution::coefficient(1.),
-            Player { health: 3 },
-            Avatar(asset_server.load("sprites/Avatars/Frame Kitty.png")),
-            Name::new("Kitty"),
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn((
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(53., 29.) / 1.5),
-                            anchor: Anchor::Custom(Vec2::new(0., 1.6)),
-                            ..default()
-                        },
-                        transform: Transform::from_xyz(0., -1.5, -1.),
-                        texture: asset_server
-                            .load("sprites/Rocket engine.png")
-                            .into(),
-
-                        ..default()
-                    },
-                    RocketEngineSprite,
-                ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        RocketEngineParticles,
-                        ParticleEffectBundle {
-                            transform: Transform::from_translation(
-                                (Vec2::NEG_Y * 33.).extend(0.),
-                            ),
-                            effect: ParticleEffect::new(engine_effect)
-                                .with_z_layer_2d(Some(0.)),
-                            ..default()
-                        },
-                        Name::new("RocketEngineParticles"),
-                    ));
-                });
-        });
-}
-
-#[cfg(target_arch = "wasm32")]
 pub fn spawn_player_without_gpu_particles(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -222,12 +100,10 @@ pub fn despawn_player(commands: &mut Commands, player: Entity) {
     commands.entity(player).despawn_recursive();
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn player_movement(
+pub fn player_movement_without_gpu_particles(
+    touches: Res<Touches>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut touches: EventReader<TouchInput>,
     mut player_query: Query<(&mut ExternalForce, &Transform), With<Player>>,
-    mut spawner_query: Query<&mut EffectSpawner, With<RocketEngineParticles>>,
     time: Res<Time>,
     mut rocket_transform_query: Query<
         &mut Transform,
@@ -238,6 +114,8 @@ pub fn player_movement(
     sample_pack: Res<SamplePack>,
     mut local_is_playing: Local<bool>,
     mut local_engine_handle: Local<Option<StaticSoundHandle>>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
@@ -265,137 +143,19 @@ pub fn player_movement(
         if keyboard_input.pressed(down) || keyboard_input.pressed(down_opt) {
             direction += Vec2::new(0., -1.);
         }
+
         let window = window_query.get_single().unwrap();
-        let center = Vec2::new(window.width() / 2., window.height() / 2.);
 
-        if let Some(touch) = touches.iter().next() {
-            direction = center - touch.position;
-        }
-
-        // If there are some input
-        if direction.length() > 0.0 {
-            direction = direction.normalize();
-            // Animate engine rotation
-            rotate_transform_with_parent_calibration(
-                &player_transform.rotation,
-                &mut rocket_transform_query.single_mut(),
-                direction * -1.,
-                // Our sprite was drawn in this axis
-                Vec2::NEG_Y,
-                Some(&time),
+        for touch in touches.iter() {
+            println!("Player: {}", player_transform.translation.truncate());
+            println!("Touch: {}", touch.position());
+            // let pos =
+            //     touch.position() + Vec2::new(window.width(), window.height());
+            let pos = Vec2::new(
+                touch.position().x,
+                window.height() - touch.position().y,
             );
-
-            // Play engine audio
-            // Button was just pressed
-            if !*local_is_playing {
-                let rand_pos = rand::thread_rng().gen_range(0.0..3.0);
-                let sample = audio_assets
-                    .get(&sample_pack.engine)
-                    .unwrap()
-                    .get()
-                    .with_settings(
-                        StaticSoundSettings::new()
-                            .volume(0.01)
-                            .output_destination(kira_manager.get_master()),
-                    );
-                sample
-                    .settings
-                    .output_destination(kira_manager.get_master());
-                let mut handle = kira_manager.play(sample).unwrap();
-                // For playing from rand position
-                handle.seek_to(rand_pos).unwrap();
-                handle
-                    .set_volume(
-                        0.21,
-                        kira::tween::Tween {
-                            duration: Duration::from_millis(100),
-                            ..default()
-                        },
-                    )
-                    .unwrap();
-                handle.set_loop_region(..).unwrap();
-                *local_is_playing = true;
-
-                *local_engine_handle = Some(handle);
-            }
-        } else {
-            // Stop only if already playing
-            if *local_is_playing {
-                if let Some(ref mut handle) = *local_engine_handle {
-                    if let Err(e) = handle.stop(kira::tween::Tween {
-                        duration: Duration::from_secs(1),
-                        easing: kira::tween::Easing::OutPowf(1.),
-                        ..default()
-                    }) {
-                        println!("Error engine sound stopping: {}", e);
-                    }
-                    *local_is_playing = false;
-                }
-            }
-        }
-
-        player.force = direction * PLAYER_SPEED * time.delta_seconds();
-
-        if let Ok(mut spawner) = spawner_query.get_single_mut() {
-            spawner.set_active(direction.length() > 0.0);
-        }
-    } else {
-        if *local_is_playing {
-            if let Some(ref mut handle) = *local_engine_handle {
-                if let Err(e) = handle.stop(kira::tween::Tween {
-                    duration: Duration::from_secs(1),
-                    easing: kira::tween::Easing::OutPowf(1.),
-                    ..default()
-                }) {
-                    println!("Error engine sound stopping: {}", e);
-                }
-                *local_is_playing = false;
-            }
-        }
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn player_movement_without_gpu_particles(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut player_query: Query<(&mut ExternalForce, &Transform), With<Player>>,
-    time: Res<Time>,
-    mut rocket_transform_query: Query<
-        &mut Transform,
-        (With<RocketEngineSprite>, Without<Player>),
-    >,
-    mut kira_manager: NonSendMut<KiraManager>,
-    audio_assets: Res<Assets<AudioSource>>,
-    sample_pack: Res<SamplePack>,
-    mut local_is_playing: Local<bool>,
-    mut local_engine_handle: Local<Option<StaticSoundHandle>>,
-    asset_server: Res<AssetServer>,
-    mut commands: Commands,
-) {
-    if let Ok((mut player, player_transform)) = player_query.get_single_mut() {
-        let mut direction = Vec2::ZERO;
-
-        let up = KeyCode::W;
-        let down = KeyCode::S;
-        let left = KeyCode::A;
-        let right = KeyCode::D;
-
-        let up_opt = KeyCode::Up;
-        let down_opt = KeyCode::Down;
-        let left_opt = KeyCode::Left;
-        let right_opt = KeyCode::Right;
-
-        if keyboard_input.pressed(left) || keyboard_input.pressed(left_opt) {
-            direction += Vec2::new(-1., 0.);
-        }
-        if keyboard_input.pressed(right) || keyboard_input.pressed(right_opt) {
-            direction += Vec2::new(1., 0.);
-        }
-        if keyboard_input.pressed(up) || keyboard_input.pressed(up_opt) {
-            direction += Vec2::new(0., 1.);
-        }
-        if keyboard_input.pressed(down) || keyboard_input.pressed(down_opt) {
-            direction += Vec2::new(0., -1.);
+            direction += pos - player_transform.translation.truncate();
         }
 
         // If there are some input
@@ -580,7 +340,6 @@ pub fn poll_and_despawn_collision_particles(
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 pub fn poll_and_despawn_smoke_particles(
     mut commands: Commands,
     mut particles_query: Query<(
@@ -618,7 +377,6 @@ pub fn poll_and_despawn_smoke_particles(
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 pub fn despawn_smoke_particles_on_exit_state(
     mut commands: Commands,
     particles_query: Query<Entity, With<SmokeParticle>>,
@@ -675,7 +433,7 @@ pub fn handle_player_collision(
                     enemies.iter().find(|(e, _)| {
                         *e == collided_with
                         // A little bit strange, but whatever
-                            && state.0 == PlayerState::Vulnerable
+                            && *state.get() == PlayerState::Vulnerable
                     })
                 {
                     // Collision

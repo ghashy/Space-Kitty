@@ -1,3 +1,7 @@
+use bevy::diagnostic::{
+    Diagnostic, DiagnosticsStore, RegisterDiagnostic,
+    SystemInformationDiagnosticsPlugin,
+};
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{
     Diagnostics, EntityCountDiagnosticsPlugin, FrameTimeDiagnosticsPlugin,
@@ -35,21 +39,40 @@ struct UpdateFpsTimer {
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
-        app
-            // Events
-            .add_event::<AddValueToDebugEvent>()
-            // Plugins
-            .add_plugin(EguiPlugin)
-            .add_plugin(WorldInspectorPlugin::new())
-            .add_plugin(RapierDebugRenderPlugin::default())
-            .add_plugin(FrameTimeDiagnosticsPlugin::default())
-            .add_plugin(EntityCountDiagnosticsPlugin::default())
-            .register_type::<Text2dBounds>()
-            // .add_plugin(SystemInformationDiagnosticsPlugin::default())
-            // Startup Systems
-            .add_startup_system(setup)
-            // Systems
-            .add_system(update_info_window.in_base_set(CoreSet::Update));
+        app.register_diagnostic(Diagnostic::new(
+            FrameTimeDiagnosticsPlugin::FPS,
+            "Fps",
+            10,
+        ))
+        .register_diagnostic(Diagnostic::new(
+            EntityCountDiagnosticsPlugin::ENTITY_COUNT,
+            "Fps",
+            10,
+        ))
+        .register_diagnostic(Diagnostic::new(
+            SystemInformationDiagnosticsPlugin::CPU_USAGE,
+            "Fps",
+            10,
+        ))
+        .register_diagnostic(Diagnostic::new(
+            SystemInformationDiagnosticsPlugin::MEM_USAGE,
+            "Fps",
+            10,
+        ))
+        // Events
+        .add_event::<AddValueToDebugEvent>()
+        // Plugins
+        .add_plugins(EguiPlugin)
+        .add_plugins(WorldInspectorPlugin::new())
+        .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin::default())
+        .add_plugins(EntityCountDiagnosticsPlugin::default())
+        .register_type::<Text2dBounds>()
+        // .add_plugin(SystemInformationDiagnosticsPlugin::default())
+        // Startup Systems
+        .add_systems(Startup, setup)
+        // Systems
+        .add_systems(Update, update_info_window);
         // .add_system(update_values_window.in_base_set(CoreSet::Update));
     }
 }
@@ -95,7 +118,7 @@ fn update_values_window(
 }
 
 fn update_info_window(
-    diagnostics: Res<Diagnostics>,
+    diagnostics: Res<DiagnosticsStore>,
     camera_query: Query<(&GlobalTransform, &Camera)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut timer_query: Query<&mut UpdateFpsTimer>,
@@ -154,27 +177,27 @@ fn update_info_window(
     );
 }
 
-fn extract_fps(diagnostics: &Res<Diagnostics>) -> Option<f64> {
+fn extract_fps(diagnostics: &Res<DiagnosticsStore>) -> Option<f64> {
     diagnostics
         .get(bevy::diagnostic::FrameTimeDiagnosticsPlugin::FPS)
         .and_then(|fps| fps.average())
 }
 
-fn extract_entities_count(diagnostics: &Res<Diagnostics>) -> Option<f64> {
+fn extract_entities_count(diagnostics: &Res<DiagnosticsStore>) -> Option<f64> {
     diagnostics
         .get(bevy::diagnostic::EntityCountDiagnosticsPlugin::ENTITY_COUNT)
         .and_then(|value| value.value())
 }
 
 #[allow(dead_code)]
-fn extract_cpu_usage(diagnostics: &Res<Diagnostics>) -> Option<f64> {
+fn extract_cpu_usage(diagnostics: &Res<DiagnosticsStore>) -> Option<f64> {
     diagnostics
         .get(bevy::diagnostic::SystemInformationDiagnosticsPlugin::CPU_USAGE)
         .and_then(|value| value.value())
 }
 
 #[allow(dead_code)]
-fn extract_mem_usage(diagnostics: &Res<Diagnostics>) -> Option<f64> {
+fn extract_mem_usage(diagnostics: &Res<DiagnosticsStore>) -> Option<f64> {
     diagnostics
         .get(bevy::diagnostic::SystemInformationDiagnosticsPlugin::MEM_USAGE)
         .and_then(|value| value.value())

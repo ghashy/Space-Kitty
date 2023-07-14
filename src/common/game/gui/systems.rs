@@ -27,7 +27,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             NodeBundle {
-                style: HUD_CONTAINER,
+                style: hud_container(),
                 ..default()
             },
             Hud,
@@ -36,13 +36,13 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
             // LEFT SCREEN SIDE
             parent
                 .spawn(NodeBundle {
-                    style: LEFT_SIDE_HUD_CONTAINER,
+                    style: left_side_hud_container(),
                     ..default()
                 })
                 .with_children(|parent| {
                     parent.spawn((
                         NodeBundle {
-                            style: CHART,
+                            style: chart(),
                             ..default()
                         },
                         ChartBlock {
@@ -53,13 +53,13 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
             // RIGHT SCREEN SIDE
             parent
                 .spawn(NodeBundle {
-                    style: RIGHT_SIDE_HUD_CONTAINER,
+                    style: right_side_hud_container(),
                     ..default()
                 })
                 .with_children(|parent| {
                     parent
                         .spawn(NodeBundle {
-                            style: HEARTS_ROW,
+                            style: hearts_row(),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -67,7 +67,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 id += HIT_EVENTS_OFFSET;
                                 parent.spawn((
                                     ImageBundle {
-                                        style: STARSHIP_LIFE,
+                                        style: starship_life(),
                                         image: img1.clone().into(),
                                         ..default()
                                     },
@@ -77,7 +77,7 @@ pub fn spawn_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
                         });
                     parent.spawn((
                         NodeBundle {
-                            style: MESSAGES_BAR,
+                            style: messages_bar(),
                             ..default()
                         },
                         MessagesList,
@@ -99,7 +99,7 @@ fn spawn_row(
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    position: UiRect::top(Val::Px(pos as f32 * 75.)),
+                    top: Val::Px(pos as f32 * 75.),
                     display: Display::Flex,
                     flex_direction: FlexDirection::Row,
                     justify_content: JustifyContent::SpaceBetween,
@@ -123,7 +123,7 @@ fn spawn_row(
                 ..default()
             },));
             parent.spawn((TextBundle {
-                style: ITEM_TEXT,
+                style: item_text(),
                 text: Text::from_section(
                     text,
                     TextStyle {
@@ -180,7 +180,7 @@ pub fn spawn_rows_from_backend(
                             + ": "
                             + &item.score.to_string()),
                         item.image.clone(),
-                        AVATAR,
+                        avatar(),
                         idx,
                     );
                     // Push this entity to list of drawn entities

@@ -1,6 +1,8 @@
+use bevy::prelude::Event;
+
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
-#[derive(Hash, Clone)]
+#[derive(Hash, Clone, Event)]
 pub struct AddValueToDebugEvent(pub String, pub String);
 
 impl PartialEq for AddValueToDebugEvent {

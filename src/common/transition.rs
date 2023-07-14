@@ -14,9 +14,9 @@ impl Plugin for TransitionPlugin {
         app
             // States
             .add_state::<TransitionState>()
-            .add_system(component_animator_system::<BackgroundColor>)
-            .add_system(spawn_overlap_on_transition)
-            .add_system(despawn_overlap_after_transition);
+            .add_systems(Update, component_animator_system::<BackgroundColor>)
+            .add_systems(Update, spawn_overlap_on_transition)
+            .add_systems(Update, despawn_overlap_after_transition);
     }
 }
 
@@ -56,7 +56,7 @@ pub fn spawn_overlap_on_transition(
     mut next_state: ResMut<NextState<TransitionState>>,
 ) {
     if let Some(event) = event_reader.iter().next() {
-        if app_state.0 == TransitionState::NoTransition {
+        if *app_state.get() == TransitionState::NoTransition {
             let sequence = Tween::new(
                 EaseFunction::CubicIn,
                 std::time::Duration::from_millis(500),
@@ -81,7 +81,8 @@ pub fn spawn_overlap_on_transition(
             let node = NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
                     ..default()
                 },
                 background_color: BackgroundColor(Color::rgba(0., 0., 0., 0.)),

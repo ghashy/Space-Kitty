@@ -37,76 +37,62 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            app
-                // Enter State Systems
-                .add_system(spawn_player.in_schedule(OnEnter(AppState::Game)))
-                // Systems
-                .add_system(
-                    player_movement
-                        .in_set(PlayerSystemSet::Movement)
-                        .in_set(OnUpdate(SimulationState::Running))
-                        .in_set(OnUpdate(AppState::Game)),
-                );
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            app
-                // Enter State Systems
-                .add_system(
-                    spawn_player_without_gpu_particles
-                        .in_schedule(OnEnter(AppState::Game)),
+        app
+            // Enter State Systems
+            .add_systems(
+                OnEnter(AppState::Game),
+                spawn_player_without_gpu_particles,
+            )
+            // Systems
+            .add_systems(
+                Update,
+                (
+                    player_movement_without_gpu_particles,
+                    poll_and_despawn_smoke_particles,
                 )
-                // Systems
-                .add_systems(
-                    (
-                        player_movement_without_gpu_particles,
-                        poll_and_despawn_smoke_particles,
-                    )
-                        .in_set(PlayerSystemSet::Movement)
-                        .in_set(OnUpdate(SimulationState::Running))
-                        .in_set(OnUpdate(AppState::Game)),
-                )
-                // Exit State Systems
-                .add_system(
-                    despawn_smoke_particles_on_exit_state
-                        .in_schedule(OnExit(AppState::Game)),
-                );
-        }
+                    .in_set(PlayerSystemSet::Movement)
+                    .run_if(in_state(SimulationState::Running))
+                    .run_if(in_state(AppState::Game)),
+            )
+            // Exit State Systems
+            .add_systems(
+                OnExit(AppState::Game),
+                despawn_smoke_particles_on_exit_state,
+            );
 
         app
             // Events
             .add_event::<PlayerHit>()
             // System Sets
-            .configure_set(PlayerSystemSet::Movement)
+            .configure_set(Update, PlayerSystemSet::Movement)
             // States
             .add_state::<PlayerState>()
             // Systems
             .add_systems(
+                Update,
                 (
                     handle_player_collision,
                     regenerate_player,
                     spawn_particles_on_collision_with_enemy,
                     poll_and_despawn_collision_particles,
                 )
-                    .in_set(OnUpdate(SimulationState::Running))
-                    .in_set(OnUpdate(AppState::Game)),
+                    .run_if(in_state(SimulationState::Running))
+                    .run_if(in_state(AppState::Game)),
             )
             .add_systems(
+                Update,
                 (count_player_invulnerability_timer, blink_player)
-                    .in_set(OnUpdate(SimulationState::Running))
-                    .in_set(OnUpdate(AppState::Game))
-                    .in_set(OnUpdate(PlayerState::Invulnerable)),
+                    .run_if(in_state(SimulationState::Running))
+                    .run_if(in_state(AppState::Game))
+                    .run_if(in_state(PlayerState::Invulnerable)),
             )
             // Exit State Systems
             .add_systems(
+                OnExit(AppState::Game),
                 (
                     despawn_player_on_exit_game_state,
                     despawn_collision_particles,
-                )
-                    .in_schedule(OnExit(AppState::Game)),
+                ),
             );
     }
 }

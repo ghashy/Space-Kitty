@@ -23,28 +23,23 @@ impl Plugin for ScorePlugin {
             .init_resource::<HighScores>()
             .init_resource::<Chart>()
             // Enter State Systems
-            .add_system(insert_score.in_schedule(OnEnter(AppState::Game)))
+            .add_systems(OnEnter(AppState::Game), insert_score)
             // Systems
-            .add_system(update_chart_data)
-            .add_system(update_highscores)
-            .add_system(
-                update_score
-                    // IMPORTANT: we should update score before we spawn
-                    // enemy on game progress, because spawning depends on
-                    // score value.
-                    .run_if(in_state(AppState::Game))
-                    .in_base_set(CoreSet::First),
-            )
+            .add_systems(Update, update_chart_data)
+            .add_systems(Update, update_highscores)
+            // IMPORTANT: we should update score before we spawn
+            // enemy on game progress, because spawning depends on
+            // score value.
+            .add_systems(First, update_score.run_if(in_state(AppState::Game)))
             // Exit State Systems
-            .add_system(remove_score.in_schedule(OnExit(AppState::Game)))
-            .add_system(
-                remove_highscore.in_schedule(OnExit(AppState::GameOver)),
-            );
+            .add_systems(OnExit(AppState::Game), remove_score)
+            .add_systems(OnExit(AppState::GameOver), remove_highscore);
     }
 }
 
 // Events
 
+#[derive(Event)]
 pub struct ScoreUpdateEvent {
     pub name: Name,
     pub event_type: ScoreEventType,

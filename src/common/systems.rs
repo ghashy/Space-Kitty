@@ -9,9 +9,6 @@ use bevy_rapier2d::prelude::*;
 use bevy_tweening::*;
 use rand::Rng;
 
-#[cfg(not(target_arch = "wasm32"))]
-use bevy_hanabi::*;
-
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
 use crate::common::resources::CometTimer;
@@ -203,64 +200,6 @@ pub fn spawn_background_texture(
     });
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn spawn_dust(
-    mut commands: Commands,
-    texture_storage: Res<TextureStorage>,
-    mut effects: ResMut<Assets<EffectAsset>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let mut gradient = Gradient::new();
-    gradient.add_key(0.0, Vec4::new(1., 1., 1., 0.0));
-    gradient.add_key(0.5, Vec4::new(1., 1., 1., 0.1));
-    gradient.add_key(1.0, Vec4::ZERO);
-
-    // Create the effect asset
-    let effect = effects.add(
-        EffectAsset {
-            name: "MenuBackgroundStars".to_string(),
-            capacity: 1000,
-            spawner: Spawner::rate(50.0.into()),
-            ..default()
-        }
-        .init(InitPositionSphereModifier {
-            center: Vec3::ZERO,
-            radius: 500.0,
-            dimension: ShapeDimension::Surface,
-        })
-        .init(InitLifetimeModifier {
-            lifetime: 7_f32.into(),
-        })
-        .init(InitVelocityCircleModifier {
-            center: Vec3::new(5., 5., 1.),
-            axis: Vec3::Z,
-            speed: 100.0.into(),
-        })
-        .render(ParticleTextureModifier {
-            texture: texture_storage.glowing_star.clone_weak(),
-        })
-        .render(SizeOverLifetimeModifier {
-            gradient: Gradient::constant(Vec2::splat(5.0)),
-        })
-        .render(ColorOverLifetimeModifier { gradient }),
-    );
-
-    let window = window_query.single();
-
-    commands
-        .spawn(ParticleEffectBundle {
-            effect: ParticleEffect::new(effect).with_z_layer_2d(Some(4.)),
-            transform: Transform::from_xyz(
-                window.width() / 2.,
-                window.height() / 2.,
-                0.,
-            ),
-            ..default()
-        })
-        .insert(Name::new("StarsInMenu"));
-}
-
-#[cfg(target_arch = "wasm32")]
 pub fn spawn_dust_wasm(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -305,7 +244,6 @@ pub fn spawn_dust_wasm(
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 pub fn poll_and_despawn_dust_particles(
     mut commands: Commands,
     mut particles_query: Query<(
@@ -480,7 +418,7 @@ pub fn handle_pressing_m_key(
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::M) {
-        if app_state.0 != AppState::MainMenu {
+        if *app_state.get() != AppState::MainMenu {
             next_app_state.set(AppState::MainMenu);
             println!("Entered AppState::MainMenu");
         }

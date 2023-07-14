@@ -35,14 +35,15 @@ impl Plugin for FishPlugin {
             // Events
             .add_event::<FishWasPickedEvent>()
             // Enter State Systems
-            .add_system(spawn_fish.in_schedule(OnEnter(AppState::Game)))
+            .add_systems(OnEnter(AppState::Game), spawn_fish)
             // Systems
             .add_systems(
+                Update,
                 (tick_fish_spawn_timer, spawn_fish_over_time, check_collision)
-                    .in_set(OnUpdate(AppState::Game))
-                    .in_set(OnUpdate(SimulationState::Running)),
+                    .run_if(in_state(AppState::Game))
+                    .run_if(in_state(SimulationState::Running)),
             )
             // Exit State Systems
-            .add_system(despawn_fish.in_schedule(OnExit(AppState::Game)));
+            .add_systems(OnExit(AppState::Game), despawn_fish);
     }
 }

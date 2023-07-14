@@ -7,4 +7,5 @@ pub struct Fish {}
 pub struct FishPack;
 
 // Event
+#[derive(Event)]
 pub struct FishWasPickedEvent(pub Entity);

@@ -23,18 +23,19 @@ impl Plugin for MainMenuPlugin {
         app
             // Entery State Systems
             .add_systems(
-                (spawn_main_menu, play_title_theme)
-                    .in_schedule(OnEnter(AppState::MainMenu)),
+                OnEnter(AppState::MainMenu),
+                (spawn_main_menu, play_title_theme),
             )
             // Interaction Systems
             .add_systems(
+                Update,
                 (interact_with_play_button, interact_with_quit_button)
-                    .in_set(OnUpdate(AppState::MainMenu)),
+                    .run_if(in_state(AppState::MainMenu)),
             )
             // Exit State Systems
             .add_systems(
-                (despawn_main_menu, stop_title_theme)
-                    .in_schedule(OnExit(AppState::MainMenu)),
+                OnExit(AppState::MainMenu),
+                (despawn_main_menu, stop_title_theme),
             );
     }
 }

@@ -20,13 +20,8 @@ use bevy::{
     window::{WindowMode, WindowResolution},
 };
 use bevy_rapier2d::prelude::*;
-use bevy_tweening::TweeningPlugin;
-
-#[cfg(target_arch = "wasm32")]
 use bevy_tweening::TweenCompleted;
-
-#[cfg(not(target_arch = "wasm32"))]
-use bevy_hanabi::HanabiPlugin;
+use bevy_tweening::TweeningPlugin;
 
 // ───── Current Crate Imports ────────────────────────────────────────────── //
 
@@ -73,50 +68,27 @@ const COMET_SPEED: f32 = 500.;
 // ───── Body ─────────────────────────────────────────────────────────────── //
 
 pub fn start() {
-    // Settings for bevy_hanabi
-    let mut wgpu_settings = WgpuSettings::default();
-
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        wgpu_settings
-            .features
-            .set(WgpuFeatures::VERTEX_WRITABLE_STORAGE, true);
-    }
-
     let mut app = App::new();
     // DefaultPlugins
-    if !cfg!(target_arch = "wasm32") {
-        let group = DefaultPlugins
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    resolution: WindowResolution::new(1280., 720.)
-                        .with_scale_factor_override(1.),
-                    mode: WindowMode::BorderlessFullscreen,
-                    title: String::from("Space Kitty"),
-                    ..default()
-                }),
-                ..default()
-            })
-            .set(RenderPlugin { wgpu_settings });
+    let group = DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            resizable: false,
+            mode: WindowMode::BorderlessFullscreen,
+            title: String::from("Space Kitty"),
+            ..default()
+        }),
+        ..default()
+    });
 
+    // Logger
+    {
         #[cfg(feature = "file_logger")]
         let group = group.disable::<bevy::log::LogPlugin>();
 
         app.add_plugins(group);
 
         #[cfg(feature = "file_logger")]
-        app.add_plugin(FileLoggerPlugin);
-    } else {
-        app.add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: String::from("Space Kitty"),
-                resolution: (1280., 768.).into(),
-                canvas: Some("#bevy".to_string()),
-                fit_canvas_to_parent: true,
-                ..default()
-            }),
-            ..default()
-        }));
+        app.add_plugins(FileLoggerPlugin);
     }
 
     app
@@ -126,181 +98,73 @@ pub fn start() {
         .init_resource::<CometTimer>()
         .init_resource::<TextureStorage>()
         // Startup Systems
-        .add_startup_system(setup)
-        .add_startup_system(spawn_camera)
-        .add_startup_system(spawn_background_stars)
-        .add_startup_system(spawn_background_texture)
-        .add_startup_system(setup_audio_assets)
+        .add_systems(Startup, setup)
+        .add_systems(Startup, spawn_camera)
+        .add_systems(Startup, spawn_background_stars)
+        .add_systems(Startup, spawn_background_texture)
+        .add_systems(Startup, setup_audio_assets)
         // States
         .add_state::<AppState>()
         // Events
         .add_event::<DarkenScreenEvent>()
         // Plugins
         // + 2 percents on cpu
-        .add_plugin(AudioPlugin)
+        .add_plugins(AudioPlugin)
         // +1.1 percent on cpu
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
-        .add_plugin(GamePlugin)
-        .add_plugin(GameoverPlugin)
-        .add_plugin(TweeningPlugin)
-        .add_plugin(MainMenuPlugin)
-        .add_plugin(TransitionPlugin)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.))
+        .add_plugins(GamePlugin)
+        .add_plugins(GameoverPlugin)
+        .add_plugins(TweeningPlugin)
+        .add_plugins(MainMenuPlugin)
+        .add_plugins(TransitionPlugin)
         // Audio loading system
-        .add_system(
+        .add_systems(
+            Update,
             update_app_state_after_audio_loaded
-                .in_set(OnUpdate(AppState::AudioLoading)),
+                .run_if(in_state(AppState::AudioLoading)),
         )
         // Gui Update Systems
         .add_systems(
+            Update,
             (
                 update_background_stars,
                 animate_background_stars,
                 spawn_periodical_comet,
                 move_comets,
                 despawn_outer_comets,
-            )
-                .in_base_set(CoreSet::Update),
+            ),
         )
         // Systems
-        .add_system(
-            finalize_transition_to_game.in_set(OnUpdate(AppState::MainMenu)),
+        .add_systems(
+            Update,
+            finalize_transition_to_game.run_if(in_state(AppState::MainMenu)),
         )
-        // .add_system(handle_pressing_g_key.in_set(OnUpdate(AppState::MainMenu)))
-        // .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::Game)))
-        // Debug ScrollView
-        // .add_system(debug_pressing_o_key.in_set(OnUpdate(AppState::Game)))
-        // .add_system(handle_pressing_m_key.in_set(OnUpdate(AppState::GameOver)))
-        .add_system(handle_game_over.in_set(OnUpdate(AppState::Game)))
-        .add_system(
-            finalize_transition_to_gameover.in_set(OnUpdate(AppState::Game)),
+        .add_systems(Update, handle_game_over.run_if(in_state(AppState::Game)))
+        .add_systems(
+            Update,
+            finalize_transition_to_gameover.run_if(in_state(AppState::Game)),
         );
 
     #[cfg(debug_assertions)]
-    app.add_plugin(DebugPlugin);
+    app.add_plugins(DebugPlugin);
 
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        app.add_plugin(HanabiPlugin)
-            .add_startup_system(spawn_dust)
-            .add_system(exit_game);
-    }
+    app.init_resource::<self::resources::DustTimer>()
+        .add_systems(Update, spawn_dust_wasm)
+        .add_systems(Update, poll_and_despawn_dust_particles);
 
-    #[cfg(target_arch = "wasm32")]
-    {
-        app.init_resource::<self::resources::DustTimer>()
-            .add_system(show_splash.in_schedule(OnEnter(AppState::Splash)))
-            .add_system(handle_input.in_set(OnUpdate(AppState::Splash)))
-            .add_system(despawn_splash.in_schedule(OnExit(AppState::Splash)))
-            .add_system(
-                finalize_transition_from_splash
-                    .in_set(OnUpdate(AppState::Splash)),
-            )
-            .add_system(spawn_dust_wasm)
-            .add_system(poll_and_despawn_dust_particles);
-    }
+    #[cfg(target_os = "android")]
+    app.insert_resource(Msaa::Off);
 
     app.run();
 }
 
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum AppState {
-    #[cfg(not(target_arch = "wasm32"))]
     #[default]
     AudioLoading,
-    #[cfg(not(target_arch = "wasm32"))]
     MainMenu,
-    #[cfg(not(target_arch = "wasm32"))]
     Game,
-    #[cfg(not(target_arch = "wasm32"))]
     GameOver,
-
-    #[cfg(target_arch = "wasm32")]
-    AudioLoading,
-    #[cfg(target_arch = "wasm32")]
-    MainMenu,
-    #[cfg(target_arch = "wasm32")]
-    Game,
-    #[cfg(target_arch = "wasm32")]
-    GameOver,
-    #[cfg(target_arch = "wasm32")]
-    #[default]
-    Splash,
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn show_splash(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                ..default()
-            },
-            Splash,
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn(ImageBundle {
-                    background_color: BackgroundColor(Color::BLACK),
-                    style: Style {
-                        size: Size::new(Val::Percent(100.), Val::Percent(100.)),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn(TextBundle {
-                        text: Text::from_section(
-                            "Click anywhere",
-                            TextStyle {
-                                font: asset_server
-                                    .load("fonts/Abaddon Bold.ttf"),
-                                font_size: 50.,
-                                color: Color::WHITE,
-                            },
-                        ),
-                        ..default()
-                    });
-                });
-        });
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn handle_input(
-    click: Res<Input<MouseButton>>,
-    mut next_state: ResMut<NextState<AppState>>,
-    mut darkenscreen_events: EventWriter<DarkenScreenEvent>,
-) {
-    if click.pressed(MouseButton::Left) {
-        darkenscreen_events
-            .send(DarkenScreenEvent(transition::TransitionRoute::SplashToMenu))
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn finalize_transition_from_splash(
-    mut next_state: ResMut<NextState<AppState>>,
-    mut tween_events: EventReader<TweenCompleted>,
-) {
-    for event in tween_events.iter() {
-        next_state.set(AppState::AudioLoading);
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-pub fn despawn_splash(
-    mut commands: Commands,
-    splash: Query<Entity, With<Splash>>,
-) {
-    if let Ok(splash) = splash.get_single() {
-        commands.entity(splash).despawn_recursive();
-    }
 }
 
 // TweenEvent Codes:

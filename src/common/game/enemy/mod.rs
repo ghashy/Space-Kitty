@@ -31,9 +31,10 @@ impl Plugin for EnemyPlugin {
             .add_event::<MessageBoxRequest>()
             .add_event::<DoggyTheme>()
             // Enter State Systems
-            .add_system(load_resources.in_schedule(OnEnter(AppState::Game)))
+            .add_systems(OnEnter(AppState::Game), load_resources)
             // Systems
             .add_systems(
+                Update,
                 (
                     update_enemy_direction,
                     enemy_movement,
@@ -46,21 +47,27 @@ impl Plugin for EnemyPlugin {
                     emit_notes,
                     poll_and_despawn_notes,
                 )
-                    .in_set(OnUpdate(AppState::Game))
-                    .in_set(OnUpdate(SimulationState::Running)),
+                    .run_if(in_state(AppState::Game))
+                    .run_if(in_state(SimulationState::Running)),
             )
-            .add_system(animate_big_boy.in_set(OnUpdate(AppState::Game)))
+            .add_systems(
+                Update,
+                animate_big_boy.run_if(in_state(AppState::Game)),
+            )
             // Exit State Systems
             .add_systems(
-                (despawn_enemies, despawn_notes_on_exit)
-                    .in_schedule(OnExit(AppState::Game)),
+                OnExit(AppState::Game),
+                (despawn_enemies, despawn_notes_on_exit),
             );
     }
 }
 
 // Events
+#[derive(Event)]
 pub struct EnemyIsArrivingEvent(pub String);
 
+#[derive(Event)]
 pub struct MessageBoxRequest(Entity, String);
 
+#[derive(Event)]
 pub struct DoggyTheme;

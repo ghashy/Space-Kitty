@@ -32,23 +32,27 @@ impl Plugin for GameoverPlugin {
         app
             // Enter State Systems
             .add_systems(
-                (spawn_gameover_layout, play_gameover_theme)
-                    .in_schedule(OnEnter(AppState::GameOver)),
+                OnEnter(AppState::GameOver),
+                (spawn_gameover_layout, play_gameover_theme),
             )
             // Systems
-            .add_systems((scroll_list,).in_set(OnUpdate(AppState::GameOver)))
             .add_systems(
+                Update,
+                (scroll_list,).run_if(in_state(AppState::GameOver)),
+            )
+            .add_systems(
+                Update,
                 (
                     interact_with_play_button,
                     interact_with_quit_button,
                     finalize_transition_to_game,
                 )
-                    .in_set(OnUpdate(AppState::GameOver)),
+                    .run_if(in_state(AppState::GameOver)),
             )
             // Exit State Systems
             .add_systems(
-                (despawn_gameover_layout, stop_gameover_theme)
-                    .in_schedule(OnExit(AppState::GameOver)),
+                OnExit(AppState::GameOver),
+                (despawn_gameover_layout, stop_gameover_theme),
             );
     }
 }

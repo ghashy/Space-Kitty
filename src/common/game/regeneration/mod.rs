@@ -36,25 +36,26 @@ impl Plugin for RegenerationPlugin {
             .add_event::<MilkEscapedEvent>()
             // Systems
             .add_systems(
+                Update,
                 (
                     spawn_milk_cup,
                     cup_of_milk_movement,
                     check_collision,
                     despawn_milk_out_of_screen,
                 )
-                    .in_set(OnUpdate(AppState::Game)),
+                    .run_if(in_state(AppState::Game)),
             )
             // Exit State Systems
-            .add_system(
-                despawn_milk_on_exit_state.in_schedule(OnExit(AppState::Game)),
-            );
+            .add_systems(OnExit(AppState::Game), despawn_milk_on_exit_state);
     }
 }
 
 // Events
 
+#[derive(Event)]
 pub struct RegeneratePlayerEvent {
     pub new_health: u8,
 }
 
+#[derive(Event)]
 pub struct MilkEscapedEvent;

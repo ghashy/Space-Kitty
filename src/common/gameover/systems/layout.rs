@@ -12,10 +12,10 @@ use crate::common::{
     gameover::{
         components::{GameoverComponent, ScrollView},
         styles::{
-            BAG, BOARD_FILL, BOARD_FRAME, CAT_FACE, DOG_FACE, EMITTING_FILL,
-            EMITTING_FRAME, LEFT_BUTTON, LEFT_CONTAINER, MAIN_CONTAINER,
-            RIGHT_BUTTON, RIGHT_CONTAINER, ROW, SCROLL_PARENT, SCROLL_VIEW,
-            SPACESHIP,
+            bag, board_fill, board_frame, cat_face, dog_face, emitting_fill,
+            emitting_frame, left_button, left_container, main_container,
+            right_button, right_container, row, scroll_parent, scroll_view,
+            spaceship,
         },
     },
     main_menu::components::{PlayButton, QuitButton},
@@ -31,7 +31,7 @@ pub fn spawn_gameover_layout(
 ) {
     commands
         .spawn((NodeBundle {
-            style: MAIN_CONTAINER,
+            style: main_container(),
             ..default()
         }, 
         GameoverComponent
@@ -41,7 +41,7 @@ pub fn spawn_gameover_layout(
             // Left container with button
             parent.spawn(NodeBundle {
                 // background_color: BackgroundColor(Color::AZURE),
-                style: LEFT_CONTAINER,
+                style: left_container(),
                 ..default()
             }).with_children(|parent| {
                 // Left button
@@ -50,7 +50,7 @@ pub fn spawn_gameover_layout(
                     parent.spawn((ButtonBundle {
                         image: UiImage::new(asset_server.load("sprites/Gameover/Buttons/Quit default.png")),
                         // background_color: BackgroundColor(Color::GOLD),
-                        style: LEFT_BUTTON,
+                        style: left_button(),
                         ..default()
                     },
                     QuitButton {
@@ -63,7 +63,7 @@ pub fn spawn_gameover_layout(
             });
             parent
                 .spawn(ImageBundle {
-                    style: SPACESHIP,
+                    style: spaceship(),
                     image: UiImage::new(
                         asset_server
                             .load("sprites/Gameover/Starship upper part.png"),
@@ -73,7 +73,7 @@ pub fn spawn_gameover_layout(
                 .with_children(|parent| {
                     parent
                         .spawn(ImageBundle {
-                            style: EMITTING_FRAME,
+                            style: emitting_frame(),
                             image: UiImage::new(
                                 asset_server.load(
                                     "sprites/Gameover/Emitting frame.png",
@@ -84,7 +84,7 @@ pub fn spawn_gameover_layout(
                         .with_children(|parent| {
                             parent
                                 .spawn(ImageBundle {
-                                    style: EMITTING_FILL,
+                                    style: emitting_fill(),
                                     background_color: BackgroundColor(
                                         Color::WHITE.with_a(0.35),
                                     ),
@@ -96,7 +96,7 @@ pub fn spawn_gameover_layout(
                                 .with_children(|parent| {
                                     parent
                                         .spawn(ImageBundle {
-                                            style: BOARD_FRAME,
+                                            style: board_frame(),
                                             background_color: BackgroundColor(
                                                 Color::WHITE.with_a(0.8),
                                             ),
@@ -108,7 +108,7 @@ pub fn spawn_gameover_layout(
                                         .with_children(|parent| {
                                             parent
                                                 .spawn(ImageBundle {
-                                                    style: BOARD_FILL,
+                                                    style: board_fill(),
                                                     background_color: BackgroundColor(
                                                         Color::WHITE.with_a(0.3),
                                                     ),
@@ -136,14 +136,14 @@ pub fn spawn_gameover_layout(
                                                     parent.
                                                         spawn(
                                                             NodeBundle {
-                                                                style: SCROLL_PARENT,
+                                                                style: scroll_parent(),
                                                                 ..default()
                                                             },
                                                         ).with_children(|parent| {
                                                             parent.
                                                                 spawn((
                                                                     NodeBundle {
-                                                                        style: SCROLL_VIEW,
+                                                                        style: scroll_view(),
                                                                         ..default()
                                                                     },
                                                                     ScrollView { position: 0. },
@@ -162,13 +162,13 @@ pub fn spawn_gameover_layout(
                 });
             // Right container with button
             parent.spawn(NodeBundle {
-                style: RIGHT_CONTAINER,
+                style: right_container(),
                 ..default()
             }).with_children(|parent| {
                     // Right button
                     parent.spawn((ButtonBundle {
                         image: UiImage::new(asset_server.load("sprites/Gameover/Buttons/Retry default.png")),
-                        style: RIGHT_BUTTON,
+                        style: right_button(),
                         ..default()
                     },
                     PlayButton {
@@ -202,7 +202,7 @@ fn spawn_row(
     parent
         .spawn((
             NodeBundle {
-                style: ROW,
+                style: row(),
                 ..default()
             },
             AccessibilityNode(NodeBuilder::new(Role::List)),
@@ -221,7 +221,7 @@ fn spawn_row(
                 ),
                 style: Style {
                     margin: UiRect::horizontal(Val::Px(10.)),
-                    size: Size::width(Val::Px(35.)),
+                    width: Val::Px(35.),
                     ..Style::DEFAULT
                 },
                 ..default()
@@ -233,7 +233,7 @@ fn spawn_row(
                 parent.spawn(ImageBundle {
                     image: UiImage::new(image),
                     background_color: BackgroundColor(Color::rgb(0., 0.93, 1.)),
-                    style: CAT_FACE,
+                    style: cat_face(),
                     ..default()
                 });
             } else {
@@ -247,7 +247,7 @@ fn spawn_row(
                         style: Style {
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
-                            ..DOG_FACE
+                            ..dog_face()
                         },
                         ..default()
                     })
@@ -263,16 +263,10 @@ fn spawn_row(
                                     0., 0.93, 1.,
                                 )),
                                 style: Style {
-                                    position: UiRect::new(
-                                        Val::Px(-20.6),
-                                        Val::Undefined,
-                                        Val::Px(-15.7),
-                                        Val::Undefined,
-                                    ),
-                                    size: Size::new(
-                                        Val::Px(96.1),
-                                        Val::Px(95.8),
-                                    ),
+                                    left: Val::Px(-20.6),
+                                    top: Val::Px(-15.7),
+                                    width: Val::Px(96.1),
+                                    height: Val::Px(95.8),
                                     ..Style::DEFAULT
                                 },
                                 ..default()
@@ -288,16 +282,10 @@ fn spawn_row(
                                         Color::rgb(0., 0.93, 1.),
                                     ),
                                     style: Style {
-                                        position: UiRect::new(
-                                            Val::Px(5.9),
-                                            Val::Undefined,
-                                            Val::Px(7.5),
-                                            Val::Undefined,
-                                        ),
-                                        size: Size::new(
-                                            Val::Px(44.3),
-                                            Val::Px(50.2),
-                                        ),
+                                        left: Val::Px(5.9),
+                                        top: Val::Px(7.5),
+                                        width: Val::Px(44.3),
+                                        height: Val::Px(50.2),
                                         ..Style::DEFAULT
                                     },
                                     ..default()
@@ -322,7 +310,7 @@ fn spawn_row(
                         right: Val::Px(50.),
                         ..default()
                     },
-                    size: Size::width(Val::Px(100.)),
+                    width: Val::Px(100.),
                     ..Style::DEFAULT
                 },
                 ..default()
@@ -333,7 +321,7 @@ fn spawn_row(
                     image: UiImage::new(
                         asset_server.load("sprites/Gameover/A bag.png"),
                     ),
-                    style: BAG,
+                    style: bag(),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -376,7 +364,7 @@ pub fn scroll_list(
             scrolling_list.position += dy;
             scrolling_list.position =
                 scrolling_list.position.clamp(-max_scroll, 0.);
-            style.position.top = Val::Px(scrolling_list.position);
+            style.top = Val::Px(scrolling_list.position);
         }
     }
 }

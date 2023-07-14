@@ -42,12 +42,12 @@ pub fn toggle_simulation_on_input_event(
     simulation_state: Res<State<SimulationState>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
-        if simulation_state.0 == SimulationState::Running {
+        if *simulation_state.get() == SimulationState::Running {
             commands.insert_resource(NextState(Some(SimulationState::Paused)));
             println!("Simulation paused");
         }
 
-        if simulation_state.0 == SimulationState::Paused {
+        if *simulation_state.get() == SimulationState::Paused {
             commands.insert_resource(NextState(Some(SimulationState::Running)));
             println!("Simulation running");
         }

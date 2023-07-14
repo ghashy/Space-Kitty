@@ -11,7 +11,7 @@ name = "space_kitty"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-bevy = { version = "0.10.1", default-features = false, features = [
+bevy = { version = "0.11.0", default-features = false, features = [
     "bevy_render",
     "bevy_core_pipeline",
     "bevy_winit",
@@ -20,21 +20,17 @@ bevy = { version = "0.10.1", default-features = false, features = [
     "bevy_ui",
     "png"
 ]}
-kira = "0.8.4"
-bevy_rapier2d = { version = "0.21.0", features = ["simd-stable"] }
-bevy_tweening = "0.7.0"
+kira = { path = "../../crates/kira/crates/kira" }
+bevy_rapier2d = { version = "0.22.0", features = ["simd-stable"] }
+bevy_tweening = "0.8.0"
 rand = "0.8.5"
 serde = "1.0.164"
 serde_json = "1.0.99"
-bevy_hanabi = { version = "0.6.2", optional = true }
-bevy_egui = { version = "0.20.3", optional = true }
-bevy-inspector-egui = { version = "0.18.3", optional = true }
+bevy_egui = { version = "0.21.0", optional = true }
+bevy-inspector-egui = { version = "0.19.0", optional = true }
 
 tracing-subscriber = { version = "0.3.17", optional = true }
 tracing-appender = { version = "0.2.2", optional = true }
-
-[target.'cfg(windows)'.build-dependencies]
-embed-resource = "1.6.3"
 
 [profile.dev]
 opt-level = 3
@@ -43,8 +39,31 @@ opt-level = 3
 opt-level = 3
 
 [features]
-# default = ["bevy_egui", "bevy/dynamic_linking", "bevy-inspector-egui", "bevy_hanabi"]
-default = ["bevy_egui", "bevy-inspector-egui", "bevy_hanabi"]
-# default = ["bevy_hanabi"]
+default = ["bevy_egui", "bevy-inspector-egui"]
 file_logger = ["tracing-appender", "tracing-subscriber"]
 
+# Android
+[package.metadata.android]
+package = "com.ghashy.spacekitty"
+apk_name = "Space Kitty"
+assets = "assets"
+resources = "assets/android-res"
+# This strips debug symbols from the shared libraries, drastically reducing APK size. If you need them, remove the option.
+strip = "strip"
+build_targets = ["aarch64-linux-android", "armv7-linux-androideabi"]
+
+[package.metadata.android.sdk]
+target_sdk_version = 33
+min_sdk_version = 31
+
+[package.metadata.android.application]
+icon = "@mipmap/ic_launcher"
+label = "Space Kitty"
+
+[package.metadata.android.signing.release]
+path = "/Users/ghashy/Dev/Android/space_kitty.keystore"
+keystore_password = "android"
+
+[package.metadata.android.application.activity]
+config_changes = ""
+orientation = "landscape"

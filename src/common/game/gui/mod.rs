@@ -27,21 +27,23 @@ impl Plugin for GameUiPlugin {
     fn build(&self, app: &mut App) {
         app
             // Enter State Systems
-            .add_system(spawn_hud.in_schedule(OnEnter(AppState::Game)))
+            .add_systems(OnEnter(AppState::Game), spawn_hud)
             // Systems
             .add_systems(
+                Update,
                 (
                     update_messages,
                     listen_hit_events,
                     listen_regeneration_events,
                     spawn_rows_from_backend,
                 )
-                    .in_set(OnUpdate(AppState::Game)),
+                    .run_if(in_state(AppState::Game)),
             )
-            .add_system(
-                remove_message_on_timeout.in_set(OnUpdate(AppState::Game)),
+            .add_systems(
+                Update,
+                remove_message_on_timeout.run_if(in_state(AppState::Game)),
             )
             // Exit State Systems
-            .add_system(despawn_hud.in_schedule(OnExit(AppState::Game)));
+            .add_systems(OnExit(AppState::Game), despawn_hud);
     }
 }

@@ -47,4 +47,5 @@ impl Comet {
 pub struct Comets;
 
 // Event
+#[derive(Event)]
 pub struct DarkenScreenEvent(pub TransitionRoute);
